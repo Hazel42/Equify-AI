@@ -8,11 +8,15 @@ import { Plus, Heart, Users, Brain, TrendingUp, LogOut, User } from "lucide-reac
 import { AddFavorDialog } from "@/components/AddFavorDialog";
 import { RelationshipCard } from "@/components/RelationshipCard";
 import { InsightsPanel } from "@/components/InsightsPanel";
+import { OnboardingFlow } from "@/components/OnboardingFlow";
+import { AIInsightCard } from "@/components/AIInsightCard";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useRelationships } from "@/hooks/useRelationships";
 import { useFavors } from "@/hooks/useFavors";
 import { useProfile } from "@/hooks/useProfile";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [showAddFavor, setShowAddFavor] = useState(false);
@@ -23,12 +27,36 @@ const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Fetch AI insights
+  const { data: aiInsights = [] } = useQuery({
+    queryKey: ['ai-insights', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      
+      const { data, error } = await supabase
+        .from('ai_insights')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
   // Redirect to auth if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       navigate("/auth");
     }
   }, [authLoading, isAuthenticated, navigate]);
+
+  // Show onboarding if user hasn't completed it
+  if (profile && !profile.onboarding_completed) {
+    return <OnboardingFlow onComplete={() => window.location.reload()} />;
+  }
 
   const handleAddFavor = (favorData: any) => {
     toast({
@@ -80,8 +108,9 @@ const Index = () => {
 
   const totalRelationships = relationships.length;
   const averageBalance = relationships.length > 0 ? 
-    relationships.reduce((sum, rel) => sum + 7.5, 0) / totalRelationships : 0; // Placeholder calculation
+    relationships.reduce((sum, rel) => sum + 7.5, 0) / totalRelationships : 0; // Will calculate with real data later
   const healthyRelationships = relationships.filter(() => Math.random() > 0.3).length; // Placeholder
+  const newInsights = aiInsights.filter(insight => !insight.acted_upon).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-orange-50">
@@ -106,7 +135,12 @@ const Index = () => {
               </Button>
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4 text-gray-600" />
-                <span className="text-sm text-gray-600">{profile?.full_name}</span>
+                <div className="text-sm">
+                  <span className="text-gray-600">{profile?.full_name}</span>
+                  {profile?.personality_type && (
+                    <p className="text-xs text-green-600">{profile.personality_type}</p>
+                  )}
+                </div>
               </div>
               <Button 
                 onClick={handleSignOut}
@@ -130,7 +164,9 @@ const Index = () => {
           <p className="text-lg text-gray-600">
             {relationships.length === 0 
               ? "Let's start building your relationship network. Add your first relationship below!" 
-              : "Your relationships are looking healthy. Here's what's happening today."
+              : profile?.personality_type 
+                ? `As a ${profile.personality_type}, here's how your relationships are evolving today.`
+                : "Your relationships are looking healthy. Here's what's happening today."
             }
           </p>
         </div>
@@ -186,15 +222,26 @@ const Index = () => {
             </CardHeader>
             <CardContent>
               <Badge className="bg-purple-100 text-purple-700 border-purple-200">
-                3 New
+                {newInsights} New
               </Badge>
             </CardContent>
           </Card>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Relationships Overview */}
-          <div className="lg:col-span-2">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* AI Insights */}
+            {aiInsights.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold text-gray-900">Latest AI Insights</h3>
+                {aiInsights.slice(0, 2).map((insight) => (
+                  <AIInsightCard key={insight.id} insight={insight} />
+                ))}
+              </div>
+            )}
+
+            {/* Relationships Overview */}
             <Card className="bg-white/60 backdrop-blur-sm border-gray-200">
               <CardHeader>
                 <CardTitle className="text-xl text-gray-900">Your Relationships</CardTitle>
