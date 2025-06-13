@@ -9,13 +9,266 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      ai_insights: {
+        Row: {
+          acted_upon: boolean | null
+          confidence_score: number | null
+          content: Json
+          created_at: string | null
+          id: string
+          insight_type: string
+          relationship_id: string | null
+          user_id: string
+        }
+        Insert: {
+          acted_upon?: boolean | null
+          confidence_score?: number | null
+          content: Json
+          created_at?: string | null
+          id?: string
+          insight_type: string
+          relationship_id?: string | null
+          user_id: string
+        }
+        Update: {
+          acted_upon?: boolean | null
+          confidence_score?: number | null
+          content?: Json
+          created_at?: string | null
+          id?: string
+          insight_type?: string
+          relationship_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_insights_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: false
+            referencedRelation: "relationships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_insights_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      favors: {
+        Row: {
+          category: string
+          context: string | null
+          created_at: string | null
+          date_occurred: string
+          description: string
+          direction: string
+          emotional_weight: number | null
+          estimated_value: number | null
+          id: string
+          reciprocated: boolean | null
+          relationship_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          context?: string | null
+          created_at?: string | null
+          date_occurred?: string
+          description: string
+          direction: string
+          emotional_weight?: number | null
+          estimated_value?: number | null
+          id?: string
+          reciprocated?: boolean | null
+          relationship_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          context?: string | null
+          created_at?: string | null
+          date_occurred?: string
+          description?: string
+          direction?: string
+          emotional_weight?: number | null
+          estimated_value?: number | null
+          id?: string
+          reciprocated?: boolean | null
+          relationship_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favors_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: false
+            referencedRelation: "relationships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favors_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          full_name: string
+          id: string
+          onboarding_completed: boolean | null
+          personality_type: string | null
+          reciprocity_style: string | null
+          subscription_tier: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          full_name: string
+          id: string
+          onboarding_completed?: boolean | null
+          personality_type?: string | null
+          reciprocity_style?: string | null
+          subscription_tier?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          onboarding_completed?: boolean | null
+          personality_type?: string | null
+          reciprocity_style?: string | null
+          subscription_tier?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      recommendations: {
+        Row: {
+          completed: boolean | null
+          created_at: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          priority_level: number | null
+          recommendation_type: string
+          relationship_id: string | null
+          suggested_actions: Json | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority_level?: number | null
+          recommendation_type: string
+          relationship_id?: string | null
+          suggested_actions?: Json | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority_level?: number | null
+          recommendation_type?: string
+          relationship_id?: string | null
+          suggested_actions?: Json | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recommendations_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: false
+            referencedRelation: "relationships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recommendations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      relationships: {
+        Row: {
+          contact_info: Json | null
+          created_at: string | null
+          id: string
+          importance_level: number | null
+          name: string
+          preferences: Json | null
+          relationship_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          contact_info?: Json | null
+          created_at?: string | null
+          id?: string
+          importance_level?: number | null
+          name: string
+          preferences?: Json | null
+          relationship_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          contact_info?: Json | null
+          created_at?: string | null
+          id?: string
+          importance_level?: number | null
+          name?: string
+          preferences?: Json | null
+          relationship_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "relationships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_relationship_balance: {
+        Args: { rel_id: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

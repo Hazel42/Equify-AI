@@ -7,8 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Badge } from "@/components/ui/badge";
 import { DollarSign, Clock, Heart, Briefcase } from "lucide-react";
+import { useRelationships } from "@/hooks/useRelationships";
+import { useFavors } from "@/hooks/useFavors";
+import { useToast } from "@/hooks/use-toast";
 
 interface AddFavorDialogProps {
   open: boolean;
@@ -18,14 +20,18 @@ interface AddFavorDialogProps {
 
 export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogProps) => {
   const [favorData, setFavorData] = useState({
-    person: "",
-    direction: "received", // received or given
+    relationship_id: "",
+    direction: "received" as "received" | "given",
     category: "",
     description: "",
-    value: "",
-    emotionalWeight: 3,
+    estimated_value: "",
+    emotional_weight: 3,
     context: ""
   });
+
+  const { relationships } = useRelationships();
+  const { createFavor } = useFavors();
+  const { toast } = useToast();
 
   const categories = [
     { id: "financial", label: "Financial", icon: DollarSign, description: "Meals, gifts, loans" },
@@ -34,17 +40,46 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
     { id: "professional", label: "Professional", icon: Briefcase, description: "Referrals, opportunities" }
   ];
 
-  const handleSave = () => {
-    onSave(favorData);
-    setFavorData({
-      person: "",
-      direction: "received",
-      category: "",
-      description: "",
-      value: "",
-      emotionalWeight: 3,
-      context: ""
-    });
+  const handleSave = async () => {
+    if (!favorData.relationship_id || !favorData.category || !favorData.description) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await createFavor.mutateAsync({
+        relationship_id: favorData.relationship_id,
+        direction: favorData.direction,
+        category: favorData.category,
+        description: favorData.description,
+        estimated_value: favorData.estimated_value ? parseFloat(favorData.estimated_value) : undefined,
+        emotional_weight: favorData.emotional_weight,
+        context: favorData.context || undefined,
+        date_occurred: new Date().toISOString().split('T')[0],
+        reciprocated: false,
+      });
+
+      onSave(favorData);
+      setFavorData({
+        relationship_id: "",
+        direction: "received",
+        category: "",
+        description: "",
+        estimated_value: "",
+        emotional_weight: 3,
+        context: ""
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save favor. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -63,7 +98,7 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
             <Label className="text-base font-medium">What happened?</Label>
             <RadioGroup 
               value={favorData.direction} 
-              onValueChange={(value) => setFavorData({...favorData, direction: value})}
+              onValueChange={(value: "received" | "given") => setFavorData({...favorData, direction: value})}
               className="flex gap-4 mt-2"
             >
               <div className="flex items-center space-x-2 bg-green-50 p-3 rounded-lg border border-green-200">
@@ -84,17 +119,23 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
           {/* Person Selection */}
           <div>
             <Label htmlFor="person">Person</Label>
-            <Select onValueChange={(value) => setFavorData({...favorData, person: value})}>
+            <Select onValueChange={(value) => setFavorData({...favorData, relationship_id: value})}>
               <SelectTrigger>
-                <SelectValue placeholder="Select person or add new" />
+                <SelectValue placeholder="Select person" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="sarah">Sarah Chen</SelectItem>
-                <SelectItem value="mike">Mike Rodriguez</SelectItem>
-                <SelectItem value="mom">Mom</SelectItem>
-                <SelectItem value="new">+ Add New Person</SelectItem>
+                {relationships.map((relationship) => (
+                  <SelectItem key={relationship.id} value={relationship.id}>
+                    {relationship.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
+            {relationships.length === 0 && (
+              <p className="text-sm text-gray-500 mt-1">
+                No relationships found. Add a relationship first.
+              </p>
+            )}
           </div>
 
           {/* Category Selection */}
@@ -145,9 +186,9 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
               <Label htmlFor="value">Estimated Value (optional)</Label>
               <Input
                 id="value"
-                placeholder="e.g., $25 or 2 hours"
-                value={favorData.value}
-                onChange={(e) => setFavorData({...favorData, value: e.target.value})}
+                placeholder="e.g., 25 or 2 hours"
+                value={favorData.estimated_value}
+                onChange={(e) => setFavorData({...favorData, estimated_value: e.target.value})}
               />
             </div>
             <div>
@@ -156,9 +197,9 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
                 {[1, 2, 3, 4, 5].map((level) => (
                   <button
                     key={level}
-                    onClick={() => setFavorData({...favorData, emotionalWeight: level})}
+                    onClick={() => setFavorData({...favorData, emotional_weight: level})}
                     className={`p-2 rounded ${
-                      favorData.emotionalWeight >= level 
+                      favorData.emotional_weight >= level 
                         ? 'bg-red-100 text-red-600' 
                         : 'bg-gray-100 text-gray-400'
                     }`}
@@ -187,9 +228,9 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
             <Button 
               onClick={handleSave}
               className="flex-1 bg-green-600 hover:bg-green-700"
-              disabled={!favorData.person || !favorData.category || !favorData.description}
+              disabled={!favorData.relationship_id || !favorData.category || !favorData.description || createFavor.isPending}
             >
-              Save Favor
+              {createFavor.isPending ? "Saving..." : "Save Favor"}
             </Button>
             <Button 
               variant="outline" 

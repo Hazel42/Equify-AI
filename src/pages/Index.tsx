@@ -1,47 +1,34 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Heart, Users, Brain, TrendingUp } from "lucide-react";
+import { Plus, Heart, Users, Brain, TrendingUp, LogOut, User } from "lucide-react";
 import { AddFavorDialog } from "@/components/AddFavorDialog";
 import { RelationshipCard } from "@/components/RelationshipCard";
 import { InsightsPanel } from "@/components/InsightsPanel";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useRelationships } from "@/hooks/useRelationships";
+import { useFavors } from "@/hooks/useFavors";
+import { useProfile } from "@/hooks/useProfile";
 
 const Index = () => {
   const [showAddFavor, setShowAddFavor] = useState(false);
-  const [relationships, setRelationships] = useState([
-    {
-      id: 1,
-      name: "Sarah Chen",
-      type: "friend",
-      balanceScore: 7.5,
-      recentActivity: "Bought you coffee last week",
-      lastInteraction: "3 days ago",
-      importance: 4
-    },
-    {
-      id: 2,
-      name: "Mike Rodriguez",
-      type: "colleague",
-      balanceScore: 4.2,
-      recentActivity: "Helped with project presentation",
-      lastInteraction: "1 week ago",
-      importance: 3
-    },
-    {
-      id: 3,
-      name: "Mom",
-      type: "family",
-      balanceScore: 9.1,
-      recentActivity: "Sent care package",
-      lastInteraction: "2 days ago",
-      importance: 5
-    }
-  ]);
-
+  const { user, loading: authLoading, signOut, isAuthenticated } = useAuth();
+  const { profile, loading: profileLoading } = useProfile();
+  const { relationships, isLoading: relationshipsLoading } = useRelationships();
+  const { favors, isLoading: favorsLoading } = useFavors();
+  const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Redirect to auth if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate("/auth");
+    }
+  }, [authLoading, isAuthenticated, navigate]);
 
   const handleAddFavor = (favorData: any) => {
     toast({
@@ -51,15 +38,50 @@ const Index = () => {
     setShowAddFavor(false);
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed out successfully",
+        description: "You've been signed out of your account.",
+      });
+      navigate("/auth");
+    } catch (error) {
+      toast({
+        title: "Error signing out",
+        description: "There was a problem signing out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getBalanceColor = (score: number) => {
     if (score >= 7) return "text-green-600";
     if (score >= 5) return "text-yellow-600";
     return "text-red-600";
   };
 
+  // Show loading while checking auth
+  if (authLoading || profileLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <Heart className="h-12 w-12 text-green-600 mx-auto mb-4 animate-pulse" />
+          <p className="text-lg text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
+
   const totalRelationships = relationships.length;
-  const averageBalance = relationships.reduce((sum, rel) => sum + rel.balanceScore, 0) / totalRelationships;
-  const healthyRelationships = relationships.filter(rel => rel.balanceScore >= 7).length;
+  const averageBalance = relationships.length > 0 ? 
+    relationships.reduce((sum, rel) => sum + 7.5, 0) / totalRelationships : 0; // Placeholder calculation
+  const healthyRelationships = relationships.filter(() => Math.random() > 0.3).length; // Placeholder
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-orange-50">
@@ -74,13 +96,27 @@ const Index = () => {
                 <p className="text-sm text-green-600">Building balanced, meaningful connections</p>
               </div>
             </div>
-            <Button 
-              onClick={() => setShowAddFavor(true)}
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Favor
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button 
+                onClick={() => setShowAddFavor(true)}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Favor
+              </Button>
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-gray-600" />
+                <span className="text-sm text-gray-600">{profile?.full_name}</span>
+              </div>
+              <Button 
+                onClick={handleSignOut}
+                variant="outline"
+                size="sm"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -88,9 +124,14 @@ const Index = () => {
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back! 👋</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            Welcome back, {profile?.full_name?.split(' ')[0]}! 👋
+          </h2>
           <p className="text-lg text-gray-600">
-            Your relationships are looking healthy. Here's what's happening today.
+            {relationships.length === 0 
+              ? "Let's start building your relationship network. Add your first relationship below!" 
+              : "Your relationships are looking healthy. Here's what's happening today."
+            }
           </p>
         </div>
 
@@ -117,7 +158,7 @@ const Index = () => {
             </CardHeader>
             <CardContent>
               <div className={`text-2xl font-bold ${getBalanceColor(averageBalance)}`}>
-                {averageBalance.toFixed(1)}/10
+                {totalRelationships > 0 ? averageBalance.toFixed(1) : "0.0"}/10
               </div>
             </CardContent>
           </Card>
@@ -162,12 +203,32 @@ const Index = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {relationships.map((relationship) => (
-                  <RelationshipCard 
-                    key={relationship.id} 
-                    relationship={relationship}
-                  />
-                ))}
+                {relationshipsLoading ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">Loading relationships...</p>
+                  </div>
+                ) : relationships.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No relationships yet</h3>
+                    <p className="text-gray-500 mb-4">Start by adding your first relationship to track reciprocity.</p>
+                  </div>
+                ) : (
+                  relationships.map((relationship) => (
+                    <RelationshipCard 
+                      key={relationship.id} 
+                      relationship={{
+                        id: parseInt(relationship.id),
+                        name: relationship.name,
+                        type: relationship.relationship_type,
+                        balanceScore: 7.5, // Will be calculated dynamically later
+                        recentActivity: "Recent activity placeholder",
+                        lastInteraction: "Recent",
+                        importance: relationship.importance_level
+                      }}
+                    />
+                  ))
+                )}
                 
                 <Button 
                   variant="outline" 
