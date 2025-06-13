@@ -1,0 +1,206 @@
+
+import { useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Badge } from "@/components/ui/badge";
+import { DollarSign, Clock, Heart, Briefcase } from "lucide-react";
+
+interface AddFavorDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: (favorData: any) => void;
+}
+
+export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogProps) => {
+  const [favorData, setFavorData] = useState({
+    person: "",
+    direction: "received", // received or given
+    category: "",
+    description: "",
+    value: "",
+    emotionalWeight: 3,
+    context: ""
+  });
+
+  const categories = [
+    { id: "financial", label: "Financial", icon: DollarSign, description: "Meals, gifts, loans" },
+    { id: "time", label: "Time", icon: Clock, description: "Help, mentoring, listening" },
+    { id: "emotional", label: "Emotional", icon: Heart, description: "Support, celebrations" },
+    { id: "professional", label: "Professional", icon: Briefcase, description: "Referrals, opportunities" }
+  ];
+
+  const handleSave = () => {
+    onSave(favorData);
+    setFavorData({
+      person: "",
+      direction: "received",
+      category: "",
+      description: "",
+      value: "",
+      emotionalWeight: 3,
+      context: ""
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Add a Favor</DialogTitle>
+          <DialogDescription>
+            Track kindness in your relationships - whether given or received
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {/* Direction Selection */}
+          <div>
+            <Label className="text-base font-medium">What happened?</Label>
+            <RadioGroup 
+              value={favorData.direction} 
+              onValueChange={(value) => setFavorData({...favorData, direction: value})}
+              className="flex gap-4 mt-2"
+            >
+              <div className="flex items-center space-x-2 bg-green-50 p-3 rounded-lg border border-green-200">
+                <RadioGroupItem value="received" id="received" />
+                <Label htmlFor="received" className="text-green-700 font-medium">
+                  I received a favor
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                <RadioGroupItem value="given" id="given" />
+                <Label htmlFor="given" className="text-blue-700 font-medium">
+                  I gave a favor
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          {/* Person Selection */}
+          <div>
+            <Label htmlFor="person">Person</Label>
+            <Select onValueChange={(value) => setFavorData({...favorData, person: value})}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select person or add new" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="sarah">Sarah Chen</SelectItem>
+                <SelectItem value="mike">Mike Rodriguez</SelectItem>
+                <SelectItem value="mom">Mom</SelectItem>
+                <SelectItem value="new">+ Add New Person</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Category Selection */}
+          <div>
+            <Label className="text-base font-medium">Category</Label>
+            <div className="grid grid-cols-2 gap-3 mt-2">
+              {categories.map((category) => {
+                const IconComponent = category.icon;
+                const isSelected = favorData.category === category.id;
+                return (
+                  <button
+                    key={category.id}
+                    onClick={() => setFavorData({...favorData, category: category.id})}
+                    className={`p-4 border rounded-lg text-left transition-all ${
+                      isSelected 
+                        ? 'border-green-500 bg-green-50' 
+                        : 'border-gray-200 bg-white hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <IconComponent className="h-4 w-4" />
+                      <span className="font-medium">{category.label}</span>
+                    </div>
+                    <p className="text-xs text-gray-600">{category.description}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Description */}
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              placeholder={favorData.direction === "received" 
+                ? "e.g., Sarah bought me lunch at the new cafe downtown" 
+                : "e.g., Helped Mike move his furniture to his new apartment"
+              }
+              value={favorData.description}
+              onChange={(e) => setFavorData({...favorData, description: e.target.value})}
+            />
+          </div>
+
+          {/* Value and Emotional Weight */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="value">Estimated Value (optional)</Label>
+              <Input
+                id="value"
+                placeholder="e.g., $25 or 2 hours"
+                value={favorData.value}
+                onChange={(e) => setFavorData({...favorData, value: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label>Emotional Impact</Label>
+              <div className="flex gap-1 mt-2">
+                {[1, 2, 3, 4, 5].map((level) => (
+                  <button
+                    key={level}
+                    onClick={() => setFavorData({...favorData, emotionalWeight: level})}
+                    className={`p-2 rounded ${
+                      favorData.emotionalWeight >= level 
+                        ? 'bg-red-100 text-red-600' 
+                        : 'bg-gray-100 text-gray-400'
+                    }`}
+                  >
+                    <Heart className="h-4 w-4" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Context */}
+          <div>
+            <Label htmlFor="context">Context (optional)</Label>
+            <Textarea
+              id="context"
+              placeholder="Any additional context about the situation..."
+              value={favorData.context}
+              onChange={(e) => setFavorData({...favorData, context: e.target.value})}
+              rows={2}
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-4">
+            <Button 
+              onClick={handleSave}
+              className="flex-1 bg-green-600 hover:bg-green-700"
+              disabled={!favorData.person || !favorData.category || !favorData.description}
+            >
+              Save Favor
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
