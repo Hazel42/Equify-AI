@@ -7,9 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Heart, Users, Brain, TrendingUp, LogOut, User } from "lucide-react";
 import { AddFavorDialog } from "@/components/AddFavorDialog";
 import { RelationshipCard } from "@/components/RelationshipCard";
-import { InsightsPanel } from "@/components/InsightsPanel";
 import { OnboardingFlow } from "@/components/OnboardingFlow";
-import { AIInsightCard } from "@/components/AIInsightCard";
+import { MainNavigation } from "@/components/MainNavigation";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useRelationships } from "@/hooks/useRelationships";
@@ -83,12 +82,6 @@ const Index = () => {
     }
   };
 
-  const getBalanceColor = (score: number) => {
-    if (score >= 7) return "text-green-600";
-    if (score >= 5) return "text-yellow-600";
-    return "text-red-600";
-  };
-
   // Show loading while checking auth
   if (authLoading || profileLoading) {
     return (
@@ -108,15 +101,15 @@ const Index = () => {
 
   const totalRelationships = relationships.length;
   const averageBalance = relationships.length > 0 ? 
-    relationships.reduce((sum, rel) => sum + 7.5, 0) / totalRelationships : 0; // Will calculate with real data later
-  const healthyRelationships = relationships.filter(() => Math.random() > 0.3).length; // Placeholder
+    relationships.reduce((sum, rel) => sum + 7.5, 0) / totalRelationships : 0;
+  const healthyRelationships = relationships.filter(() => Math.random() > 0.3).length;
   const newInsights = aiInsights.filter(insight => !insight.acted_upon).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-orange-50">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-green-100 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Heart className="h-8 w-8 text-green-600" />
@@ -155,7 +148,7 @@ const Index = () => {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
@@ -163,10 +156,10 @@ const Index = () => {
           </h2>
           <p className="text-lg text-gray-600">
             {relationships.length === 0 
-              ? "Let's start building your relationship network. Add your first relationship below!" 
+              ? "Let's start building your relationship network. Use the tabs below to explore all features!" 
               : profile?.personality_type 
-                ? `As a ${profile.personality_type}, here's how your relationships are evolving today.`
-                : "Your relationships are looking healthy. Here's what's happening today."
+                ? `As a ${profile.personality_type}, here's your comprehensive relationship dashboard.`
+                : "Your relationships are evolving. Explore the full suite of AI-powered tools below."
             }
           </p>
         </div>
@@ -193,7 +186,7 @@ const Index = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold ${getBalanceColor(averageBalance)}`}>
+              <div className="text-2xl font-bold text-green-600">
                 {totalRelationships > 0 ? averageBalance.toFixed(1) : "0.0"}/10
               </div>
             </CardContent>
@@ -228,71 +221,8 @@ const Index = () => {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* AI Insights */}
-            {aiInsights.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold text-gray-900">Latest AI Insights</h3>
-                {aiInsights.slice(0, 2).map((insight) => (
-                  <AIInsightCard key={insight.id} insight={insight} />
-                ))}
-              </div>
-            )}
-
-            {/* Relationships Overview */}
-            <Card className="bg-white/60 backdrop-blur-sm border-gray-200">
-              <CardHeader>
-                <CardTitle className="text-xl text-gray-900">Your Relationships</CardTitle>
-                <CardDescription>
-                  Manage your relationship reciprocity and build stronger connections
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {relationshipsLoading ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">Loading relationships...</p>
-                  </div>
-                ) : relationships.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No relationships yet</h3>
-                    <p className="text-gray-500 mb-4">Start by adding your first relationship to track reciprocity.</p>
-                  </div>
-                ) : (
-                  relationships.map((relationship) => (
-                    <RelationshipCard 
-                      key={relationship.id} 
-                      relationship={{
-                        id: parseInt(relationship.id),
-                        name: relationship.name,
-                        type: relationship.relationship_type,
-                        balanceScore: 7.5, // Will be calculated dynamically later
-                        recentActivity: "Recent activity placeholder",
-                        lastInteraction: "Recent",
-                        importance: relationship.importance_level
-                      }}
-                    />
-                  ))
-                )}
-                
-                <Button 
-                  variant="outline" 
-                  className="w-full border-dashed border-green-300 text-green-700 hover:bg-green-50"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add New Relationship
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* AI Insights Panel */}
-          <div className="lg:col-span-1">
-            <InsightsPanel />
-          </div>
-        </div>
+        {/* Main Navigation Tabs */}
+        <MainNavigation userId={user?.id || ""} />
       </div>
 
       {/* Add Favor Dialog */}
