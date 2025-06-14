@@ -10,6 +10,8 @@ import { SmartRecommendationEngine } from "./SmartRecommendationEngine";
 import { GamificationPanel } from "./GamificationPanel";
 import { PerformanceAnalytics } from "./PerformanceAnalytics";
 import { NotificationSystem } from "./NotificationSystem";
+import { HelpSystem } from "./HelpSystem";
+import { AdvancedSettingsPanel } from "./AdvancedSettingsPanel";
 import { 
   Users, 
   BarChart3, 
@@ -19,7 +21,9 @@ import {
   TrendingUp,
   Download,
   Home,
-  Lightbulb
+  Lightbulb,
+  HelpCircle,
+  Sliders
 } from "lucide-react";
 
 interface MainNavigationProps {
@@ -34,7 +38,7 @@ export const MainNavigation = ({ userId }: MainNavigationProps) => {
       <div className="flex items-center justify-between mb-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex items-center justify-between">
-            <TabsList className="grid w-full grid-cols-9 lg:w-auto lg:grid-cols-9">
+            <TabsList className="grid w-full grid-cols-11 lg:w-auto lg:grid-cols-11">
               <TabsTrigger value="dashboard" className="flex items-center gap-2">
                 <Home className="h-4 w-4" />
                 <span className="hidden sm:inline">Dashboard</span>
@@ -66,6 +70,14 @@ export const MainNavigation = ({ userId }: MainNavigationProps) => {
               <TabsTrigger value="data" className="flex items-center gap-2">
                 <Download className="h-4 w-4" />
                 <span className="hidden sm:inline">Data</span>
+              </TabsTrigger>
+              <TabsTrigger value="help" className="flex items-center gap-2">
+                <HelpCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">Help</span>
+              </TabsTrigger>
+              <TabsTrigger value="advanced" className="flex items-center gap-2">
+                <Sliders className="h-4 w-4" />
+                <span className="hidden sm:inline">Advanced</span>
               </TabsTrigger>
               <TabsTrigger value="settings" className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
@@ -109,6 +121,14 @@ export const MainNavigation = ({ userId }: MainNavigationProps) => {
 
             <TabsContent value="data" className="space-y-6">
               <ExportImportManager />
+            </TabsContent>
+
+            <TabsContent value="help" className="space-y-6">
+              <HelpSystem />
+            </TabsContent>
+
+            <TabsContent value="advanced" className="space-y-6">
+              <AdvancedSettingsPanel />
             </TabsContent>
 
             <TabsContent value="settings" className="space-y-6">
