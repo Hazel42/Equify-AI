@@ -160,7 +160,7 @@ export const RelationshipManager = () => {
 
   const handleAddRelationship = async (data: any) => {
     try {
-      await addRelationship(data);
+      await addRelationship.mutateAsync(data);
       setShowAddForm(false);
       toast({
         title: "Relationship Added",
@@ -264,15 +264,15 @@ export const RelationshipManager = () => {
                   <span className="text-sm text-gray-600">Balance Score: 7.5/10</span>
                 </div>
                 
-                {relationship.contact_info?.email && (
+                {relationship.contact_info && typeof relationship.contact_info === 'object' && 'email' in relationship.contact_info && relationship.contact_info.email && (
                   <div className="text-sm text-gray-600">
-                    📧 {relationship.contact_info.email}
+                    📧 {relationship.contact_info.email as string}
                   </div>
                 )}
                 
-                {relationship.preferences?.communication_style && (
+                {relationship.preferences && typeof relationship.preferences === 'object' && 'communication_style' in relationship.preferences && relationship.preferences.communication_style && (
                   <div className="text-sm text-gray-600">
-                    💬 {relationship.preferences.communication_style}
+                    💬 {relationship.preferences.communication_style as string}
                   </div>
                 )}
 

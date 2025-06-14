@@ -37,7 +37,7 @@ export const useRelationships = () => {
     enabled: !!user,
   });
 
-  const createRelationship = useMutation({
+  const addRelationship = useMutation({
     mutationFn: async (newRelationship: Omit<Relationship, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
       if (!user) throw new Error('User not authenticated');
 
@@ -92,7 +92,7 @@ export const useRelationships = () => {
   return {
     relationships,
     isLoading,
-    createRelationship,
+    addRelationship,
     updateRelationship,
     deleteRelationship,
   };
