@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Heart, Users, Brain, TrendingUp, LogOut, User } from "lucide-react";
 import { AddFavorDialog } from "@/components/AddFavorDialog";
-import { RelationshipCard } from "@/components/RelationshipCard";
 import { OnboardingFlow } from "@/components/OnboardingFlow";
 import { MainNavigation } from "@/components/MainNavigation";
 import { useToast } from "@/hooks/use-toast";
@@ -99,12 +98,6 @@ const Index = () => {
     return null;
   }
 
-  const totalRelationships = relationships.length;
-  const averageBalance = relationships.length > 0 ? 
-    relationships.reduce((sum, rel) => sum + 7.5, 0) / totalRelationships : 0;
-  const healthyRelationships = relationships.filter(() => Math.random() > 0.3).length;
-  const newInsights = aiInsights.filter(insight => !insight.acted_upon).length;
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-orange-50">
       {/* Header */}
@@ -149,78 +142,6 @@ const Index = () => {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {profile?.full_name?.split(' ')[0]}! 👋
-          </h2>
-          <p className="text-lg text-gray-600">
-            {relationships.length === 0 
-              ? "Let's start building your relationship network. Use the tabs below to explore all features!" 
-              : profile?.personality_type 
-                ? `As a ${profile.personality_type}, here's your comprehensive relationship dashboard.`
-                : "Your relationships are evolving. Explore the full suite of AI-powered tools below."
-            }
-          </p>
-        </div>
-
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white/60 backdrop-blur-sm border-green-200">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Total Relationships
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{totalRelationships}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/60 backdrop-blur-sm border-blue-200">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
-                Average Balance
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {totalRelationships > 0 ? averageBalance.toFixed(1) : "0.0"}/10
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/60 backdrop-blur-sm border-orange-200">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <Heart className="h-4 w-4" />
-                Healthy Relationships
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {healthyRelationships}/{totalRelationships}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/60 backdrop-blur-sm border-purple-200">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <Brain className="h-4 w-4" />
-                AI Insights
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Badge className="bg-purple-100 text-purple-700 border-purple-200">
-                {newInsights} New
-              </Badge>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Main Navigation Tabs */}
         <MainNavigation userId={user?.id || ""} />
       </div>

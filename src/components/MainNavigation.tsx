@@ -7,7 +7,8 @@ import { RelationshipManager } from "./RelationshipManager";
 import { SmartRecommendations } from "./SmartRecommendations";
 import { AnalyticsDashboard } from "./AnalyticsDashboard";
 import { NotificationCenter } from "./NotificationCenter";
-import { AIInsightCard } from "./AIInsightCard";
+import { EnhancedDashboard } from "./EnhancedDashboard";
+import { SettingsPage } from "./SettingsPage";
 
 interface MainNavigationProps {
   userId: string;
@@ -52,12 +53,7 @@ export const MainNavigation = ({ userId, defaultTab = "dashboard" }: MainNavigat
 
         <div className="mt-6">
           <TabsContent value="dashboard" className="space-y-6">
-            {/* Dashboard content - will be populated from existing Index.tsx */}
-            <div className="text-center py-12">
-              <Heart className="h-16 w-16 text-green-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Your Dashboard</h2>
-              <p className="text-gray-600">Your relationship overview and quick actions</p>
-            </div>
+            <EnhancedDashboard />
           </TabsContent>
 
           <TabsContent value="relationships">
@@ -85,12 +81,7 @@ export const MainNavigation = ({ userId, defaultTab = "dashboard" }: MainNavigat
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-6">
-            <div className="text-center py-12">
-              <Settings className="h-16 w-16 text-gray-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Settings</h2>
-              <p className="text-gray-600">Customize your RelationshipDebt AI experience</p>
-              <p className="text-sm text-gray-500 mt-4">Settings panel coming soon...</p>
-            </div>
+            <SettingsPage />
           </TabsContent>
         </div>
       </Tabs>
