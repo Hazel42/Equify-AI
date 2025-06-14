@@ -6,7 +6,6 @@ import { AnalyticsDashboard } from "./AnalyticsDashboard";
 import { EnhancedDashboard } from "./EnhancedDashboard";
 import { SettingsPage } from "./SettingsPage";
 import { ExportImportManager } from "./ExportImportManager";
-import { SmartRecommendations } from "./SmartRecommendations";
 import { SmartRecommendationEngine } from "./SmartRecommendationEngine";
 import { GamificationPanel } from "./GamificationPanel";
 import { PerformanceAnalytics } from "./PerformanceAnalytics";
@@ -89,7 +88,7 @@ export const MainNavigation = ({ userId }: MainNavigationProps) => {
             </TabsContent>
 
             <TabsContent value="analytics" className="space-y-6">
-              <AnalyticsDashboard userId={userId} />
+              <AnalyticsDashboard />
             </TabsContent>
 
             <TabsContent value="performance" className="space-y-6">
@@ -97,7 +96,7 @@ export const MainNavigation = ({ userId }: MainNavigationProps) => {
             </TabsContent>
 
             <TabsContent value="recommendations" className="space-y-6">
-              <SmartRecommendations />
+              <SmartRecommendationEngine />
             </TabsContent>
 
             <TabsContent value="smart-recommendations" className="space-y-6">
