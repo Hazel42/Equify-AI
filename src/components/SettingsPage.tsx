@@ -32,7 +32,7 @@ export const SettingsPage = () => {
   const handleUpdateProfile = async () => {
     setLoading(true);
     try {
-      await updateProfile.mutateAsync({
+      await updateProfile({
         full_name: formData.full_name,
         personality_type: formData.personality_type,
         reciprocity_style: formData.reciprocity_style,
