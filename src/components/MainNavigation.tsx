@@ -1,90 +1,123 @@
 
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Heart, Users, Brain, BarChart3, Bell, Settings, Home } from "lucide-react";
 import { RelationshipManager } from "./RelationshipManager";
-import { SmartRecommendations } from "./SmartRecommendations";
 import { AnalyticsDashboard } from "./AnalyticsDashboard";
-import { NotificationCenter } from "./NotificationCenter";
 import { EnhancedDashboard } from "./EnhancedDashboard";
 import { SettingsPage } from "./SettingsPage";
+import { ExportImportManager } from "./ExportImportManager";
+import { SmartRecommendations } from "./SmartRecommendations";
+import { SmartRecommendationEngine } from "./SmartRecommendationEngine";
+import { GamificationPanel } from "./GamificationPanel";
+import { PerformanceAnalytics } from "./PerformanceAnalytics";
+import { NotificationSystem } from "./NotificationSystem";
+import { 
+  Users, 
+  BarChart3, 
+  Settings, 
+  Brain, 
+  Trophy,
+  TrendingUp,
+  Download,
+  Home,
+  Lightbulb
+} from "lucide-react";
 
 interface MainNavigationProps {
   userId: string;
-  defaultTab?: string;
 }
 
-export const MainNavigation = ({ userId, defaultTab = "dashboard" }: MainNavigationProps) => {
-  const [activeTab, setActiveTab] = useState(defaultTab);
+export const MainNavigation = ({ userId }: MainNavigationProps) => {
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   return (
     <div className="w-full">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-6 bg-white/60 backdrop-blur-sm border border-green-100">
-          <TabsTrigger value="dashboard" className="flex items-center gap-2">
-            <Home className="h-4 w-4" />
-            <span className="hidden sm:inline">Dashboard</span>
-          </TabsTrigger>
-          <TabsTrigger value="relationships" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">Relationships</span>
-          </TabsTrigger>
-          <TabsTrigger value="ai" className="flex items-center gap-2">
-            <Brain className="h-4 w-4" />
-            <span className="hidden sm:inline">AI Insights</span>
-          </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            <span className="hidden sm:inline">Analytics</span>
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2 relative">
-            <Bell className="h-4 w-4" />
-            <span className="hidden sm:inline">Notifications</span>
-            <Badge className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center p-0">
-              3
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            <span className="hidden sm:inline">Settings</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <div className="mt-6">
-          <TabsContent value="dashboard" className="space-y-6">
-            <EnhancedDashboard />
-          </TabsContent>
-
-          <TabsContent value="relationships">
-            <RelationshipManager />
-          </TabsContent>
-
-          <TabsContent value="ai" className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">AI-Powered Insights</h2>
-              <p className="text-gray-600">Smart recommendations and relationship analysis</p>
+      <div className="flex items-center justify-between mb-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="flex items-center justify-between">
+            <TabsList className="grid w-full grid-cols-9 lg:w-auto lg:grid-cols-9">
+              <TabsTrigger value="dashboard" className="flex items-center gap-2">
+                <Home className="h-4 w-4" />
+                <span className="hidden sm:inline">Dashboard</span>
+              </TabsTrigger>
+              <TabsTrigger value="relationships" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline">Relationships</span>
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                <span className="hidden sm:inline">Analytics</span>
+              </TabsTrigger>
+              <TabsTrigger value="performance" className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                <span className="hidden sm:inline">Performance</span>
+              </TabsTrigger>
+              <TabsTrigger value="recommendations" className="flex items-center gap-2">
+                <Brain className="h-4 w-4" />
+                <span className="hidden sm:inline">AI Insights</span>
+              </TabsTrigger>
+              <TabsTrigger value="smart-recommendations" className="flex items-center gap-2">
+                <Lightbulb className="h-4 w-4" />
+                <span className="hidden sm:inline">Smart Tips</span>
+              </TabsTrigger>
+              <TabsTrigger value="gamification" className="flex items-center gap-2">
+                <Trophy className="h-4 w-4" />
+                <span className="hidden sm:inline">Achievements</span>
+              </TabsTrigger>
+              <TabsTrigger value="data" className="flex items-center gap-2">
+                <Download className="h-4 w-4" />
+                <span className="hidden sm:inline">Data</span>
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">Settings</span>
+              </TabsTrigger>
+            </TabsList>
+            
+            <div className="ml-4">
+              <NotificationSystem />
             </div>
-            <SmartRecommendations 
-              relationshipId="" 
-              userId={userId} 
-              relationshipName="All Relationships" 
-            />
-          </TabsContent>
+          </div>
 
-          <TabsContent value="analytics">
-            <AnalyticsDashboard />
-          </TabsContent>
+          <div className="mt-6">
+            <TabsContent value="dashboard" className="space-y-6">
+              <EnhancedDashboard />
+            </TabsContent>
 
-          <TabsContent value="notifications">
-            <NotificationCenter />
-          </TabsContent>
+            <TabsContent value="relationships" className="space-y-6">
+              <RelationshipManager />
+            </TabsContent>
 
-          <TabsContent value="settings" className="space-y-6">
-            <SettingsPage />
-          </TabsContent>
-        </div>
-      </Tabs>
+            <TabsContent value="analytics" className="space-y-6">
+              <AnalyticsDashboard userId={userId} />
+            </TabsContent>
+
+            <TabsContent value="performance" className="space-y-6">
+              <PerformanceAnalytics />
+            </TabsContent>
+
+            <TabsContent value="recommendations" className="space-y-6">
+              <SmartRecommendations />
+            </TabsContent>
+
+            <TabsContent value="smart-recommendations" className="space-y-6">
+              <SmartRecommendationEngine />
+            </TabsContent>
+
+            <TabsContent value="gamification" className="space-y-6">
+              <GamificationPanel />
+            </TabsContent>
+
+            <TabsContent value="data" className="space-y-6">
+              <ExportImportManager />
+            </TabsContent>
+
+            <TabsContent value="settings" className="space-y-6">
+              <SettingsPage />
+            </TabsContent>
+          </div>
+        </Tabs>
+      </div>
     </div>
   );
 };
