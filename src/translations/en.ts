@@ -1,3 +1,4 @@
+
 export const en = {
   common: {
     add: 'Add',
@@ -70,6 +71,8 @@ export const en = {
     relationshipAdded: 'Relationship Added',
     relationshipAddedDesc: 'Your new relationship has been added.',
     aiAutoAnalysisError: 'Automatic AI analysis failed.',
+    aiAutoAnalysisSuccess: 'AI analysis completed successfully.',
+    aiAutoAnalysisSuccessDesc: 'New insights and recommendations have been generated.',
   },
   language: {
     english: 'English',

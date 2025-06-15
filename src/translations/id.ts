@@ -1,3 +1,4 @@
+
 export const id = {
   common: {
     add: 'Tambah',
@@ -68,8 +69,10 @@ export const id = {
     missingInfoDesc: 'Harap isi semua field yang diperlukan.',
     errorSavingRelationship: 'Gagal menyimpan hubungan. Silakan coba lagi.',
     relationshipAdded: 'Hubungan Ditambahkan',
-    relationshipAddedDesc: 'Hubungan baru Anda telah ditambahkan.',
+    relationshipAddedDesc: 'Hubungan baru Anda telah ditambahkannya.',
     aiAutoAnalysisError: 'Analisis AI otomatis gagal.',
+    aiAutoAnalysisSuccess: 'Analisis AI berhasil diselesaikan.',
+    aiAutoAnalysisSuccessDesc: 'Wawasan dan rekomendasi baru telah dibuat.',
   },
   language: {
     english: 'English',
