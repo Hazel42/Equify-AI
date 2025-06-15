@@ -1,11 +1,9 @@
-
 import {
   Calendar,
   Home,
   Users,
   BarChart3,
   Brain,
-  Lightbulb,
   Trophy,
   Download,
   Settings,
@@ -70,14 +68,9 @@ const getMenuItems = (t: any) => [
     group: t('navigation.aiTools'),
     items: [
       {
-        title: t('navigation.aiInsights'),
+        title: 'AI Recommendations',
         icon: Brain,
         value: "recommendations",
-      },
-      {
-        title: t('navigation.smartTips'),
-        icon: Lightbulb,
-        value: "smart-recommendations",
       },
     ],
   },

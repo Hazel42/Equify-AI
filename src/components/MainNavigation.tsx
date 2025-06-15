@@ -28,8 +28,6 @@ export const MainNavigation = ({ userId, activeTab }: MainNavigationProps) => {
         return <PerformanceAnalytics />;
       case "recommendations":
         return <SmartRecommendationEngine />;
-      case "smart-recommendations":
-        return <SmartRecommendationEngine />;
       case "gamification":
         return <GamificationPanel />;
       case "data":

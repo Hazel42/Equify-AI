@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -80,6 +79,15 @@ const Index = () => {
     return null;
   }
 
+  const getHeaderTitle = () => {
+    switch (activeTab) {
+      case 'recommendations':
+        return 'AI Recommendations';
+      default:
+        return t(`navigation.${activeTab}`);
+    }
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gradient-to-br from-green-50 via-blue-50 to-orange-50">
@@ -113,7 +121,7 @@ const Index = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <h2 className="text-xl font-semibold text-gray-900">
-                  {t(`navigation.${activeTab === 'recommendations' ? 'aiInsights' : activeTab === 'smart-recommendations' ? 'smartTips' : activeTab}`)}
+                  {getHeaderTitle()}
                 </h2>
               </div>
               
