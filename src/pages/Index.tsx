@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useAIRealtimeUpdates } from "@/hooks/useAIRealtimeUpdates";
 
 const Index = () => {
   const [showAddFavor, setShowAddFavor] = useState(false);
@@ -22,6 +23,9 @@ const Index = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Add realtime updates hook
+  useAIRealtimeUpdates();
 
   // Redirect to auth if not authenticated
   useEffect(() => {

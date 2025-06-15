@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,13 +7,26 @@ import { TrendingUp, Users, Heart, Brain, Calendar, Star, ArrowRight, Target } f
 import { useRelationships } from "@/hooks/useRelationships";
 import { useFavors } from "@/hooks/useFavors";
 import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
+import { useAI } from "@/hooks/useAI";
+import { useLanguage } from "@/hooks/useLanguage";
+import { useToast } from "@/hooks/useToast";
+import { QuickSetupGuide, AddRelationshipDialog, AddFavorDialog } from "@/components/QuickSetupGuide";
+import { useState } from "react";
+import { RefreshCw, Sparkles } from "lucide-react";
 
 const COLORS = ['#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#8B5CF6'];
 
 export const EnhancedDashboard = () => {
-  const { relationships } = useRelationships();
-  const { favors } = useFavors();
+  const [showAddFavor, setShowAddFavor] = useState(false);
+  const [showAddRelationship, setShowAddRelationship] = useState(false);
+  const { relationships, loading: relationshipsLoading, createRelationship } = useRelationships();
+  const { favors, loading: favorsLoading } = useFavors();
   const { profile } = useProfile();
+  const { user } = useAuth();
+  const { generateRecommendations, loading: aiLoading } = useAI();
+  const { t } = useLanguage();
+  const { toast } = useToast();
 
   // Calculate key metrics
   const totalRelationships = relationships.length;
@@ -76,8 +88,142 @@ export const EnhancedDashboard = () => {
 
   const currentPersonality = personalityInsights[profile?.personality_type as keyof typeof personalityInsights] || personalityInsights.balanced;
 
+  const handleGenerateAIForAll = async () => {
+    if (!user || relationships.length === 0) {
+      toast({
+        title: "Cannot Generate AI Recommendations",
+        description: "Please add at least one relationship first.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Starting AI Analysis",
+      description: `Analyzing ${relationships.length} relationships. This may take a moment.`,
+    });
+
+    let successCount = 0;
+    for (const rel of relationships) {
+      try {
+        await generateRecommendations(user.id, rel.id, 'Dashboard full analysis');
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to generate recommendations for ${rel.name}`, error);
+      }
+    }
+
+    if (successCount > 0) {
+      toast({
+        title: "AI Analysis Complete",
+        description: `Generated recommendations for ${successCount} relationships. Check the AI Recommendations tab!`,
+      });
+    }
+  };
+
+  if (relationshipsLoading || favorsLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="h-8 w-8 text-green-600 mx-auto mb-4 animate-spin">
+            <TrendingUp className="h-full w-full" />
+          </div>
+          <p className="text-gray-600">{t('common.loading')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show setup guide if no data exists
+  if (relationships.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Reciprocity AI!</h2>
+          <p className="text-gray-600">Track your relationships and get AI-powered insights to strengthen your connections.</p>
+        </div>
+        
+        <QuickSetupGuide 
+          onAddRelationship={() => setShowAddRelationship(true)}
+          onAddFavor={() => setShowAddFavor(true)}
+          onGenerateAI={handleGenerateAIForAll}
+        />
+
+        {/* Add Relationship Dialog */}
+        <AddRelationshipDialog 
+          open={showAddRelationship}
+          onOpenChange={setShowAddRelationship}
+          onSave={(data) => {
+            createRelationship(data);
+            setShowAddRelationship(false);
+            toast({
+              title: "Relationship Added",
+              description: "Your relationship has been added successfully!",
+            });
+          }}
+        />
+
+        {/* Add Favor Dialog */}
+        <AddFavorDialog 
+          open={showAddFavor}
+          onOpenChange={setShowAddFavor}
+          onSave={() => {
+            setShowAddFavor(false);
+            toast({
+              title: "Favor Added",
+              description: "Your interaction has been recorded!",
+            });
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {/* Quick Setup Guide for incomplete setups */}
+      {(relationships.length > 0 && favors.length < 2) && (
+        <QuickSetupGuide 
+          onAddRelationship={() => setShowAddRelationship(true)}
+          onAddFavor={() => setShowAddFavor(true)}
+          onGenerateAI={handleGenerateAIForAll}
+        />
+      )}
+
+      {/* AI Quick Actions */}
+      {relationships.length > 0 && favors.length >= 2 && (
+        <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-green-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Brain className="h-8 w-8 text-blue-600" />
+                <div>
+                  <h3 className="font-semibold text-gray-900">AI-Powered Insights</h3>
+                  <p className="text-sm text-gray-600">Get personalized recommendations for all your relationships</p>
+                </div>
+              </div>
+              <Button 
+                onClick={handleGenerateAIForAll}
+                disabled={aiLoading}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {aiLoading ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Generate AI Insights
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200">
         <div className="flex items-center justify-between">
