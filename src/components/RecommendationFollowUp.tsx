@@ -9,6 +9,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface RecommendationFollowUpProps {
   recommendationId: string;
@@ -28,6 +29,7 @@ export const RecommendationFollowUp = ({
   const [showFollowUp, setShowFollowUp] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
 
   const completeRecommendation = useMutation({
@@ -67,16 +69,16 @@ export const RecommendationFollowUp = ({
       queryClient.invalidateQueries({ queryKey: ['ai-recommendations'] });
       queryClient.invalidateQueries({ queryKey: ['today-actions'] });
       toast({
-        title: "Recommendation Completed! 🎉",
-        description: "Your feedback helps us provide better recommendations.",
+        title: t('toast.recommendationCompleted'),
+        description: t('toast.recommendationCompletedDesc'),
       });
       onComplete();
     },
     onError: (error) => {
       console.error('Error completing recommendation:', error);
       toast({
-        title: "Error",
-        description: "Failed to complete recommendation. Please try again.",
+        title: t('common.error'),
+        description: t('toast.errorCompletingRecommendation'),
         variant: "destructive",
       });
     }
@@ -89,8 +91,8 @@ export const RecommendationFollowUp = ({
   const handleDetailedComplete = () => {
     if (rating === 0) {
       toast({
-        title: "Rating Required",
-        description: "Please provide a rating before submitting.",
+        title: t('toast.ratingRequired'),
+        description: t('toast.ratingRequiredDesc'),
         variant: "destructive",
       });
       return;
@@ -114,8 +116,8 @@ export const RecommendationFollowUp = ({
     },
     onSuccess: () => {
       toast({
-        title: "Scheduled for Later",
-        description: "This recommendation will appear again in 3 days.",
+        title: t('toast.scheduledLater'),
+        description: t('toast.scheduledLaterDesc'),
       });
       onComplete();
     }
@@ -127,16 +129,16 @@ export const RecommendationFollowUp = ({
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <MessageSquare className="h-5 w-5 text-green-600" />
-            How did it go?
+            {t('followUp.title')}
           </CardTitle>
           <CardDescription>
-            Tell us about your experience with: "{title}"
+            {t('followUp.description', { title: title })}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Rate this recommendation (1-5 stars)
+              {t('followUp.ratingLabel')}
             </label>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -153,10 +155,10 @@ export const RecommendationFollowUp = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Notes (optional)
+              {t('followUp.notesLabel')}
             </label>
             <Textarea
-              placeholder="How did this recommendation work out? Any thoughts or feedback?"
+              placeholder={t('followUp.notesPlaceholder')}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
@@ -169,13 +171,13 @@ export const RecommendationFollowUp = ({
               disabled={completeRecommendation.isPending}
               className="bg-green-600 hover:bg-green-700"
             >
-              {completeRecommendation.isPending ? "Submitting..." : "Submit Feedback"}
+              {completeRecommendation.isPending ? t('common.submitting') : t('common.submitFeedback')}
             </Button>
             <Button 
               variant="outline"
               onClick={() => setShowFollowUp(false)}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
         </CardContent>
@@ -191,7 +193,7 @@ export const RecommendationFollowUp = ({
         className="bg-green-600 hover:bg-green-700 flex-1"
       >
         <CheckCircle className="h-4 w-4 mr-2" />
-        {completeRecommendation.isPending ? "Completing..." : "Done!"}
+        {completeRecommendation.isPending ? t('common.completing') : t('common.done')}
       </Button>
       
       <Button 
@@ -200,7 +202,7 @@ export const RecommendationFollowUp = ({
         className="flex-1"
       >
         <MessageSquare className="h-4 w-4 mr-2" />
-        Add Feedback
+        {t('common.addFeedback')}
       </Button>
       
       <Button 
@@ -210,7 +212,7 @@ export const RecommendationFollowUp = ({
         size="sm"
       >
         <Clock className="h-4 w-4 mr-1" />
-        Later
+        {t('common.later')}
       </Button>
     </div>
   );

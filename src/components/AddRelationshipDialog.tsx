@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRelationships } from "@/hooks/useRelationships";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface AddRelationshipDialogProps {
   open: boolean;
@@ -25,12 +26,13 @@ export const AddRelationshipDialog = ({ open, onOpenChange, onSave }: AddRelatio
 
   const { addRelationship } = useRelationships();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleSave = async () => {
     if (!relationshipData.name || !relationshipData.relationship_type) {
       toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
+        title: t('toast.missingInfo'),
+        description: t('toast.missingInfoDesc'),
         variant: "destructive",
       });
       return;
@@ -49,8 +51,8 @@ export const AddRelationshipDialog = ({ open, onOpenChange, onSave }: AddRelatio
     } catch (error) {
       console.error('Error saving relationship:', error);
       toast({
-        title: "Error",
-        description: "Failed to save relationship. Please try again.",
+        title: t('common.error'),
+        description: t('toast.errorSavingRelationship'),
         variant: "destructive",
       });
     }
@@ -60,41 +62,41 @@ export const AddRelationshipDialog = ({ open, onOpenChange, onSave }: AddRelatio
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Relationship</DialogTitle>
+          <DialogTitle>{t('addRelationship.title')}</DialogTitle>
           <DialogDescription>
-            Add someone important to start tracking your interactions.
+            {t('addRelationship.description')}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t('addRelationship.nameLabel')}</Label>
             <Input
               id="name"
-              placeholder="Enter person's name"
+              placeholder={t('addRelationship.namePlaceholder')}
               value={relationshipData.name}
               onChange={(e) => setRelationshipData({...relationshipData, name: e.target.value})}
             />
           </div>
 
           <div>
-            <Label htmlFor="type">Relationship Type</Label>
+            <Label htmlFor="type">{t('addRelationship.typeLabel')}</Label>
             <Select onValueChange={(value) => setRelationshipData({...relationshipData, relationship_type: value})}>
               <SelectTrigger>
-                <SelectValue placeholder="Select relationship type" />
+                <SelectValue placeholder={t('addRelationship.typePlaceholder')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="family">Family</SelectItem>
-                <SelectItem value="friend">Friend</SelectItem>
-                <SelectItem value="colleague">Colleague</SelectItem>
-                <SelectItem value="neighbor">Neighbor</SelectItem>
-                <SelectItem value="mentor">Mentor</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="family">{t('addRelationship.relationshipTypes.family')}</SelectItem>
+                <SelectItem value="friend">{t('addRelationship.relationshipTypes.friend')}</SelectItem>
+                <SelectItem value="colleague">{t('addRelationship.relationshipTypes.colleague')}</SelectItem>
+                <SelectItem value="neighbor">{t('addRelationship.relationshipTypes.neighbor')}</SelectItem>
+                <SelectItem value="mentor">{t('addRelationship.relationshipTypes.mentor')}</SelectItem>
+                <SelectItem value="other">{t('addRelationship.relationshipTypes.other')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div>
-            <Label>Importance Level: {relationshipData.importance_level}</Label>
+            <Label>{t('addRelationship.importanceLabel', { level: relationshipData.importance_level })}</Label>
             <div className="flex gap-1 mt-2">
               {[1, 2, 3, 4, 5].map((level) => (
                 <button
@@ -118,14 +120,14 @@ export const AddRelationshipDialog = ({ open, onOpenChange, onSave }: AddRelatio
               className="flex-1 bg-green-600 hover:bg-green-700"
               disabled={!relationshipData.name || !relationshipData.relationship_type || addRelationship.isPending}
             >
-              {addRelationship.isPending ? "Saving..." : "Save Relationship"}
+              {addRelationship.isPending ? t('common.saving') : t('addRelationship.saveButton')}
             </Button>
             <Button 
               variant="outline" 
               onClick={() => onOpenChange(false)}
               className="flex-1"
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
         </div>

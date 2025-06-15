@@ -85,10 +85,14 @@ const Index = () => {
 
   const getHeaderTitle = () => {
     switch (activeTab) {
+      case 'dashboard':
+        return t('navigation.dashboard');
+      case 'relationships':
+        return t('navigation.relationships');
       case 'recommendations':
-        return 'AI Recommendations';
+        return t('navigation.recommendations');
       default:
-        return t(`navigation.${activeTab}`);
+        return t('navigation.dashboard');
     }
   };
 

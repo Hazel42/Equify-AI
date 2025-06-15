@@ -64,27 +64,23 @@ export const EnhancedDashboard = () => {
 
   const personalityInsights = {
     'giving': {
-      title: 'The Giver',
-      description: 'You naturally give more than you receive',
-      tip: 'Remember to accept help from others too!',
+      title: t('dashboard.personality.giver'),
+      tip: t('dashboard.personality.giverTip'),
       color: 'green'
     },
     'balanced': {
-      title: 'The Balanced',
-      description: 'You maintain good reciprocity balance',
-      tip: 'Keep up the great relationship management!',
+      title: t('dashboard.personality.balanced'),
+      tip: t('dashboard.personality.balancedTip'),
       color: 'blue'
     },
     'receiver': {
-      title: 'The Receiver',
-      description: 'You often receive more than you give',
-      tip: 'Look for opportunities to reciprocate kindness',
+      title: t('dashboard.personality.receiver'),
+      tip: t('dashboard.personality.receiverTip'),
       color: 'orange'
     },
     'analyzer': {
-      title: 'The Analyzer',
-      description: 'You carefully track relationship dynamics',
-      tip: 'Balance analysis with spontaneous kindness',
+      title: t('dashboard.personality.analyzer'),
+      tip: t('dashboard.personality.analyzerTip'),
       color: 'purple'
     }
   };
@@ -201,8 +197,8 @@ export const EnhancedDashboard = () => {
               <div className="flex items-center gap-3">
                 <Brain className="h-8 w-8 text-blue-600" />
                 <div>
-                  <h3 className="font-semibold text-gray-900">AI-Powered Insights</h3>
-                  <p className="text-sm text-gray-600">Get personalized recommendations for all your relationships</p>
+                  <h3 className="font-semibold text-gray-900">{t('dashboard.aiPoweredInsights')}</h3>
+                  <p className="text-sm text-gray-600">{t('dashboard.getPersonalizedRecommendations')}</p>
                 </div>
               </div>
               <Button 
@@ -213,12 +209,12 @@ export const EnhancedDashboard = () => {
                 {aiLoading ? (
                   <>
                     <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    Analyzing...
+                    {t('dashboard.analyzing')}
                   </>
                 ) : (
                   <>
                     <Sparkles className="h-4 w-4 mr-2" />
-                    Generate AI Insights
+                    {t('dashboard.generateInsights')}
                   </>
                 )}
               </Button>
@@ -232,10 +228,10 @@ export const EnhancedDashboard = () => {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Good morning, {profile?.full_name?.split(' ')[0]}! 👋
+              {t('dashboard.greeting', { name: profile?.full_name?.split(' ')[0] })}
             </h2>
             <p className="text-gray-600 mb-4">
-              Here's your relationship overview for today
+              {t('dashboard.overview')}
             </p>
             <div className="flex items-center gap-2">
               <Badge className={`bg-${currentPersonality.color}-100 text-${currentPersonality.color}-700`}>
@@ -246,7 +242,7 @@ export const EnhancedDashboard = () => {
           </div>
           <div className="text-right">
             <div className="text-3xl font-bold text-green-600">{averageBalance.toFixed(1)}/10</div>
-            <p className="text-sm text-gray-500">Overall Balance</p>
+            <p className="text-sm text-gray-500">{t('dashboard.overallBalance')}</p>
           </div>
         </div>
       </div>
@@ -257,14 +253,14 @@ export const EnhancedDashboard = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-green-600">Total Relationships</p>
+                <p className="text-sm font-medium text-green-600">{t('dashboard.totalRelationships')}</p>
                 <p className="text-2xl font-bold text-green-900">{totalRelationships}</p>
               </div>
               <Users className="h-8 w-8 text-green-600" />
             </div>
             <div className="mt-4">
               <Progress value={Math.min(totalRelationships * 10, 100)} className="h-2" />
-              <p className="text-xs text-green-600 mt-1">Growing your network</p>
+              <p className="text-xs text-green-600 mt-1">{t('dashboard.growingNetwork')}</p>
             </div>
           </CardContent>
         </Card>
@@ -273,7 +269,7 @@ export const EnhancedDashboard = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-blue-600">This Month</p>
+                <p className="text-sm font-medium text-blue-600">{t('dashboard.thisMonth')}</p>
                 <p className="text-2xl font-bold text-blue-900">{thisMonthFavors}</p>
               </div>
               <Calendar className="h-8 w-8 text-blue-600" />
@@ -281,7 +277,7 @@ export const EnhancedDashboard = () => {
             <div className="mt-4">
               <Badge className="bg-blue-100 text-blue-700">
                 <TrendingUp className="h-3 w-3 mr-1" />
-                +12% vs last month
+                {t('dashboard.vsLastMonth')}
               </Badge>
             </div>
           </CardContent>
@@ -291,7 +287,7 @@ export const EnhancedDashboard = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-purple-600">Healthy Relations</p>
+                <p className="text-sm font-medium text-purple-600">{t('dashboard.healthyRelations')}</p>
                 <p className="text-2xl font-bold text-purple-900">{healthyRelationships}</p>
               </div>
               <Heart className="h-8 w-8 text-purple-600" />
@@ -310,14 +306,14 @@ export const EnhancedDashboard = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-orange-600">AI Insights</p>
+                <p className="text-sm font-medium text-orange-600">{t('dashboard.aiInsights')}</p>
                 <p className="text-2xl font-bold text-orange-900">3</p>
               </div>
               <Brain className="h-8 w-8 text-orange-600" />
             </div>
             <div className="mt-4">
               <Button size="sm" variant="outline" className="text-orange-600 border-orange-300">
-                View All <ArrowRight className="h-3 w-3 ml-1" />
+                {t('dashboard.viewAll')} <ArrowRight className="h-3 w-3 ml-1" />
               </Button>
             </div>
           </CardContent>
@@ -328,8 +324,8 @@ export const EnhancedDashboard = () => {
         {/* Weekly Activity Trend */}
         <Card>
           <CardHeader>
-            <CardTitle>Weekly Activity</CardTitle>
-            <CardDescription>Your giving and receiving patterns this week</CardDescription>
+            <CardTitle>{t('dashboard.weeklyActivity')}</CardTitle>
+            <CardDescription>{t('dashboard.weeklyActivityDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -348,8 +344,8 @@ export const EnhancedDashboard = () => {
         {/* Balance Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle>Relationship Health</CardTitle>
-            <CardDescription>Distribution of relationship balance scores</CardDescription>
+            <CardTitle>{t('dashboard.relationshipHealth')}</CardTitle>
+            <CardDescription>{t('dashboard.relationshipHealthDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>

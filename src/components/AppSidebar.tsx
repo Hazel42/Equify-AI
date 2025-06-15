@@ -1,15 +1,7 @@
 import {
-  Calendar,
   Home,
   Users,
-  BarChart3,
   Brain,
-  Trophy,
-  Download,
-  Settings,
-  TrendingUp,
-  HelpCircle,
-  Sliders,
   Heart,
 } from "lucide-react";
 
@@ -47,65 +39,10 @@ const getMenuItems = (t: any) => [
         icon: Users,
         value: "relationships",
       },
-    ],
-  },
-  {
-    group: t('navigation.analytics'),
-    items: [
       {
-        title: t('navigation.analytics'),
-        icon: BarChart3,
-        value: "analytics",
-      },
-      {
-        title: t('navigation.performance'),
-        icon: TrendingUp,
-        value: "performance",
-      },
-    ],
-  },
-  {
-    group: t('navigation.aiTools'),
-    items: [
-      {
-        title: 'AI Recommendations',
+        title: t('navigation.recommendations'),
         icon: Brain,
         value: "recommendations",
-      },
-    ],
-  },
-  {
-    group: t('navigation.tools'),
-    items: [
-      {
-        title: t('navigation.achievements'),
-        icon: Trophy,
-        value: "gamification",
-      },
-      {
-        title: t('navigation.data'),
-        icon: Download,
-        value: "data",
-      },
-      {
-        title: t('navigation.help'),
-        icon: HelpCircle,
-        value: "help",
-      },
-    ],
-  },
-  {
-    group: t('navigation.configuration'),
-    items: [
-      {
-        title: t('navigation.advanced'),
-        icon: Sliders,
-        value: "advanced",
-      },
-      {
-        title: t('common.settings'),
-        icon: Settings,
-        value: "settings",
       },
     ],
   },
