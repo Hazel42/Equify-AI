@@ -1,3 +1,4 @@
+
 export const en = {
   common: {
     add: 'Add',
@@ -56,6 +57,7 @@ export const en = {
     recommendationCompleted: 'Recommendation Completed! 🎉',
     recommendationCompletedDesc: 'Your feedback helps us provide better recommendations.',
     errorCompletingRecommendation: 'Failed to complete recommendation. Please try again.',
+    errorAcceptingRecommendation: 'Failed to accept recommendation. Please try again.',
     ratingRequired: 'Rating Required',
     ratingRequiredDesc: 'Please provide a rating before submitting.',
     scheduledLater: 'Scheduled for Later',
@@ -169,5 +171,7 @@ export const en = {
     analysisFailedAllDesc: 'Could not generate recommendations for any relationship.',
     dismissed: 'Recommendation Dismissed',
     dismissedDesc: "We'll generate new recommendations based on your preferences.",
+    accepted: 'Recommendation Accepted',
+    acceptedDesc: "This action has been added to your Today's Action Items.",
   },
 };

@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { AddFavorDialog } from "@/components/AddFavorDialog";
 import { TodayActionItems } from "@/components/TodayActionItems";
 import { useState } from "react";
 import { RefreshCw, Sparkles } from "lucide-react";
+import { useAutoAI } from "@/hooks/useAutoAI";
 
 const COLORS = ['#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#8B5CF6'];
 
@@ -30,6 +32,17 @@ export const EnhancedDashboard = () => {
   const { generateRecommendations, loading: aiLoading } = useAI();
   const { t } = useLanguage();
   const { toast } = useToast();
+  const [relationshipForAI, setRelationshipForAI] = useState<string | undefined>();
+
+  useAutoAI({
+    userId: user?.id,
+    relationshipId: relationshipForAI,
+    triggerAnalysis: !!relationshipForAI,
+    onComplete: () => {
+      console.log('Auto AI analysis complete for new relationship');
+      setRelationshipForAI(undefined);
+    },
+  });
 
   // Calculate key metrics
   const totalRelationships = relationships.length;
@@ -153,12 +166,19 @@ export const EnhancedDashboard = () => {
           open={showAddRelationship}
           onOpenChange={setShowAddRelationship}
           onSave={(data) => {
-            addRelationship.mutate(data);
-            setShowAddRelationship(false);
-            toast({
-              title: "Relationship Added",
-              description: "Your relationship has been added successfully!",
+            addRelationship.mutate(data, {
+              onSuccess: (result: any) => {
+                  const newId = result?.data?.[0]?.id;
+                  if (newId) {
+                      setRelationshipForAI(newId);
+                  }
+                  toast({
+                    title: t('toast.relationshipAdded'),
+                    description: t('toast.relationshipAddedDesc'),
+                  });
+              }
             });
+            setShowAddRelationship(false);
           }}
         />
 
@@ -379,12 +399,19 @@ export const EnhancedDashboard = () => {
         open={showAddRelationship}
         onOpenChange={setShowAddRelationship}
         onSave={(data) => {
-          addRelationship.mutate(data);
-          setShowAddRelationship(false);
-          toast({
-            title: "Relationship Added",
-            description: "Your relationship has been added successfully!",
+          addRelationship.mutate(data, {
+              onSuccess: (result: any) => {
+                  const newId = result?.data?.[0]?.id;
+                  if (newId) {
+                      setRelationshipForAI(newId);
+                  }
+                  toast({
+                    title: t('toast.relationshipAdded'),
+                    description: t('toast.relationshipAddedDesc'),
+                  });
+              }
           });
+          setShowAddRelationship(false);
         }}
       />
 

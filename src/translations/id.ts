@@ -1,3 +1,4 @@
+
 export const id = {
   common: {
     add: 'Tambah',
@@ -56,6 +57,7 @@ export const id = {
     recommendationCompleted: 'Rekomendasi Selesai! 🎉',
     recommendationCompletedDesc: 'Umpan balik Anda membantu kami memberikan rekomendasi yang lebih baik.',
     errorCompletingRecommendation: 'Gagal menyelesaikan rekomendasi. Silakan coba lagi.',
+    errorAcceptingRecommendation: 'Gagal menerima rekomendasi. Silakan coba lagi.',
     ratingRequired: 'Peringkat Diperlukan',
     ratingRequiredDesc: 'Harap berikan peringkat sebelum mengirim.',
     scheduledLater: 'Dijadwalkan untuk Nanti',
@@ -169,5 +171,7 @@ export const id = {
     analysisFailedAllDesc: 'Tidak dapat menghasilkan rekomendasi untuk hubungan apa pun.',
     dismissed: 'Rekomendasi Diabaikan',
     dismissedDesc: 'Kami akan menghasilkan rekomendasi baru berdasarkan preferensi Anda.',
+    accepted: 'Rekomendasi Diterima',
+    acceptedDesc: 'Tindakan ini telah ditambahkan ke Daftar Tindakan Hari Ini Anda.',
   },
 };

@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, relationshipId, context = 'General analysis' } = await req.json();
+    const { userId, relationshipId, context = 'General analysis', language = 'en' } = await req.json();
 
     if (!userId || !relationshipId) {
       return new Response(
@@ -96,8 +96,14 @@ serve(async (req) => {
       })),
       context
     };
+    
+    const languageInstruction = language === 'id'
+        ? 'Provide the response in Indonesian.'
+        : 'Provide the response in English.';
 
     const prompt = `You are an AI relationship advisor specializing in reciprocity and social connections. 
+
+${languageInstruction}
 
 Analyze this relationship and provide personalized recommendations:
 

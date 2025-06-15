@@ -3,12 +3,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Brain, RefreshCw, Sparkles } from "lucide-react";
 import { useRelationships } from "@/hooks/useRelationships";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useAI } from "@/hooks/useAI";
-import { RecommendationFollowUp } from "@/components/RecommendationFollowUp";
 import { useLanguage } from "@/hooks/useLanguage";
 import { RecommendationCard } from "@/components/RecommendationCard";
 import { RecommendationFilters } from "@/components/RecommendationFilters";
@@ -26,12 +25,12 @@ interface RecommendationFromDB {
 
 export const SmartRecommendationEngine = () => {
   const [activeFilter, setActiveFilter] = useState<string>('all');
-  const [selectedRecommendation, setSelectedRecommendation] = useState<string | null>(null);
   const { user } = useAuth();
   const { relationships } = useRelationships();
   const { toast } = useToast();
   const { t } = useLanguage();
   const { generateRecommendations, loading: aiLoading } = useAI();
+  const queryClient = useQueryClient();
 
   const { data: recommendationsFromDB = [], refetch: refetchAIRecommendations } = useQuery<RecommendationFromDB[]>({
     queryKey: ['ai-recommendations', user?.id],
@@ -43,6 +42,7 @@ export const SmartRecommendationEngine = () => {
         .select('*')
         .eq('user_id', user.id)
         .eq('completed', false)
+        .is('due_date', null)
         .order('created_at', { ascending: false })
         .limit(20);
 
@@ -130,8 +130,28 @@ export const SmartRecommendationEngine = () => {
     }
   };
 
-  const handleAcceptRecommendation = (recommendationId: string) => {
-    setSelectedRecommendation(recommendationId);
+  const handleAcceptRecommendation = async (recommendationId: string) => {
+    const dbId = recommendationId.replace(/^ai-/, '');
+    const today = new Date().toISOString();
+    
+    const { error } = await supabase
+        .from('recommendations')
+        .update({ 
+            due_date: today,
+            updated_at: new Date().toISOString()
+        })
+        .eq('id', dbId);
+
+    if (error) {
+        toast({ title: t('common.error'), description: t('toast.errorAcceptingRecommendation'), variant: "destructive" });
+    } else {
+        toast({
+          title: t('recommendations.accepted'),
+          description: t('recommendations.acceptedDesc'),
+        });
+        refetchAIRecommendations();
+        queryClient.invalidateQueries({ queryKey: ['today-actions'] });
+    }
   };
 
   const handleDismissRecommendation = async (recommendationId: string) => {
@@ -143,7 +163,7 @@ export const SmartRecommendationEngine = () => {
         .eq('id', dbId);
 
     if (error) {
-        toast({ title: "Error", description: t('errorCompletingRecommendation'), variant: "destructive" });
+        toast({ title: "Error", description: t('toast.errorCompletingRecommendation'), variant: "destructive" });
     } else {
         toast({
           title: t('recommendations.dismissed'),
@@ -201,21 +221,6 @@ export const SmartRecommendationEngine = () => {
           </Card>
         ) : (
           filteredRecommendations.map(recommendation => {
-            if (selectedRecommendation === recommendation.id) {
-              return (
-                <RecommendationFollowUp
-                  key={recommendation.id}
-                  recommendationId={recommendation.id.replace(/^ai-/, '')}
-                  title={recommendation.title}
-                  relationshipName={recommendation.relationshipName || 'Unknown'}
-                  onComplete={() => {
-                    setSelectedRecommendation(null);
-                    refetchAIRecommendations();
-                  }}
-                />
-              );
-            }
-
             return (
               <RecommendationCard
                 key={recommendation.id}

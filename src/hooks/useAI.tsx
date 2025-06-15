@@ -2,16 +2,18 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "./useLanguage";
 
 export const useAI = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { language } = useLanguage();
 
   const generateRecommendations = async (userId: string, relationshipId: string, context?: string) => {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-recommendations', {
-        body: { userId, relationshipId, context }
+        body: { userId, relationshipId, context, language }
       });
 
       if (error) throw error;
