@@ -8,7 +8,7 @@ interface UseAutoAIProps {
   userId: string;
   relationshipId?: string;
   triggerAnalysis?: boolean;
-  onComplete?: (success: boolean) => void; // new callback prop
+  onComplete?: (success: boolean) => void;
 }
 
 export const useAutoAI = ({
@@ -18,7 +18,6 @@ export const useAutoAI = ({
   onComplete,
 }: UseAutoAIProps) => {
   const { generateRecommendations, loading } = useAI();
-  const { toast } = useToast();
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -31,11 +30,6 @@ export const useAutoAI = ({
         // The generateRecommendations function now handles all AI analysis.
         await generateRecommendations(userId, relationshipId, 'Auto-generated after new favor');
 
-        toast({
-          title: t('toast.aiAnalysisComplete'),
-          description: t('toast.aiAnalysisCompleteDesc'),
-        });
-
         console.log('✅ Auto AI analysis completed');
         if (onComplete) onComplete(true);
       } catch (error) {
@@ -47,7 +41,7 @@ export const useAutoAI = ({
 
     const timeoutId = setTimeout(runAutoAnalysis, 1000);
     return () => clearTimeout(timeoutId);
-  }, [triggerAnalysis, relationshipId, userId, generateRecommendations, toast, onComplete, t]);
+  }, [triggerAnalysis, relationshipId, userId, generateRecommendations, onComplete, t]);
 
   return { loading };
 };

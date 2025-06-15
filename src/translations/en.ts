@@ -1,4 +1,3 @@
-
 export const en = {
   common: {
     add: 'Add',
@@ -70,6 +69,7 @@ export const en = {
     errorSavingRelationship: 'Failed to save relationship. Please try again.',
     relationshipAdded: 'Relationship Added',
     relationshipAddedDesc: 'Your new relationship has been added.',
+    aiAutoAnalysisError: 'Automatic AI analysis failed.',
   },
   language: {
     english: 'English',

@@ -1,4 +1,3 @@
-
 export const id = {
   common: {
     add: 'Tambah',
@@ -70,6 +69,7 @@ export const id = {
     errorSavingRelationship: 'Gagal menyimpan hubungan. Silakan coba lagi.',
     relationshipAdded: 'Hubungan Ditambahkan',
     relationshipAddedDesc: 'Hubungan baru Anda telah ditambahkan.',
+    aiAutoAnalysisError: 'Analisis AI otomatis gagal.',
   },
   language: {
     english: 'Bahasa Inggris',

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import { useFavors } from "@/hooks/useFavors";
 import { useAuth } from "@/hooks/useAuth";
 import { useAutoAI } from "@/hooks/useAutoAI";
 import { useToast } from "@/hooks/use-toast";
-import { useRef } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AddFavorDialogProps {
   open: boolean;
@@ -37,6 +37,7 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
   const { relationships } = useRelationships();
   const { createFavor } = useFavors();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   // Ref for debouncing recommendations refresh
   const refreshTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -49,11 +50,15 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
     onComplete: (success) => {
       // If AI finished, propagate up/refresh data (assume parent listeners or next steps)
       if (success) {
+        toast({
+          title: t('toast.aiAnalysisComplete'),
+          description: t('toast.aiAnalysisCompleteDesc'),
+        });
         // Signal a global event so recommendations and dashboard can refetch (simple approach)
         window.dispatchEvent(new CustomEvent("ai-recommendation-updated"));
         setAiError(null);
       } else {
-        setAiError('Gagal menjalankan AI. Silakan coba beberapa saat lagi.');
+        setAiError(t('toast.aiAutoAnalysisError'));
       }
     }
   });
@@ -125,10 +130,10 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            Add a Favor
+            {t('addFavor.title')}
             {aiLoading && (
               <div className="flex items-center gap-1 text-sm text-blue-600">
                 <Brain className="h-4 w-4 animate-pulse" />
@@ -137,7 +142,7 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
             )}
           </DialogTitle>
           <DialogDescription>
-            Track kindness in your relationships - whether given or received. AI will automatically analyze and provide recommendations.
+            {t('addFavor.description')}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-6">

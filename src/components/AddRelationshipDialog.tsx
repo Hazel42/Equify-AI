@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useRelationships } from "@/hooks/useRelationships";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/hooks/useAuth";
+import { useAutoAI } from "@/hooks/useAutoAI";
+import { Brain } from "lucide-react";
 
 interface AddRelationshipDialogProps {
   open: boolean;
@@ -26,6 +30,34 @@ export const AddRelationshipDialog = ({ open, onOpenChange, onSave }: AddRelatio
   const { addRelationship } = useRelationships();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { user } = useAuth();
+  
+  const [newRelationshipId, setNewRelationshipId] = useState<string | null>(null);
+  const [triggerAI, setTriggerAI] = useState(false);
+
+  const { loading: aiLoading } = useAutoAI({
+    userId: user?.id || "",
+    relationshipId: newRelationshipId || undefined,
+    triggerAnalysis: triggerAI,
+    onComplete: (success) => {
+      setTriggerAI(false);
+      setNewRelationshipId(null);
+      if (success) {
+        window.dispatchEvent(new CustomEvent("ai-recommendation-updated"));
+        toast({
+          title: t('toast.aiAnalysisComplete'),
+          description: t('toast.aiAnalysisCompleteDesc'),
+        });
+      } else {
+        toast({
+          title: t('common.error'),
+          description: t('toast.aiAutoAnalysisError'),
+          variant: "destructive",
+        });
+      }
+    }
+  });
+
 
   const handleSave = async () => {
     if (!relationshipData.name || !relationshipData.relationship_type) {
@@ -38,8 +70,11 @@ export const AddRelationshipDialog = ({ open, onOpenChange, onSave }: AddRelatio
     }
 
     try {
-      await addRelationship.mutateAsync(relationshipData);
-      onSave(relationshipData);
+      const newRelationship = await addRelationship.mutateAsync(relationshipData);
+      onSave(newRelationship);
+      setNewRelationshipId(newRelationship.id);
+      setTriggerAI(true);
+      
       setRelationshipData({
         name: "",
         relationship_type: "",
@@ -117,14 +152,22 @@ export const AddRelationshipDialog = ({ open, onOpenChange, onSave }: AddRelatio
             <Button 
               onClick={handleSave}
               className="flex-1 bg-green-600 hover:bg-green-700"
-              disabled={!relationshipData.name || !relationshipData.relationship_type || addRelationship.isPending}
+              disabled={!relationshipData.name || !relationshipData.relationship_type || addRelationship.isPending || aiLoading}
             >
-              {addRelationship.isPending ? t('common.saving') : t('addRelationship.saveButton')}
+              {addRelationship.isPending ? t('common.saving') : 
+               aiLoading ? (
+                  <div className="flex items-center gap-2">
+                      <Brain className="h-4 w-4 animate-pulse" />
+                      {t('dashboard.analyzing')}
+                  </div>
+               ) :
+               t('addRelationship.saveButton')}
             </Button>
             <Button 
               variant="outline" 
               onClick={() => onOpenChange(false)}
               className="flex-1"
+              disabled={addRelationship.isPending || aiLoading}
             >
               {t('common.cancel')}
             </Button>
