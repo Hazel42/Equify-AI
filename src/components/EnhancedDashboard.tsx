@@ -10,8 +10,10 @@ import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useAI } from "@/hooks/useAI";
 import { useLanguage } from "@/hooks/useLanguage";
-import { useToast } from "@/hooks/useToast";
-import { QuickSetupGuide, AddRelationshipDialog, AddFavorDialog } from "@/components/QuickSetupGuide";
+import { useToast } from "@/hooks/use-toast";
+import { QuickSetupGuide } from "@/components/QuickSetupGuide";
+import { AddRelationshipDialog } from "@/components/AddRelationshipDialog";
+import { AddFavorDialog } from "@/components/AddFavorDialog";
 import { useState } from "react";
 import { RefreshCw, Sparkles } from "lucide-react";
 
@@ -20,8 +22,8 @@ const COLORS = ['#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#8B5CF6'];
 export const EnhancedDashboard = () => {
   const [showAddFavor, setShowAddFavor] = useState(false);
   const [showAddRelationship, setShowAddRelationship] = useState(false);
-  const { relationships, loading: relationshipsLoading, createRelationship } = useRelationships();
-  const { favors, loading: favorsLoading } = useFavors();
+  const { relationships, isLoading: relationshipsLoading, addRelationship } = useRelationships();
+  const { favors, isLoading: favorsLoading } = useFavors();
   const { profile } = useProfile();
   const { user } = useAuth();
   const { generateRecommendations, loading: aiLoading } = useAI();
@@ -154,7 +156,7 @@ export const EnhancedDashboard = () => {
           open={showAddRelationship}
           onOpenChange={setShowAddRelationship}
           onSave={(data) => {
-            createRelationship(data);
+            addRelationship.mutate(data);
             setShowAddRelationship(false);
             toast({
               title: "Relationship Added",
