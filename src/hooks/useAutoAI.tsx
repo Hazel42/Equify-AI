@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { useAI } from "./useAI";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "./useLanguage";
 
 interface UseAutoAIProps {
   userId: string;
@@ -16,8 +17,9 @@ export const useAutoAI = ({
   triggerAnalysis,
   onComplete,
 }: UseAutoAIProps) => {
-  const { analyzeRelationship, generateRecommendations, loading } = useAI();
+  const { generateRecommendations, loading } = useAI();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const runAutoAnalysis = async () => {
@@ -25,15 +27,13 @@ export const useAutoAI = ({
 
       try {
         console.log('🤖 Starting auto AI analysis...');
-        // Run relationship analysis
-        await analyzeRelationship(relationshipId, userId);
 
-        // Generate new recommendations
+        // The generateRecommendations function now handles all AI analysis.
         await generateRecommendations(userId, relationshipId, 'Auto-generated after new favor');
 
         toast({
-          title: "AI Analysis Complete",
-          description: "New recommendations and insights have been generated based on your latest activity.",
+          title: t('toast.aiAnalysisComplete'),
+          description: t('toast.aiAnalysisCompleteDesc'),
         });
 
         console.log('✅ Auto AI analysis completed');
@@ -47,7 +47,7 @@ export const useAutoAI = ({
 
     const timeoutId = setTimeout(runAutoAnalysis, 1000);
     return () => clearTimeout(timeoutId);
-  }, [triggerAnalysis, relationshipId, userId, analyzeRelationship, generateRecommendations, toast, onComplete]);
+  }, [triggerAnalysis, relationshipId, userId, generateRecommendations, toast, onComplete, t]);
 
   return { loading };
 };
