@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useAI } from "./useAI";
 import { useToast } from "@/hooks/use-toast";
-import { useLanguage } from "./useLanguage";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface UseAutoAIProps {
   userId: string;
