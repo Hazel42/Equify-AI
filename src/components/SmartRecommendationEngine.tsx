@@ -1,9 +1,7 @@
-
 import { useState, useEffect, useMemo } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Brain, Clock, Heart, MessageCircle, Gift, Sparkles, RefreshCw, Lightbulb } from "lucide-react";
+import { Brain, RefreshCw, Sparkles } from "lucide-react";
 import { useRelationships } from "@/hooks/useRelationships";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAI } from "@/hooks/useAI";
 import { RecommendationFollowUp } from "@/components/RecommendationFollowUp";
 import { useLanguage } from "@/hooks/useLanguage";
+import { RecommendationCard } from "@/components/RecommendationCard";
+import { RecommendationFilters } from "@/components/RecommendationFilters";
 
 interface RecommendationFromDB {
   id: string;
@@ -134,34 +134,22 @@ export const SmartRecommendationEngine = () => {
     setSelectedRecommendation(recommendationId);
   };
 
-  const handleDismissRecommendation = (recommendationId: string) => {
-    toast({
-      title: t('recommendations.dismissed'),
-      description: t('recommendations.dismissedDesc'),
-    });
-    // In a real app, we'd update the recommendation status to 'dismissed'
-    // For now, we just refetch to simulate removal if backend logic changes.
-    refetchAIRecommendations();
-  };
+  const handleDismissRecommendation = async (recommendationId: string) => {
+    const dbId = recommendationId.replace(/^ai-/, '');
+    
+    const { error } = await supabase
+        .from('recommendations')
+        .update({ completed: true })
+        .eq('id', dbId);
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'ai_generated': return <Sparkles className="h-4 w-4" />;
-      case 'communication': return <MessageCircle className="h-4 w-4" />;
-      case 'favor': return <Gift className="h-4 w-4" />;
-      case 'appreciation': return <Heart className="h-4 w-4" />;
-      case 'connection': return <Brain className="h-4 w-4" />;
-      default: return <Lightbulb className="h-4 w-4" />;
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'urgent': return 'bg-red-100 text-red-700 border-red-200';
-      case 'high': return 'bg-orange-100 text-orange-700 border-orange-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      case 'low': return 'bg-green-100 text-green-700 border-green-200';
-      default: return 'bg-gray-100 text-gray-700 border-gray-200';
+    if (error) {
+        toast({ title: "Error", description: t('errorCompletingRecommendation'), variant: "destructive" });
+    } else {
+        toast({
+          title: t('recommendations.dismissed'),
+          description: t('recommendations.dismissedDesc'),
+        });
+        refetchAIRecommendations();
     }
   };
 
@@ -177,7 +165,6 @@ export const SmartRecommendationEngine = () => {
     { key: 'communication', label: t('recommendations.filterCommunication'), count: recommendations.filter(r => r.type === 'communication').length },
     { key: 'favor', label: t('recommendations.filterFavor'), count: recommendations.filter(r => r.type === 'favor').length },
   ], [recommendations, t]);
-
 
   return (
     <div className="space-y-6">
@@ -195,24 +182,11 @@ export const SmartRecommendationEngine = () => {
         </Button>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {filterTypes.map(filter => (
-          filter.count > 0 &&
-          <Button
-            key={filter.key}
-            variant={activeFilter === filter.key ? "default" : "outline"}
-            size="sm"
-            onClick={() => setActiveFilter(filter.key)}
-            className="flex items-center gap-2"
-          >
-            {filter.key === 'ai' && <Sparkles className="h-3 w-3" />}
-            {filter.label}
-            <Badge variant="secondary" className="ml-1">
-              {filter.count}
-            </Badge>
-          </Button>
-        ))}
-      </div>
+      <RecommendationFilters
+        filterTypes={filterTypes}
+        activeFilter={activeFilter}
+        onFilterChange={setActiveFilter}
+      />
 
       <div className="space-y-4">
         {filteredRecommendations.length === 0 ? (
@@ -231,7 +205,7 @@ export const SmartRecommendationEngine = () => {
               return (
                 <RecommendationFollowUp
                   key={recommendation.id}
-                  recommendationId={recommendation.id}
+                  recommendationId={recommendation.id.replace(/^ai-/, '')}
                   title={recommendation.title}
                   relationshipName={recommendation.relationshipName || 'Unknown'}
                   onComplete={() => {
@@ -243,83 +217,12 @@ export const SmartRecommendationEngine = () => {
             }
 
             return (
-              <Card key={recommendation.id} className={`hover:shadow-md transition-shadow ${recommendation.isAIGenerated ? 'border-blue-200 bg-blue-50/30' : ''}`}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`${recommendation.isAIGenerated ? 'text-blue-600' : 'text-gray-600'}`}>
-                        {getTypeIcon(recommendation.type)}
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          {recommendation.title}
-                          {recommendation.isAIGenerated && (
-                            <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-                              <Sparkles className="h-3 w-3 mr-1" />
-                              AI
-                            </Badge>
-                          )}
-                        </CardTitle>
-                        <CardDescription className="mt-1">
-                          {recommendation.relationshipName && (
-                            <span className="font-medium">{t('recommendations.cardFor')}: {recommendation.relationshipName} • </span>
-                          )}
-                          {t('recommendations.cardTime')}: {recommendation.timeInvestment}
-                        </CardDescription>
-                      </div>
-                    </div>
-                    <Badge className={getPriorityColor(recommendation.priority)}>
-                      {recommendation.priority}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-gray-700">{recommendation.description}</p>
-                  
-                  <div className={`${recommendation.isAIGenerated ? 'bg-blue-50' : 'bg-gray-50'} p-3 rounded-lg`}>
-                    <h4 className={`font-medium ${recommendation.isAIGenerated ? 'text-blue-900' : 'text-gray-900'} mb-2`}>
-                      {recommendation.isAIGenerated ? t('recommendations.cardAiReasoning') : t('recommendations.cardReasoning')}
-                    </h4>
-                    <p className={`text-sm ${recommendation.isAIGenerated ? 'text-blue-700' : 'text-gray-700'}`}>
-                      {recommendation.reasoning}
-                    </p>
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">{t('recommendations.cardSuggestedActions')}</h4>
-                    <ul className="space-y-1">
-                      {recommendation.suggestedActionsList.map((action: string, index: number) => (
-                        <li key={index} className="text-sm text-gray-600 flex items-center gap-2">
-                          <div className={`w-1.5 h-1.5 ${recommendation.isAIGenerated ? 'bg-blue-500' : 'bg-green-500'} rounded-full`} />
-                          {action}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {recommendation.due_date && (
-                    <div className="flex items-center gap-2 text-sm text-orange-600">
-                      <Clock className="h-4 w-4" />
-                      {t('recommendations.cardDueDate')}: {new Date(recommendation.due_date).toLocaleDateString()}
-                    </div>
-                  )}
-
-                  <div className="flex gap-2 pt-2">
-                    <Button 
-                      onClick={() => handleAcceptRecommendation(recommendation.id)}
-                      className={`${recommendation.isAIGenerated ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'}`}
-                    >
-                      {t('recommendations.acceptButton')}
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      onClick={() => handleDismissRecommendation(recommendation.id)}
-                    >
-                      {t('recommendations.dismissButton')}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <RecommendationCard
+                key={recommendation.id}
+                recommendation={recommendation}
+                onAccept={handleAcceptRecommendation}
+                onDismiss={handleDismissRecommendation}
+              />
             );
           })
         )}
