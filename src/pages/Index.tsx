@@ -8,11 +8,13 @@ import { Plus, Heart, Users, Brain, TrendingUp, LogOut, User } from "lucide-reac
 import { AddFavorDialog } from "@/components/AddFavorDialog";
 import { OnboardingFlow } from "@/components/OnboardingFlow";
 import { MainNavigation } from "@/components/MainNavigation";
+import { LanguageSelector } from "@/components/LanguageSelector";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useRelationships } from "@/hooks/useRelationships";
 import { useFavors } from "@/hooks/useFavors";
 import { useProfile } from "@/hooks/useProfile";
+import { useLanguage } from "@/hooks/useLanguage";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -22,6 +24,7 @@ const Index = () => {
   const { profile, loading: profileLoading } = useProfile();
   const { relationships, isLoading: relationshipsLoading } = useRelationships();
   const { favors, isLoading: favorsLoading } = useFavors();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -58,8 +61,8 @@ const Index = () => {
 
   const handleAddFavor = (favorData: any) => {
     toast({
-      title: "Favor Added Successfully",
-      description: `Added "${favorData.description}" to your relationship tracking.`,
+      title: t('toast.favorAdded'),
+      description: t('toast.favorAddedDesc').replace('{description}', favorData.description),
     });
     setShowAddFavor(false);
   };
@@ -68,14 +71,14 @@ const Index = () => {
     try {
       await signOut();
       toast({
-        title: "Signed out successfully",
-        description: "You've been signed out of your account.",
+        title: t('toast.signedOut'),
+        description: t('toast.signedOutDesc'),
       });
       navigate("/auth");
     } catch (error) {
       toast({
-        title: "Error signing out",
-        description: "There was a problem signing out. Please try again.",
+        title: t('toast.signOutError'),
+        description: t('toast.signOutErrorDesc'),
         variant: "destructive",
       });
     }
@@ -87,7 +90,7 @@ const Index = () => {
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-orange-50 flex items-center justify-center">
         <div className="text-center">
           <Heart className="h-12 w-12 text-green-600 mx-auto mb-4 animate-pulse" />
-          <p className="text-lg text-gray-600">Loading...</p>
+          <p className="text-lg text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -107,8 +110,8 @@ const Index = () => {
             <div className="flex items-center gap-3">
               <Heart className="h-8 w-8 text-green-600" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">RelationshipDebt AI</h1>
-                <p className="text-sm text-green-600">Building balanced, meaningful connections</p>
+                <h1 className="text-2xl font-bold text-gray-900">{t('header.title')}</h1>
+                <p className="text-sm text-green-600">{t('header.subtitle')}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -117,7 +120,7 @@ const Index = () => {
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Add Favor
+                {t('header.addFavor')}
               </Button>
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4 text-gray-600" />
@@ -128,13 +131,14 @@ const Index = () => {
                   )}
                 </div>
               </div>
+              <LanguageSelector />
               <Button 
                 onClick={handleSignOut}
                 variant="outline"
                 size="sm"
               >
                 <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
+                {t('header.signOut')}
               </Button>
             </div>
           </div>
