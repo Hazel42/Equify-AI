@@ -26,9 +26,13 @@ export const id = {
     signOut: 'Keluar',
   },
   navigation: {
+    main: 'Utama',
+    analytics: 'Analitik',
+    aiTools: 'Alat AI',
+    tools: 'Alat',
+    configuration: 'Konfigurasi',
     dashboard: 'Dasbor',
     relationships: 'Hubungan',
-    analytics: 'Analitik',
     performance: 'Performa',
     aiInsights: 'Wawasan AI',
     smartTips: 'Tips Cerdas',
@@ -36,6 +40,9 @@ export const id = {
     data: 'Data',
     help: 'Bantuan',
     advanced: 'Lanjutan',
+  },
+  footer: {
+    version: 'Versi',
   },
   toast: {
     favorAdded: 'Bantuan Berhasil Ditambahkan',

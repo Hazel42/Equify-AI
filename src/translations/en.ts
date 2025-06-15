@@ -26,9 +26,13 @@ export const en = {
     signOut: 'Sign Out',
   },
   navigation: {
+    main: 'Main',
+    analytics: 'Analytics',
+    aiTools: 'AI Tools',
+    tools: 'Tools',
+    configuration: 'Configuration',
     dashboard: 'Dashboard',
     relationships: 'Relationships',
-    analytics: 'Analytics',
     performance: 'Performance',
     aiInsights: 'AI Insights',
     smartTips: 'Smart Tips',
@@ -36,6 +40,9 @@ export const en = {
     data: 'Data',
     help: 'Help',
     advanced: 'Advanced',
+  },
+  footer: {
+    version: 'Version',
   },
   toast: {
     favorAdded: 'Favor Added Successfully',
