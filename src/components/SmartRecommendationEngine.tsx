@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -56,6 +55,17 @@ export const SmartRecommendationEngine = () => {
     enabled: !!user,
     refetchInterval: 30000, // Refetch every 30 seconds to get new AI recommendations
   });
+
+  // Listen for global AI updates to trigger refetch
+  useEffect(() => {
+    const handler = () => {
+      refetchAIRecommendations();
+    };
+    window.addEventListener("ai-recommendation-updated", handler);
+    return () => {
+      window.removeEventListener("ai-recommendation-updated", handler);
+    };
+  }, [refetchAIRecommendations]);
 
   useEffect(() => {
     generateCombinedRecommendations();

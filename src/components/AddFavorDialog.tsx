@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,7 @@ import { useFavors } from "@/hooks/useFavors";
 import { useAuth } from "@/hooks/useAuth";
 import { useAutoAI } from "@/hooks/useAutoAI";
 import { useToast } from "@/hooks/use-toast";
+import { useRef } from "react";
 
 interface AddFavorDialogProps {
   open: boolean;
@@ -31,17 +31,31 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
     context: ""
   });
   const [triggerAI, setTriggerAI] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const { user } = useAuth();
   const { relationships } = useRelationships();
   const { createFavor } = useFavors();
   const { toast } = useToast();
 
-  // Auto AI hook - will trigger when triggerAI becomes true
+  // Ref for debouncing recommendations refresh
+  const refreshTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Auto AI hook - trigger on favor save; refresh recommendation after
   const { loading: aiLoading } = useAutoAI({
     userId: user?.id || "",
     relationshipId: favorData.relationship_id,
-    triggerAnalysis: triggerAI
+    triggerAnalysis: triggerAI,
+    onComplete: (success) => {
+      // If AI finished, propagate up/refresh data (assume parent listeners or next steps)
+      if (success) {
+        // Signal a global event so recommendations and dashboard can refetch (simple approach)
+        window.dispatchEvent(new CustomEvent("ai-recommendation-updated"));
+        setAiError(null);
+      } else {
+        setAiError('Gagal menjalankan AI. Silakan coba beberapa saat lagi.');
+      }
+    }
   });
 
   const categories = [
@@ -62,8 +76,8 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
     }
 
     try {
+      setAiError(null);
       console.log('💾 Saving favor...');
-      
       await createFavor.mutateAsync({
         relationship_id: favorData.relationship_id,
         direction: favorData.direction,
@@ -77,13 +91,10 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
       });
 
       console.log('✅ Favor saved, triggering AI analysis...');
-      
-      // Trigger AI analysis after successful save
       setTriggerAI(true);
-      
+
       onSave(favorData);
-      
-      // Reset form
+
       setFavorData({
         relationship_id: "",
         direction: "received",
@@ -93,10 +104,15 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
         emotional_weight: 3,
         context: ""
       });
-      
-      // Reset AI trigger for next time
+
       setTimeout(() => setTriggerAI(false), 2000);
-      
+
+      // Debounce: give time for AI/favors to process, then trigger dashboard refresh
+      if (refreshTimeout.current) clearTimeout(refreshTimeout.current);
+      refreshTimeout.current = setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("favor-added"));
+      }, 1500);
+
     } catch (error) {
       console.error('❌ Error saving favor:', error);
       toast({
@@ -124,7 +140,6 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
             Track kindness in your relationships - whether given or received. AI will automatically analyze and provide recommendations.
           </DialogDescription>
         </DialogHeader>
-
         <div className="space-y-6">
           {/* Direction Selection */}
           <div>
@@ -261,9 +276,19 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
             <Button 
               onClick={handleSave}
               className="flex-1 bg-green-600 hover:bg-green-700"
-              disabled={!favorData.relationship_id || !favorData.category || !favorData.description || createFavor.isPending || aiLoading}
+              disabled={
+                !favorData.relationship_id ||
+                !favorData.category ||
+                !favorData.description ||
+                createFavor.isPending ||
+                aiLoading
+              }
             >
-              {createFavor.isPending ? "Saving..." : aiLoading ? "Analyzing with AI..." : "Save Favor"}
+              {createFavor.isPending
+                ? "Saving..."
+                : aiLoading
+                ? "Analyzing with AI..."
+                : "Save Favor"}
             </Button>
             <Button 
               variant="outline" 
@@ -284,6 +309,16 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
               <p className="text-xs text-blue-600 mt-1">
                 Generating personalized recommendations and insights based on your favor.
               </p>
+              {aiError && (
+                <div className="text-red-600 border border-red-300 mt-2 rounded p-2 bg-white/80 text-xs">
+                  {aiError}
+                </div>
+              )}
+            </div>
+          )}
+          {aiError && !aiLoading && (
+            <div className="text-red-600 border border-red-300 mt-2 rounded p-2 bg-white/80 text-xs">
+              {aiError}
             </div>
           )}
         </div>
