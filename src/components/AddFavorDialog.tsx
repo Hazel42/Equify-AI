@@ -7,9 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { DollarSign, Clock, Heart, Briefcase } from "lucide-react";
+import { DollarSign, Clock, Heart, Briefcase, Brain } from "lucide-react";
 import { useRelationships } from "@/hooks/useRelationships";
 import { useFavors } from "@/hooks/useFavors";
+import { useAuth } from "@/hooks/useAuth";
+import { useAutoAI } from "@/hooks/useAutoAI";
 import { useToast } from "@/hooks/use-toast";
 
 interface AddFavorDialogProps {
@@ -28,10 +30,19 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
     emotional_weight: 3,
     context: ""
   });
+  const [triggerAI, setTriggerAI] = useState(false);
 
+  const { user } = useAuth();
   const { relationships } = useRelationships();
   const { createFavor } = useFavors();
   const { toast } = useToast();
+
+  // Auto AI hook - will trigger when triggerAI becomes true
+  const { loading: aiLoading } = useAutoAI({
+    userId: user?.id || "",
+    relationshipId: favorData.relationship_id,
+    triggerAnalysis: triggerAI
+  });
 
   const categories = [
     { id: "financial", label: "Financial", icon: DollarSign, description: "Meals, gifts, loans" },
@@ -51,6 +62,8 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
     }
 
     try {
+      console.log('💾 Saving favor...');
+      
       await createFavor.mutateAsync({
         relationship_id: favorData.relationship_id,
         direction: favorData.direction,
@@ -63,7 +76,14 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
         reciprocated: false,
       });
 
+      console.log('✅ Favor saved, triggering AI analysis...');
+      
+      // Trigger AI analysis after successful save
+      setTriggerAI(true);
+      
       onSave(favorData);
+      
+      // Reset form
       setFavorData({
         relationship_id: "",
         direction: "received",
@@ -73,7 +93,12 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
         emotional_weight: 3,
         context: ""
       });
+      
+      // Reset AI trigger for next time
+      setTimeout(() => setTriggerAI(false), 2000);
+      
     } catch (error) {
+      console.error('❌ Error saving favor:', error);
       toast({
         title: "Error",
         description: "Failed to save favor. Please try again.",
@@ -86,9 +111,17 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Add a Favor</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            Add a Favor
+            {aiLoading && (
+              <div className="flex items-center gap-1 text-sm text-blue-600">
+                <Brain className="h-4 w-4 animate-pulse" />
+                AI Analyzing...
+              </div>
+            )}
+          </DialogTitle>
           <DialogDescription>
-            Track kindness in your relationships - whether given or received
+            Track kindness in your relationships - whether given or received. AI will automatically analyze and provide recommendations.
           </DialogDescription>
         </DialogHeader>
 
@@ -228,18 +261,31 @@ export const AddFavorDialog = ({ open, onOpenChange, onSave }: AddFavorDialogPro
             <Button 
               onClick={handleSave}
               className="flex-1 bg-green-600 hover:bg-green-700"
-              disabled={!favorData.relationship_id || !favorData.category || !favorData.description || createFavor.isPending}
+              disabled={!favorData.relationship_id || !favorData.category || !favorData.description || createFavor.isPending || aiLoading}
             >
-              {createFavor.isPending ? "Saving..." : "Save Favor"}
+              {createFavor.isPending ? "Saving..." : aiLoading ? "Analyzing with AI..." : "Save Favor"}
             </Button>
             <Button 
               variant="outline" 
               onClick={() => onOpenChange(false)}
               className="flex-1"
+              disabled={createFavor.isPending || aiLoading}
             >
               Cancel
             </Button>
           </div>
+          
+          {aiLoading && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="flex items-center gap-2 text-blue-700">
+                <Brain className="h-4 w-4 animate-pulse" />
+                <span className="text-sm font-medium">AI is analyzing your relationship...</span>
+              </div>
+              <p className="text-xs text-blue-600 mt-1">
+                Generating personalized recommendations and insights based on your favor.
+              </p>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
