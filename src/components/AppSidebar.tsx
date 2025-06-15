@@ -1,3 +1,4 @@
+
 import {
   Home,
   Users,
@@ -17,7 +18,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useLanguage } from "@/hooks/useLanguage";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AppSidebarProps {
   activeTab: string;

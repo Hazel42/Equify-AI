@@ -10,7 +10,7 @@ import { useFavors } from "@/hooks/useFavors";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useAI } from "@/hooks/useAI";
-import { useLanguage } from "@/hooks/useLanguage";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { QuickSetupGuide } from "@/components/QuickSetupGuide";
 import { AddRelationshipDialog } from "@/components/AddRelationshipDialog";
