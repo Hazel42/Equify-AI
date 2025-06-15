@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { QuickSetupGuide } from "@/components/QuickSetupGuide";
 import { AddRelationshipDialog } from "@/components/AddRelationshipDialog";
 import { AddFavorDialog } from "@/components/AddFavorDialog";
+import { TodayActionItems } from "@/components/TodayActionItems";
 import { useState } from "react";
 import { RefreshCw, Sparkles } from "lucide-react";
 
@@ -375,48 +376,33 @@ export const EnhancedDashboard = () => {
       </div>
 
       {/* Action Items */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-green-600" />
-            Today's Action Items
-          </CardTitle>
-          <CardDescription>Recommended actions to strengthen your relationships</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 border border-green-200 rounded-lg bg-green-50">
-              <h4 className="font-medium text-green-900 mb-2">Send a Thank You</h4>
-              <p className="text-sm text-green-700 mb-3">
-                Thank Sarah for the book recommendation from last week
-              </p>
-              <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                Do It Now
-              </Button>
-            </div>
-            
-            <div className="p-4 border border-blue-200 rounded-lg bg-blue-50">
-              <h4 className="font-medium text-blue-900 mb-2">Schedule Coffee</h4>
-              <p className="text-sm text-blue-700 mb-3">
-                Reach out to John for that coffee you promised
-              </p>
-              <Button size="sm" variant="outline" className="border-blue-300">
-                Schedule
-              </Button>
-            </div>
-            
-            <div className="p-4 border border-purple-200 rounded-lg bg-purple-50">
-              <h4 className="font-medium text-purple-900 mb-2">Check In</h4>
-              <p className="text-sm text-purple-700 mb-3">
-                See how Mom is doing with her new project
-              </p>
-              <Button size="sm" variant="outline" className="border-purple-300">
-                Call Now
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <TodayActionItems />
+
+      {/* Add relationship and favor dialogs remain the same */}
+      <AddRelationshipDialog 
+        open={showAddRelationship}
+        onOpenChange={setShowAddRelationship}
+        onSave={(data) => {
+          addRelationship.mutate(data);
+          setShowAddRelationship(false);
+          toast({
+            title: "Relationship Added",
+            description: "Your relationship has been added successfully!",
+          });
+        }}
+      />
+
+      <AddFavorDialog 
+        open={showAddFavor}
+        onOpenChange={setShowAddFavor}
+        onSave={() => {
+          setShowAddFavor(false);
+          toast({
+            title: "Favor Added",
+            description: "Your interaction has been recorded!",
+          });
+        }}
+      />
     </div>
   );
 };

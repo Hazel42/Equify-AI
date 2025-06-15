@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useAI } from "@/hooks/useAI";
+import { RecommendationFollowUp } from "@/components/RecommendationFollowUp";
 
 interface SmartRecommendation {
   id: string;
@@ -32,6 +32,7 @@ interface SmartRecommendation {
 export const SmartRecommendationEngine = () => {
   const [recommendations, setRecommendations] = useState<SmartRecommendation[]>([]);
   const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [selectedRecommendation, setSelectedRecommendation] = useState<string | null>(null);
   const { user } = useAuth();
   const { relationships } = useRelationships();
   const { favors } = useFavors();
@@ -244,18 +245,7 @@ export const SmartRecommendationEngine = () => {
   };
 
   const handleAcceptRecommendation = (recommendationId: string) => {
-    const recommendation = recommendations.find(r => r.id === recommendationId);
-    if (recommendation) {
-      toast({
-        title: "Recommendation Accepted",
-        description: `Great choice! "${recommendation.title}" will help strengthen your relationships.`,
-      });
-      
-      setRecommendations(prev => prev.filter(r => r.id !== recommendationId));
-      
-      // Refresh AI recommendations to get new ones
-      refetchAIRecommendations();
-    }
+    setSelectedRecommendation(recommendationId);
   };
 
   const handleDismissRecommendation = (recommendationId: string) => {
@@ -352,85 +342,103 @@ export const SmartRecommendationEngine = () => {
             </CardContent>
           </Card>
         ) : (
-          filteredRecommendations.map(recommendation => (
-            <Card key={recommendation.id} className={`hover:shadow-md transition-shadow ${recommendation.isAIGenerated ? 'border-blue-200 bg-blue-50/30' : ''}`}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`${recommendation.isAIGenerated ? 'text-blue-600' : 'text-gray-600'}`}>
-                      {getTypeIcon(recommendation.type)}
+          filteredRecommendations.map(recommendation => {
+            if (selectedRecommendation === recommendation.id) {
+              return (
+                <RecommendationFollowUp
+                  key={recommendation.id}
+                  recommendationId={recommendation.id}
+                  title={recommendation.title}
+                  relationshipName={recommendation.relationshipName || 'Unknown'}
+                  onComplete={() => {
+                    setSelectedRecommendation(null);
+                    setRecommendations(prev => prev.filter(r => r.id !== recommendation.id));
+                    refetchAIRecommendations();
+                  }}
+                />
+              );
+            }
+
+            return (
+              <Card key={recommendation.id} className={`hover:shadow-md transition-shadow ${recommendation.isAIGenerated ? 'border-blue-200 bg-blue-50/30' : ''}`}>
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`${recommendation.isAIGenerated ? 'text-blue-600' : 'text-gray-600'}`}>
+                        {getTypeIcon(recommendation.type)}
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          {recommendation.title}
+                          {recommendation.isAIGenerated && (
+                            <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+                              <Sparkles className="h-3 w-3 mr-1" />
+                              AI
+                            </Badge>
+                          )}
+                        </CardTitle>
+                        <CardDescription className="mt-1">
+                          {recommendation.relationshipName && (
+                            <span className="font-medium">For: {recommendation.relationshipName} • </span>
+                          )}
+                          Impact: {recommendation.estimatedImpact}/10 • Time: {recommendation.timeInvestment}
+                        </CardDescription>
+                      </div>
                     </div>
-                    <div>
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        {recommendation.title}
-                        {recommendation.isAIGenerated && (
-                          <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-                            <Sparkles className="h-3 w-3 mr-1" />
-                            AI
-                          </Badge>
-                        )}
-                      </CardTitle>
-                      <CardDescription className="mt-1">
-                        {recommendation.relationshipName && (
-                          <span className="font-medium">For: {recommendation.relationshipName} • </span>
-                        )}
-                        Impact: {recommendation.estimatedImpact}/10 • Time: {recommendation.timeInvestment}
-                      </CardDescription>
+                    <Badge className={getPriorityColor(recommendation.priority)}>
+                      {recommendation.priority}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-gray-700">{recommendation.description}</p>
+                  
+                  <div className={`${recommendation.isAIGenerated ? 'bg-blue-50' : 'bg-gray-50'} p-3 rounded-lg`}>
+                    <h4 className={`font-medium ${recommendation.isAIGenerated ? 'text-blue-900' : 'text-gray-900'} mb-2`}>
+                      {recommendation.isAIGenerated ? 'AI Reasoning' : 'Reasoning'}
+                    </h4>
+                    <p className={`text-sm ${recommendation.isAIGenerated ? 'text-blue-700' : 'text-gray-700'}`}>
+                      {recommendation.reasoning}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Suggested Actions</h4>
+                    <ul className="space-y-1">
+                      {recommendation.suggestedActions.map((action, index) => (
+                        <li key={index} className="text-sm text-gray-600 flex items-center gap-2">
+                          <div className={`w-1.5 h-1.5 ${recommendation.isAIGenerated ? 'bg-blue-500' : 'bg-green-500'} rounded-full`} />
+                          {action}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {recommendation.dueDate && (
+                    <div className="flex items-center gap-2 text-sm text-orange-600">
+                      <Clock className="h-4 w-4" />
+                      Due: {new Date(recommendation.dueDate).toLocaleDateString()}
                     </div>
+                  )}
+
+                  <div className="flex gap-2 pt-2">
+                    <Button 
+                      onClick={() => handleAcceptRecommendation(recommendation.id)}
+                      className={`${recommendation.isAIGenerated ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'}`}
+                    >
+                      Accept & Act
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => handleDismissRecommendation(recommendation.id)}
+                    >
+                      Dismiss
+                    </Button>
                   </div>
-                  <Badge className={getPriorityColor(recommendation.priority)}>
-                    {recommendation.priority}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-gray-700">{recommendation.description}</p>
-                
-                <div className={`${recommendation.isAIGenerated ? 'bg-blue-50' : 'bg-gray-50'} p-3 rounded-lg`}>
-                  <h4 className={`font-medium ${recommendation.isAIGenerated ? 'text-blue-900' : 'text-gray-900'} mb-2`}>
-                    {recommendation.isAIGenerated ? 'AI Reasoning' : 'Reasoning'}
-                  </h4>
-                  <p className={`text-sm ${recommendation.isAIGenerated ? 'text-blue-700' : 'text-gray-700'}`}>
-                    {recommendation.reasoning}
-                  </p>
-                </div>
-
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Suggested Actions</h4>
-                  <ul className="space-y-1">
-                    {recommendation.suggestedActions.map((action, index) => (
-                      <li key={index} className="text-sm text-gray-600 flex items-center gap-2">
-                        <div className={`w-1.5 h-1.5 ${recommendation.isAIGenerated ? 'bg-blue-500' : 'bg-green-500'} rounded-full`} />
-                        {action}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {recommendation.dueDate && (
-                  <div className="flex items-center gap-2 text-sm text-orange-600">
-                    <Clock className="h-4 w-4" />
-                    Due: {new Date(recommendation.dueDate).toLocaleDateString()}
-                  </div>
-                )}
-
-                <div className="flex gap-2 pt-2">
-                  <Button 
-                    onClick={() => handleAcceptRecommendation(recommendation.id)}
-                    className={`${recommendation.isAIGenerated ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'}`}
-                  >
-                    Accept & Act
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    onClick={() => handleDismissRecommendation(recommendation.id)}
-                  >
-                    Dismiss
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+                </CardContent>
+              </Card>
+            );
+          })
         )}
       </div>
     </div>
