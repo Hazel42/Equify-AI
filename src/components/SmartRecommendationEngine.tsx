@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Clock, Heart, MessageCircle, Gift, Calendar, TrendingUp, Lightbulb, Sparkles } from "lucide-react";
+import { Brain, Clock, Heart, MessageCircle, Gift, Calendar, TrendingUp, Lightbulb, Sparkles, RefreshCw } from "lucide-react";
 import { useRelationships } from "@/hooks/useRelationships";
 import { useFavors } from "@/hooks/useFavors";
 import { useProfile } from "@/hooks/useProfile";
@@ -10,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useAI } from "@/hooks/useAI";
 
 interface SmartRecommendation {
   id: string;
@@ -35,6 +37,7 @@ export const SmartRecommendationEngine = () => {
   const { favors } = useFavors();
   const { profile } = useProfile();
   const { toast } = useToast();
+  const { generateRecommendations, loading: aiLoading } = useAI();
 
   // Fetch AI-generated recommendations from database
   const { data: aiRecommendations = [], refetch: refetchAIRecommendations } = useQuery({
@@ -67,11 +70,7 @@ export const SmartRecommendationEngine = () => {
     };
   }, [refetchAIRecommendations]);
 
-  useEffect(() => {
-    generateCombinedRecommendations();
-  }, [relationships, favors, profile, aiRecommendations]);
-
-  const generateCombinedRecommendations = () => {
+  const generateCombinedRecommendations = useCallback(() => {
     const newRecommendations: SmartRecommendation[] = [];
 
     // Convert AI-generated recommendations from database
@@ -192,7 +191,56 @@ export const SmartRecommendationEngine = () => {
       return priorityOrder[b.priority] - priorityOrder[a.priority];
     });
 
-    setRecommendations(sortedRecommendations.slice(0, 12)); // Show more recommendations
+    setRecommendations(sortedRecommendations.slice(0, 12));
+  }, [aiRecommendations, relationships, favors, profile]);
+
+  useEffect(() => {
+    generateCombinedRecommendations();
+  }, [generateCombinedRecommendations]);
+
+  const handleGenerateAllRecommendations = async () => {
+    if (!user || relationships.length === 0) {
+      toast({
+        title: "Cannot Generate Recommendations",
+        description: "Please add at least one relationship first.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Starting AI Analysis",
+      description: `Generating recommendations for ${relationships.length} relationships. This may take a moment.`,
+    });
+
+    let successCount = 0;
+    for (const rel of relationships) {
+      try {
+        await generateRecommendations(user.id, rel.id, 'Manual full analysis trigger');
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to generate recommendations for ${rel.name}`, error);
+        toast({
+            title: `AI Failed for ${rel.name}`,
+            description: "There was an error generating recommendations for this relationship.",
+            variant: "destructive",
+        });
+      }
+    }
+
+    if (successCount > 0) {
+        toast({
+          title: "AI Analysis Complete",
+          description: `Finished generating recommendations. ${successCount} out of ${relationships.length} succeeded. Refreshing list...`,
+        });
+        refetchAIRecommendations();
+    } else {
+        toast({
+            title: "AI Analysis Failed",
+            description: "Could not generate recommendations for any relationship.",
+            variant: "destructive",
+        });
+    }
   };
 
   const handleAcceptRecommendation = (recommendationId: string) => {
@@ -256,12 +304,18 @@ export const SmartRecommendationEngine = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-          <Brain className="h-6 w-6 text-blue-600" />
-          Smart Recommendations
-        </h2>
-        <p className="text-gray-600">AI-powered suggestions to strengthen your relationships</p>
+      <div className="flex justify-between items-start flex-wrap gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+            <Brain className="h-6 w-6 text-blue-600" />
+            Smart Recommendations
+          </h2>
+          <p className="text-gray-600">AI-powered suggestions to strengthen your relationships</p>
+        </div>
+        <Button onClick={handleGenerateAllRecommendations} disabled={aiLoading} className="bg-blue-600 hover:bg-blue-700">
+            <RefreshCw className={`h-4 w-4 mr-2 ${aiLoading ? 'animate-spin' : ''}`} />
+            {aiLoading ? "Analyzing..." : "Analyze All Relationships"}
+        </Button>
       </div>
 
       {/* Filter Tabs */}
