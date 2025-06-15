@@ -1,12 +1,12 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export type Language = 'en' | 'id';
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, replacements?: Record<string, string | number>) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -29,7 +29,7 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
     localStorage.setItem('preferred-language', lang);
   };
 
-  const t = (key: string): string => {
+  const t = (key: string, replacements?: Record<string, string | number>): string => {
     const keys = key.split('.');
     let value: any = translations[language];
     
@@ -37,7 +37,18 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
       value = value?.[k];
     }
     
-    return value || key;
+    let translation = value || key;
+
+    if (replacements && typeof translation === 'string') {
+      for (const placeholder in replacements) {
+        translation = translation.replace(
+          new RegExp(`\\{${placeholder}\\}`, 'g'),
+          String(replacements[placeholder])
+        );
+      }
+    }
+    
+    return translation;
   };
 
   const contextValue: LanguageContextType = {
