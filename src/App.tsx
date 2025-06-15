@@ -12,22 +12,22 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <BrowserRouter>
-    <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
+  <QueryClientProvider client={queryClient}>
+    <LanguageProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </TooltipProvider>
-      </LanguageProvider>
-    </QueryClientProvider>
-  </BrowserRouter>
+        </BrowserRouter>
+      </TooltipProvider>
+    </LanguageProvider>
+  </QueryClientProvider>
 );
 
 export default App;
