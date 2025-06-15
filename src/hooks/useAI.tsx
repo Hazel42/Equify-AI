@@ -7,33 +7,6 @@ export const useAI = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const analyzeRelationship = async (relationshipId: string, userId: string) => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('analyze-relationship', {
-        body: { relationshipId, userId }
-      });
-
-      if (error) throw error;
-      
-      toast({
-        title: "Analysis Complete",
-        description: "AI has analyzed your relationship dynamics.",
-      });
-      
-      return data;
-    } catch (error: any) {
-      toast({
-        title: "Analysis Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const generateRecommendations = async (userId: string, relationshipId: string, context?: string) => {
     setLoading(true);
     try {
@@ -43,10 +16,8 @@ export const useAI = () => {
 
       if (error) throw error;
       
-      toast({
-        title: "Recommendations Generated",
-        description: "AI has created personalized reciprocity suggestions.",
-      });
+      // Toast notifications will be handled by the component that calls this.
+      // This makes the hook more reusable.
       
       return data;
     } catch (error: any) {
@@ -62,7 +33,6 @@ export const useAI = () => {
   };
 
   return {
-    analyzeRelationship,
     generateRecommendations,
     loading
   };

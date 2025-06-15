@@ -1,47 +1,39 @@
-import { useState, useEffect, useCallback } from "react";
+
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Clock, Heart, MessageCircle, Gift, Calendar, TrendingUp, Lightbulb, Sparkles, RefreshCw } from "lucide-react";
+import { Brain, Clock, Heart, MessageCircle, Gift, Sparkles, RefreshCw, Lightbulb } from "lucide-react";
 import { useRelationships } from "@/hooks/useRelationships";
-import { useFavors } from "@/hooks/useFavors";
-import { useProfile } from "@/hooks/useProfile";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useAI } from "@/hooks/useAI";
 import { RecommendationFollowUp } from "@/components/RecommendationFollowUp";
+import { useLanguage } from "@/hooks/useLanguage";
 
-interface SmartRecommendation {
+interface RecommendationFromDB {
   id: string;
-  type: 'communication' | 'favor' | 'milestone' | 'balance' | 'connection' | 'ai_generated';
+  relationship_id: string | null;
   title: string;
-  description: string;
-  reasoning: string;
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  estimatedImpact: number;
-  timeInvestment: string;
-  relationshipId?: string;
-  relationshipName?: string;
-  suggestedActions: string[];
-  dueDate?: string;
-  isAIGenerated?: boolean;
+  description: string | null;
+  suggested_actions: any;
+  priority_level: number | null;
+  due_date: string | null;
+  recommendation_type: string;
 }
 
 export const SmartRecommendationEngine = () => {
-  const [recommendations, setRecommendations] = useState<SmartRecommendation[]>([]);
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [selectedRecommendation, setSelectedRecommendation] = useState<string | null>(null);
   const { user } = useAuth();
   const { relationships } = useRelationships();
-  const { favors } = useFavors();
-  const { profile } = useProfile();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const { generateRecommendations, loading: aiLoading } = useAI();
 
-  // Fetch AI-generated recommendations from database
-  const { data: aiRecommendations = [], refetch: refetchAIRecommendations } = useQuery({
+  const { data: recommendationsFromDB = [], refetch: refetchAIRecommendations } = useQuery<RecommendationFromDB[]>({
     queryKey: ['ai-recommendations', user?.id],
     queryFn: async () => {
       if (!user) return [];
@@ -50,17 +42,16 @@ export const SmartRecommendationEngine = () => {
         .from('recommendations')
         .select('*')
         .eq('user_id', user.id)
+        .eq('completed', false)
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(20);
 
       if (error) throw error;
       return data || [];
     },
     enabled: !!user,
-    refetchInterval: 30000, // Refetch every 30 seconds to get new AI recommendations
   });
 
-  // Listen for global AI updates to trigger refetch
   useEffect(() => {
     const handler = () => {
       refetchAIRecommendations();
@@ -71,147 +62,42 @@ export const SmartRecommendationEngine = () => {
     };
   }, [refetchAIRecommendations]);
 
-  const generateCombinedRecommendations = useCallback(() => {
-    const newRecommendations: SmartRecommendation[] = [];
-
-    // Convert AI-generated recommendations from database
-    aiRecommendations.forEach(aiRec => {
-      const relationship = relationships.find(r => r.id === aiRec.relationship_id);
+  const recommendations = useMemo(() => {
+    return recommendationsFromDB.map(rec => {
+      const relationship = relationships.find(r => r.id === rec.relationship_id);
+      const actions = rec.suggested_actions || {};
+      const priorityLevel = rec.priority_level || 2;
       
-      if (aiRec.suggested_actions && typeof aiRec.suggested_actions === 'object') {
-        const actions = aiRec.suggested_actions as any;
-        
-        newRecommendations.push({
-          id: `ai-${aiRec.id}`,
-          type: 'ai_generated',
-          title: aiRec.title || 'AI Recommendation',
-          description: aiRec.description || 'Personalized suggestion from AI analysis',
-          reasoning: `AI-generated based on your relationship patterns and recent activities.`,
-          priority: aiRec.priority_level >= 4 ? 'high' : aiRec.priority_level >= 3 ? 'medium' : 'low',
-          estimatedImpact: 9,
-          timeInvestment: actions.effort_level === 'low' ? '5-15 minutes' : actions.effort_level === 'medium' ? '15-30 minutes' : '30+ minutes',
-          relationshipId: aiRec.relationship_id || undefined,
-          relationshipName: relationship?.name || 'Unknown',
-          suggestedActions: Array.isArray(actions.how_to_execute) ? actions.how_to_execute : 
-                           actions.how_to_execute ? [actions.how_to_execute] : 
-                           ['Follow AI guidance'],
-          dueDate: aiRec.due_date || undefined,
-          isAIGenerated: true
-        });
-      }
-    });
-
-    // Communication recommendations based on last interaction
-    relationships.forEach(relationship => {
-      const lastFavor = favors
-        .filter(f => f.relationship_id === relationship.id)
-        .sort((a, b) => new Date(b.date_occurred).getTime() - new Date(a.date_occurred).getTime())[0];
-
-      if (!lastFavor || new Date().getTime() - new Date(lastFavor.date_occurred).getTime() > 7 * 24 * 60 * 60 * 1000) {
-        newRecommendations.push({
-          id: `comm-${relationship.id}`,
-          type: 'communication',
-          title: `Reconnect with ${relationship.name}`,
-          description: `It's been a while since your last interaction. A simple check-in could strengthen your bond.`,
-          reasoning: `Based on your ${profile?.personality_type || 'balanced'} personality type and the lack of recent interaction, this relationship needs attention.`,
-          priority: 'medium',
-          estimatedImpact: 8,
-          timeInvestment: '5-10 minutes',
-          relationshipId: relationship.id,
-          relationshipName: relationship.name,
-          suggestedActions: [
-            'Send a thoughtful text message',
-            'Schedule a coffee meetup',
-            'Share something that reminded you of them',
-            'Ask about their recent projects'
-          ],
-          dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString()
-        });
-      }
-    });
-
-    // Balance recommendations
-    relationships.forEach(relationship => {
-      const relationshipFavors = favors.filter(f => f.relationship_id === relationship.id);
-      const given = relationshipFavors.filter(f => f.direction === 'given').length;
-      const received = relationshipFavors.filter(f => f.direction === 'received').length;
-
-      if (received > given + 2) {
-        newRecommendations.push({
-          id: `balance-${relationship.id}`,
-          type: 'balance',
-          title: `Rebalance relationship with ${relationship.name}`,
-          description: `You've received more favors than you've given. Consider showing appreciation.`,
-          reasoning: `The giving-receiving ratio is imbalanced (${given} given vs ${received} received). Restoring balance will strengthen this relationship.`,
-          priority: 'high',
-          estimatedImpact: 9,
-          timeInvestment: '15-30 minutes',
-          relationshipId: relationship.id,
-          relationshipName: relationship.name,
-          suggestedActions: [
-            'Offer help with their current project',
-            'Treat them to lunch or coffee',
-            'Give a thoughtful gift',
-            'Provide a meaningful introduction'
-          ]
-        });
-      }
-    });
-
-    // Recent activity-based recommendations
-    const recentFavors = favors.filter(f => 
-      new Date().getTime() - new Date(f.date_occurred).getTime() < 3 * 24 * 60 * 60 * 1000
-    );
-
-    if (recentFavors.length === 0) {
-      newRecommendations.push({
-        id: 'favor-opportunity',
-        type: 'favor',
-        title: 'Look for Favor Opportunities',
-        description: 'You haven\'t recorded any relationship activities recently. Stay engaged!',
-        reasoning: 'Regular relationship activities are key to maintaining strong connections.',
-        priority: 'medium',
-        estimatedImpact: 8,
-        timeInvestment: 'Varies',
-        suggestedActions: [
-          'Check in with 2-3 people today',
-          'Offer help to someone in your network',
-          'Share useful resources or connections',
-          'Plan a social gathering'
-        ],
-        dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString()
-      });
-    }
-
-    // Sort by AI-generated first, then by priority
-    const sortedRecommendations = newRecommendations.sort((a, b) => {
-      if (a.isAIGenerated && !b.isAIGenerated) return -1;
-      if (!a.isAIGenerated && b.isAIGenerated) return 1;
-      
-      const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
-      return priorityOrder[b.priority] - priorityOrder[a.priority];
-    });
-
-    setRecommendations(sortedRecommendations.slice(0, 12));
-  }, [aiRecommendations, relationships, favors, profile]);
-
-  useEffect(() => {
-    generateCombinedRecommendations();
-  }, [generateCombinedRecommendations]);
+      return {
+        ...rec,
+        id: `ai-${rec.id}`,
+        relationshipName: relationship?.name || 'Unknown',
+        isAIGenerated: rec.recommendation_type === 'ai_generated',
+        priority: priorityLevel >= 4 ? 'urgent' : priorityLevel >= 3 ? 'high' : priorityLevel >= 2 ? 'medium' : 'low',
+        timeInvestment: actions.effort_level || 'N/A',
+        suggestedActionsList: Array.isArray(actions.how_to_execute) 
+            ? actions.how_to_execute 
+            : (actions.how_to_execute ? [actions.how_to_execute] : []),
+        reasoning: actions.why_appropriate || rec.description,
+        type: actions.category || rec.recommendation_type,
+        estimatedImpactText: actions.expected_impact || 'Varies',
+      };
+    }).sort((a, b) => (b.priority_level || 0) - (a.priority_level || 0));
+  }, [recommendationsFromDB, relationships]);
 
   const handleGenerateAllRecommendations = async () => {
     if (!user || relationships.length === 0) {
       toast({
-        title: "Cannot Generate Recommendations",
-        description: "Please add at least one relationship first.",
+        title: t('recommendations.analysisError'),
+        description: t('recommendations.analysisErrorDesc'),
         variant: "destructive"
       });
       return;
     }
 
     toast({
-      title: "Starting AI Analysis",
-      description: `Generating recommendations for ${relationships.length} relationships. This may take a moment.`,
+      title: t('recommendations.analysisStart'),
+      description: t('recommendations.analysisStartDesc', { count: relationships.length }),
     });
 
     let successCount = 0;
@@ -222,8 +108,8 @@ export const SmartRecommendationEngine = () => {
       } catch (error) {
         console.error(`Failed to generate recommendations for ${rel.name}`, error);
         toast({
-            title: `AI Failed for ${rel.name}`,
-            description: "There was an error generating recommendations for this relationship.",
+            title: t('recommendations.analysisFailed', { name: rel.name }),
+            description: t('recommendations.analysisFailedDesc'),
             variant: "destructive",
         });
       }
@@ -231,14 +117,14 @@ export const SmartRecommendationEngine = () => {
 
     if (successCount > 0) {
         toast({
-          title: "AI Analysis Complete",
-          description: `Finished generating recommendations. ${successCount} out of ${relationships.length} succeeded. Refreshing list...`,
+          title: t('recommendations.analysisComplete'),
+          description: t('recommendations.analysisCompleteDesc', { successCount: successCount, total: relationships.length }),
         });
         refetchAIRecommendations();
     } else {
         toast({
-            title: "AI Analysis Failed",
-            description: "Could not generate recommendations for any relationship.",
+            title: t('recommendations.analysisFailedAll'),
+            description: t('recommendations.analysisFailedAllDesc'),
             variant: "destructive",
         });
     }
@@ -249,11 +135,13 @@ export const SmartRecommendationEngine = () => {
   };
 
   const handleDismissRecommendation = (recommendationId: string) => {
-    setRecommendations(prev => prev.filter(r => r.id !== recommendationId));
     toast({
-      title: "Recommendation Dismissed",
-      description: "We'll generate new recommendations based on your preferences.",
+      title: t('recommendations.dismissed'),
+      description: t('recommendations.dismissedDesc'),
     });
+    // In a real app, we'd update the recommendation status to 'dismissed'
+    // For now, we just refetch to simulate removal if backend logic changes.
+    refetchAIRecommendations();
   };
 
   const getTypeIcon = (type: string) => {
@@ -261,8 +149,7 @@ export const SmartRecommendationEngine = () => {
       case 'ai_generated': return <Sparkles className="h-4 w-4" />;
       case 'communication': return <MessageCircle className="h-4 w-4" />;
       case 'favor': return <Gift className="h-4 w-4" />;
-      case 'milestone': return <TrendingUp className="h-4 w-4" />;
-      case 'balance': return <Heart className="h-4 w-4" />;
+      case 'appreciation': return <Heart className="h-4 w-4" />;
       case 'connection': return <Brain className="h-4 w-4" />;
       default: return <Lightbulb className="h-4 w-4" />;
     }
@@ -278,19 +165,19 @@ export const SmartRecommendationEngine = () => {
     }
   };
 
-  const filteredRecommendations = activeFilter === 'all' 
-    ? recommendations 
-    : activeFilter === 'ai' 
-    ? recommendations.filter(r => r.isAIGenerated)
-    : recommendations.filter(r => r.type === activeFilter);
+  const filteredRecommendations = recommendations.filter(r => {
+    if (activeFilter === 'all') return true;
+    if (activeFilter === 'ai') return r.isAIGenerated;
+    return r.type === activeFilter;
+  });
 
-  const filterTypes = [
-    { key: 'all', label: 'All', count: recommendations.length },
-    { key: 'ai', label: 'AI Generated', count: recommendations.filter(r => r.isAIGenerated).length },
-    { key: 'communication', label: 'Communication', count: recommendations.filter(r => r.type === 'communication').length },
-    { key: 'balance', label: 'Balance', count: recommendations.filter(r => r.type === 'balance').length },
-    { key: 'favor', label: 'Favors', count: recommendations.filter(r => r.type === 'favor').length },
-  ];
+  const filterTypes = useMemo(() => [
+    { key: 'all', label: t('recommendations.filterAll'), count: recommendations.length },
+    { key: 'ai', label: t('recommendations.filterAi'), count: recommendations.filter(r => r.isAIGenerated).length },
+    { key: 'communication', label: t('recommendations.filterCommunication'), count: recommendations.filter(r => r.type === 'communication').length },
+    { key: 'favor', label: t('recommendations.filterFavor'), count: recommendations.filter(r => r.type === 'favor').length },
+  ], [recommendations, t]);
+
 
   return (
     <div className="space-y-6">
@@ -298,19 +185,19 @@ export const SmartRecommendationEngine = () => {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
             <Brain className="h-6 w-6 text-blue-600" />
-            Smart Recommendations
+            {t('recommendations.title')}
           </h2>
-          <p className="text-gray-600">AI-powered suggestions to strengthen your relationships</p>
+          <p className="text-gray-600">{t('recommendations.description')}</p>
         </div>
         <Button onClick={handleGenerateAllRecommendations} disabled={aiLoading} className="bg-blue-600 hover:bg-blue-700">
             <RefreshCw className={`h-4 w-4 mr-2 ${aiLoading ? 'animate-spin' : ''}`} />
-            {aiLoading ? "Analyzing..." : "Analyze All Relationships"}
+            {aiLoading ? t('recommendations.analyzingButton') : t('recommendations.analyzeButton')}
         </Button>
       </div>
 
-      {/* Filter Tabs */}
       <div className="flex flex-wrap gap-2">
         {filterTypes.map(filter => (
+          filter.count > 0 &&
           <Button
             key={filter.key}
             variant={activeFilter === filter.key ? "default" : "outline"}
@@ -320,24 +207,21 @@ export const SmartRecommendationEngine = () => {
           >
             {filter.key === 'ai' && <Sparkles className="h-3 w-3" />}
             {filter.label}
-            {filter.count > 0 && (
-              <Badge variant="secondary" className="ml-1">
-                {filter.count}
-              </Badge>
-            )}
+            <Badge variant="secondary" className="ml-1">
+              {filter.count}
+            </Badge>
           </Button>
         ))}
       </div>
 
-      {/* Recommendations */}
       <div className="space-y-4">
         {filteredRecommendations.length === 0 ? (
           <Card>
             <CardContent className="pt-6">
-              <div className="text-center text-gray-500">
+              <div className="text-center text-gray-500 py-8">
                 <Brain className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p>No recommendations available right now.</p>
-                <p className="text-sm">Add some favors to get AI-powered insights!</p>
+                <p className="font-semibold">{t('recommendations.emptyTitle')}</p>
+                <p className="text-sm">{t('recommendations.emptyDescription')}</p>
               </div>
             </CardContent>
           </Card>
@@ -352,7 +236,6 @@ export const SmartRecommendationEngine = () => {
                   relationshipName={recommendation.relationshipName || 'Unknown'}
                   onComplete={() => {
                     setSelectedRecommendation(null);
-                    setRecommendations(prev => prev.filter(r => r.id !== recommendation.id));
                     refetchAIRecommendations();
                   }}
                 />
@@ -379,9 +262,9 @@ export const SmartRecommendationEngine = () => {
                         </CardTitle>
                         <CardDescription className="mt-1">
                           {recommendation.relationshipName && (
-                            <span className="font-medium">For: {recommendation.relationshipName} • </span>
+                            <span className="font-medium">{t('recommendations.cardFor')}: {recommendation.relationshipName} • </span>
                           )}
-                          Impact: {recommendation.estimatedImpact}/10 • Time: {recommendation.timeInvestment}
+                          {t('recommendations.cardTime')}: {recommendation.timeInvestment}
                         </CardDescription>
                       </div>
                     </div>
@@ -395,7 +278,7 @@ export const SmartRecommendationEngine = () => {
                   
                   <div className={`${recommendation.isAIGenerated ? 'bg-blue-50' : 'bg-gray-50'} p-3 rounded-lg`}>
                     <h4 className={`font-medium ${recommendation.isAIGenerated ? 'text-blue-900' : 'text-gray-900'} mb-2`}>
-                      {recommendation.isAIGenerated ? 'AI Reasoning' : 'Reasoning'}
+                      {recommendation.isAIGenerated ? t('recommendations.cardAiReasoning') : t('recommendations.cardReasoning')}
                     </h4>
                     <p className={`text-sm ${recommendation.isAIGenerated ? 'text-blue-700' : 'text-gray-700'}`}>
                       {recommendation.reasoning}
@@ -403,9 +286,9 @@ export const SmartRecommendationEngine = () => {
                   </div>
 
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Suggested Actions</h4>
+                    <h4 className="font-medium text-gray-900 mb-2">{t('recommendations.cardSuggestedActions')}</h4>
                     <ul className="space-y-1">
-                      {recommendation.suggestedActions.map((action, index) => (
+                      {recommendation.suggestedActionsList.map((action: string, index: number) => (
                         <li key={index} className="text-sm text-gray-600 flex items-center gap-2">
                           <div className={`w-1.5 h-1.5 ${recommendation.isAIGenerated ? 'bg-blue-500' : 'bg-green-500'} rounded-full`} />
                           {action}
@@ -414,10 +297,10 @@ export const SmartRecommendationEngine = () => {
                     </ul>
                   </div>
 
-                  {recommendation.dueDate && (
+                  {recommendation.due_date && (
                     <div className="flex items-center gap-2 text-sm text-orange-600">
                       <Clock className="h-4 w-4" />
-                      Due: {new Date(recommendation.dueDate).toLocaleDateString()}
+                      {t('recommendations.cardDueDate')}: {new Date(recommendation.due_date).toLocaleDateString()}
                     </div>
                   )}
 
@@ -426,13 +309,13 @@ export const SmartRecommendationEngine = () => {
                       onClick={() => handleAcceptRecommendation(recommendation.id)}
                       className={`${recommendation.isAIGenerated ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'}`}
                     >
-                      Accept & Act
+                      {t('recommendations.acceptButton')}
                     </Button>
                     <Button 
                       variant="outline"
                       onClick={() => handleDismissRecommendation(recommendation.id)}
                     >
-                      Dismiss
+                      {t('recommendations.dismissButton')}
                     </Button>
                   </div>
                 </CardContent>

@@ -1,4 +1,3 @@
-
 export const id = {
   common: {
     add: 'Tambah',
@@ -137,5 +136,38 @@ export const id = {
       mentor: 'Mentor',
       other: 'Lainnya',
     }
-  }
+  },
+  recommendations: {
+    title: 'Rekomendasi Cerdas',
+    description: 'Saran yang didukung AI untuk memperkuat hubungan Anda',
+    analyzeButton: 'Analisis Semua Hubungan',
+    analyzingButton: 'Menganalisis...',
+    filterAll: 'Semua',
+    filterAi: 'Buatan AI',
+    filterCommunication: 'Komunikasi',
+    filterFavor: 'Bantuan',
+    emptyTitle: 'Belum ada rekomendasi',
+    emptyDescription: 'Analisis hubungan Anda untuk mendapatkan saran AI yang dipersonalisasi.',
+    cardFor: 'Untuk',
+    cardImpact: 'Dampak',
+    cardTime: 'Waktu',
+    cardReasoning: 'Alasan',
+    cardAiReasoning: 'Alasan AI',
+    cardSuggestedActions: 'Saran Tindakan',
+    cardDueDate: 'Batas Waktu',
+    acceptButton: 'Terima & Lakukan',
+    dismissButton: 'Abaikan',
+    analysisError: 'Tidak Dapat Menghasilkan Rekomendasi',
+    analysisErrorDesc: 'Harap tambahkan setidaknya satu hubungan terlebih dahulu.',
+    analysisStart: 'Memulai Analisis AI',
+    analysisStartDesc: 'Menghasilkan rekomendasi untuk {count} hubungan. Ini mungkin memakan waktu sebentar.',
+    analysisFailed: 'AI Gagal untuk {name}',
+    analysisFailedDesc: 'Terjadi kesalahan saat membuat rekomendasi untuk hubungan ini.',
+    analysisComplete: 'Analisis AI Selesai',
+    analysisCompleteDesc: 'Selesai menghasilkan rekomendasi. {successCount} dari {total} berhasil. Memuat ulang daftar...',
+    analysisFailedAll: 'Analisis AI Gagal',
+    analysisFailedAllDesc: 'Tidak dapat menghasilkan rekomendasi untuk hubungan apa pun.',
+    dismissed: 'Rekomendasi Diabaikan',
+    dismissedDesc: 'Kami akan menghasilkan rekomendasi baru berdasarkan preferensi Anda.',
+  },
 };

@@ -1,4 +1,3 @@
-
 export const en = {
   common: {
     add: 'Add',
@@ -137,5 +136,38 @@ export const en = {
       mentor: 'Mentor',
       other: 'Other',
     }
-  }
+  },
+  recommendations: {
+    title: 'Smart Recommendations',
+    description: 'AI-powered suggestions to strengthen your relationships',
+    analyzeButton: 'Analyze All Relationships',
+    analyzingButton: 'Analyzing...',
+    filterAll: 'All',
+    filterAi: 'AI Generated',
+    filterCommunication: 'Communication',
+    filterFavor: 'Favor',
+    emptyTitle: 'No recommendations yet',
+    emptyDescription: 'Analyze your relationships to get personalized AI suggestions.',
+    cardFor: 'For',
+    cardImpact: 'Impact',
+    cardTime: 'Time',
+    cardReasoning: 'Reasoning',
+    cardAiReasoning: 'AI Reasoning',
+    cardSuggestedActions: 'Suggested Actions',
+    cardDueDate: 'Due',
+    acceptButton: 'Accept & Act',
+    dismissButton: 'Dismiss',
+    analysisError: 'Cannot Generate Recommendations',
+    analysisErrorDesc: 'Please add at least one relationship first.',
+    analysisStart: 'Starting AI Analysis',
+    analysisStartDesc: 'Generating recommendations for {count} relationships. This may take a moment.',
+    analysisFailed: 'AI Failed for {name}',
+    analysisFailedDesc: 'There was an error generating recommendations for this relationship.',
+    analysisComplete: 'AI Analysis Complete',
+    analysisCompleteDesc: 'Finished generating recommendations. {successCount} out of {total} succeeded. Refreshing list...',
+    analysisFailedAll: 'AI Analysis Failed',
+    analysisFailedAllDesc: 'Could not generate recommendations for any relationship.',
+    dismissed: 'Recommendation Dismissed',
+    dismissedDesc: "We'll generate new recommendations based on your preferences.",
+  },
 };
