@@ -1,97 +1,120 @@
-
+import { useState } from "react";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   Home,
   Users,
   Brain,
-  Heart,
+  BarChart3,
+  Settings,
+  MessageCircle,
+  Lightbulb,
+  Zap
 } from "lucide-react";
-
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import { Link } from "react-router-dom";
 
 interface AppSidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
 }
 
-// Menu items organized by categories
-const getMenuItems = () => [
-  {
-    group: 'Main',
-    items: [
-      {
-        title: 'Dashboard',
-        icon: Home,
-        value: "dashboard",
-      },
-      {
-        title: 'Relationships',
-        icon: Users,
-        value: "relationships",
-      },
-      {
-        title: 'AI Recommendations',
-        icon: Brain,
-        value: "recommendations",
-      },
-    ],
-  },
-];
+export const AppSidebar = ({ activeTab, onTabChange }: AppSidebarProps) => {
+  const { user } = useAuth();
+  const { profile } = useProfile();
 
-export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
-  const menuItems = getMenuItems();
+  const menuItems = [
+    {
+      id: 'dashboard',
+      title: 'Dashboard',
+      icon: Home,
+      description: 'Overview and quick actions'
+    },
+    {
+      id: 'relationships',
+      title: 'Relationships',
+      icon: Users,
+      description: 'Manage your connections'
+    },
+    {
+      id: 'recommendations',
+      title: 'AI Recommendations',
+      icon: Brain,
+      description: 'Smart suggestions'
+    },
+    {
+      id: 'ai-chat',
+      title: 'AI Assistant',
+      icon: MessageCircle,
+      description: 'Chat with relationship advisor'
+    },
+    {
+      id: 'ai-insights',
+      title: 'AI Insights',
+      icon: Lightbulb,
+      description: 'Deep relationship analytics'
+    },
+    {
+      id: 'automation',
+      title: 'Smart Automation',
+      icon: Zap,
+      description: 'Automated relationship management'
+    },
+    {
+      id: 'analytics',
+      title: 'Analytics',
+      icon: BarChart3,
+      description: 'Performance metrics'
+    },
+    {
+      id: 'settings',
+      title: 'Settings',
+      icon: Settings,
+      description: 'App preferences'
+    }
+  ];
 
   return (
-    <Sidebar>
-      <SidebarHeader className="border-b border-green-100">
-        <div className="flex items-center gap-3 p-4">
-          <Heart className="h-8 w-8 text-green-600" />
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Reciprocity AI</h1>
-            <p className="text-sm text-green-600">Relationship Insights</p>
-          </div>
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="sm" className="lg:hidden">
+          Menu
+        </Button>
+      </SheetTrigger>
+      <SheetContent className="w-full sm:w-64">
+        <SheetHeader className="text-left">
+          <SheetTitle>Menu</SheetTitle>
+          <SheetDescription>
+            Navigate through your relationship management tools.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="py-4">
+          {menuItems.map((item) => (
+            <Button
+              key={item.id}
+              variant={activeTab === item.id ? "secondary" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => onTabChange(item.id)}
+              asChild
+            >
+              <Link to="/">
+                <div className="flex items-center gap-2">
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.title}</span>
+                </div>
+              </Link>
+            </Button>
+          ))}
         </div>
-      </SidebarHeader>
-      
-      <SidebarContent>
-        {menuItems.map((group) => (
-          <SidebarGroup key={group.group}>
-            <SidebarGroupLabel>{group.group}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {group.items.map((item) => (
-                  <SidebarMenuItem key={item.value}>
-                    <SidebarMenuButton
-                      isActive={activeTab === item.value}
-                      onClick={() => onTabChange(item.value)}
-                      className="w-full justify-start"
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
-      </SidebarContent>
-      
-      <SidebarFooter className="border-t border-green-100">
-        <div className="p-4 text-xs text-gray-500">
-          Version 1.0.0
-        </div>
-      </SidebarFooter>
-    </Sidebar>
+      </SheetContent>
+    </Sheet>
   );
-}
+};
