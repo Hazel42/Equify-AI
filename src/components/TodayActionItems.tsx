@@ -8,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ActionItem {
   id: string;
@@ -24,7 +23,6 @@ interface ActionItem {
 export const TodayActionItems = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [completingId, setCompletingId] = useState<string | null>(null);
 
@@ -84,14 +82,14 @@ export const TodayActionItems = () => {
       queryClient.invalidateQueries({ queryKey: ['today-actions'] });
       queryClient.invalidateQueries({ queryKey: ['ai-recommendations'] });
       toast({
-        title: t('toast.actionCompleted'),
-        description: t('toast.actionCompletedDesc'),
+        title: 'Action Completed',
+        description: 'Great job! Your action has been marked as completed.',
       });
     },
     onError: (error) => {
       toast({
-        title: t('common.error'),
-        description: t('toast.errorMarkingCompleted'),
+        title: 'Error',
+        description: 'Failed to mark action as completed. Please try again.',
         variant: "destructive",
       });
     },
@@ -128,13 +126,13 @@ export const TodayActionItems = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="h-5 w-5 text-green-600" />
-            {t('todayActions.title')}
+            Today's Action Items
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-4">
             <div className="animate-spin h-6 w-6 mx-auto mb-2">⏳</div>
-            <p className="text-gray-500">{t('todayActions.loading')}</p>
+            <p className="text-gray-500">Loading your action items...</p>
           </div>
         </CardContent>
       </Card>
@@ -147,15 +145,15 @@ export const TodayActionItems = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="h-5 w-5 text-green-600" />
-            {t('todayActions.title')}
+            Today's Action Items
           </CardTitle>
-          <CardDescription>{t('todayActions.noActions')}</CardDescription>
+          <CardDescription>No pending actions for today</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <p className="text-gray-600 mb-2">{t('todayActions.allCaughtUp')}</p>
-            <p className="text-sm text-gray-500">{t('todayActions.checkBackLater')}</p>
+            <p className="text-gray-600 mb-2">You're all caught up!</p>
+            <p className="text-sm text-gray-500">Check back later for new recommendations.</p>
           </div>
         </CardContent>
       </Card>
@@ -167,9 +165,9 @@ export const TodayActionItems = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Target className="h-5 w-5 text-green-600" />
-          {t('todayActions.title')}
+          Today's Action Items
         </CardTitle>
-        <CardDescription>{t('todayActions.description')}</CardDescription>
+        <CardDescription>Complete these actions to strengthen your relationships</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -194,12 +192,12 @@ export const TodayActionItems = () => {
               <p className="text-sm text-gray-600 mb-3">{action.description}</p>
               
               <div className="text-xs text-blue-600 mb-3">
-                {t('common.for')}: {action.relationshipName}
+                For: {action.relationshipName}
               </div>
 
               {action.suggestedActions?.how_to_execute && (
                 <div className="mb-3">
-                  <p className="text-xs font-medium text-gray-700 mb-1">{t('common.howToDoIt')}</p>
+                  <p className="text-xs font-medium text-gray-700 mb-1">How to do it:</p>
                   <p className="text-xs text-gray-600">{action.suggestedActions.how_to_execute}</p>
                 </div>
               )}
@@ -213,12 +211,12 @@ export const TodayActionItems = () => {
                 {completingId === action.id ? (
                   <>
                     <div className="animate-spin h-4 w-4 mr-2">⏳</div>
-                    {t('common.completing')}...
+                    Completing...
                   </>
                 ) : (
                   <>
                     <CheckCircle className="h-4 w-4 mr-2" />
-                    {t('common.markDone')}
+                    Mark as Done
                   </>
                 )}
               </Button>
