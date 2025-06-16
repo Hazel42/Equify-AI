@@ -27,9 +27,9 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    console.log(`🤖 Starting AI analysis for relationship ${relationshipId} in ${language}`)
+    console.log(`🤖 Starting AI analysis for relationship ${relationshipId}`)
 
-    // Get relationship details
+    // Get relationship details with better error handling
     const { data: relationship, error: relError } = await supabaseClient
       .from('relationships')
       .select('*')
@@ -38,7 +38,8 @@ serve(async (req) => {
       .single()
 
     if (relError || !relationship) {
-      throw new Error(`Relationship not found: ${relError?.message}`)
+      console.error('Relationship fetch error:', relError)
+      throw new Error(`Relationship not found: ${relError?.message || 'Unknown error'}`)
     }
 
     // Get recent favors for this relationship
@@ -66,73 +67,49 @@ serve(async (req) => {
     const receivedCount = recentFavors.filter(f => f.direction === 'received').length
     const balance = givenCount - receivedCount
 
-    // Determine language for AI prompt
-    const isIndonesian = language === 'id'
-    const systemPrompt = isIndonesian ? 
-      `Anda adalah AI ahli hubungan yang membantu pengguna membangun koneksi yang seimbang dan bermakna. Berikan rekomendasi dalam Bahasa Indonesia yang natural dan mudah dipahami.` :
-      `You are a relationship expert AI that helps users build balanced, meaningful connections. Provide recommendations in natural, easy-to-understand English.`
+    // Enhanced system prompt for better AI responses
+    const systemPrompt = `You are an expert relationship advisor AI that helps users build balanced, meaningful connections. 
+    Analyze the relationship data provided and give specific, actionable recommendations to strengthen this relationship.
+    Focus on practical actions that consider the current balance and relationship dynamics.
+    Always provide recommendations in clear, easy-to-understand English.`
 
-    const userPrompt = isIndonesian ?
-      `Analisis hubungan ini dan berikan rekomendasi:
+    const userPrompt = `Analyze this relationship and provide recommendations:
 
-Nama: ${relationship.name}
-Jenis Hubungan: ${relationship.relationship_type}
-Tingkat Kepentingan: ${relationship.importance_level}/5
-Favor yang Diberikan: ${givenCount}
-Favor yang Diterima: ${receivedCount}
-Keseimbangan: ${balance > 0 ? `+${balance} (lebih banyak memberi)` : balance < 0 ? `${balance} (lebih banyak menerima)` : 'seimbang'}
+Relationship Details:
+- Name: ${relationship.name}
+- Type: ${relationship.relationship_type}
+- Importance Level: ${relationship.importance_level}/5
+- Favors Given: ${givenCount}
+- Favors Received: ${receivedCount}
+- Balance: ${balance > 0 ? `+${balance} (giving more)` : balance < 0 ? `${balance} (receiving more)` : 'balanced'}
 
-Favor Terbaru:
-${recentFavors.slice(0, 5).map(f => `- ${f.direction === 'given' ? 'Memberi' : 'Menerima'}: ${f.description} (${f.category})`).join('\n')}
-
-${context ? `Konteks Tambahan: ${context}` : ''}
-
-Berikan 1-3 rekomendasi spesifik dan dapat ditindaklanjuti untuk memperkuat hubungan ini. Format respons sebagai JSON:
-{
-  "recommendations": [
-    {
-      "title": "Judul rekomendasi",
-      "description": "Deskripsi detail dalam bahasa Indonesia",
-      "priority": "high|medium|low",
-      "category": "communication|favor|emotional_support|quality_time",
-      "estimated_time_minutes": number,
-      "reasoning": "Alasan mengapa rekomendasi ini penting",
-      "suggested_actions": ["Aksi 1", "Aksi 2"],
-      "due_date": "YYYY-MM-DD"
-    }
-  ]
-}` :
-      `Analyze this relationship and provide recommendations:
-
-Name: ${relationship.name}
-Relationship Type: ${relationship.relationship_type}
-Importance Level: ${relationship.importance_level}/5
-Favors Given: ${givenCount}
-Favors Received: ${receivedCount}
-Balance: ${balance > 0 ? `+${balance} (giving more)` : balance < 0 ? `${balance} (receiving more)` : 'balanced'}
-
-Recent Favors:
-${recentFavors.slice(0, 5).map(f => `- ${f.direction === 'given' ? 'Gave' : 'Received'}: ${f.description} (${f.category})`).join('\n')}
+Recent Favors (Last 5):
+${recentFavors.slice(0, 5).map(f => `- ${f.direction === 'given' ? 'Gave' : 'Received'}: ${f.description} (${f.category})`).join('\n') || 'No recent favors recorded'}
 
 ${context ? `Additional Context: ${context}` : ''}
 
-Provide 1-3 specific, actionable recommendations to strengthen this relationship. Format response as JSON:
+User Profile:
+- Personality Type: ${profile?.personality_type || 'Not set'}
+
+Please provide 2-3 specific, actionable recommendations to strengthen this relationship. Consider the current balance and suggest ways to improve connection quality.
+
+Format your response as JSON:
 {
   "recommendations": [
     {
-      "title": "Recommendation title",
-      "description": "Detailed description in English",
+      "title": "Clear, specific recommendation title",
+      "description": "Detailed explanation of what to do and why",
       "priority": "high|medium|low",
-      "category": "communication|favor|emotional_support|quality_time",
-      "estimated_time_minutes": number,
-      "reasoning": "Why this recommendation is important",
-      "suggested_actions": ["Action 1", "Action 2"],
-      "due_date": "YYYY-MM-DD"
+      "category": "communication|favor|emotional_support|quality_time|appreciation",
+      "estimated_time_minutes": 15,
+      "reasoning": "Why this recommendation is important for this relationship",
+      "suggested_actions": ["Specific action 1", "Specific action 2"],
+      "due_date": "2024-01-15"
     }
   ]
 }`
 
-    // Call AI service
+    // Call DeepSeek AI service with improved error handling
     const aiResponse = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: {
@@ -151,53 +128,85 @@ Provide 1-3 specific, actionable recommendations to strengthen this relationship
     })
 
     if (!aiResponse.ok) {
-      throw new Error(`AI API error: ${aiResponse.status} ${aiResponse.statusText}`)
+      const errorText = await aiResponse.text()
+      console.error('AI API error:', aiResponse.status, errorText)
+      throw new Error(`AI API error: ${aiResponse.status} - ${errorText}`)
     }
 
     const aiResult = await aiResponse.json()
     const aiContent = aiResult.choices[0]?.message?.content
 
     if (!aiContent) {
+      console.error('No content received from AI:', aiResult)
       throw new Error('No content received from AI')
     }
 
-    // Parse AI response
+    console.log('AI Response:', aiContent)
+
+    // Parse AI response with better error handling
     let recommendations
     try {
-      const parsed = JSON.parse(aiContent)
+      // Try to extract JSON from the response
+      const jsonMatch = aiContent.match(/\{[\s\S]*\}/)
+      const jsonStr = jsonMatch ? jsonMatch[0] : aiContent
+      const parsed = JSON.parse(jsonStr)
       recommendations = parsed.recommendations
+      
+      if (!Array.isArray(recommendations)) {
+        throw new Error('Recommendations should be an array')
+      }
     } catch (parseError) {
-      console.error('Failed to parse AI response:', aiContent)
-      throw new Error('Failed to parse AI recommendations')
+      console.error('Failed to parse AI response:', aiContent, parseError)
+      
+      // Fallback recommendations if AI parsing fails
+      recommendations = [{
+        title: "Schedule a check-in",
+        description: "Reach out to reconnect and see how they're doing",
+        priority: "medium",
+        category: "communication",
+        estimated_time_minutes: 30,
+        reasoning: "Regular communication helps maintain strong relationships",
+        suggested_actions: ["Send a message asking how they are", "Suggest meeting for coffee"],
+        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      }]
     }
 
-    // Save recommendations to database
+    // Save recommendations to database with better error handling
     const savedRecommendations = []
     for (const rec of recommendations) {
-      const { data: savedRec, error: saveError } = await supabaseClient
-        .from('ai_recommendations')
-        .insert({
-          user_id: userId,
-          relationship_id: relationshipId,
-          title: rec.title,
-          description: rec.description,
-          priority: rec.priority,
-          category: rec.category,
-          estimated_time_minutes: rec.estimated_time_minutes,
-          reasoning: rec.reasoning,
-          suggested_actions: rec.suggested_actions,
-          due_date: rec.due_date,
-          status: 'pending',
-          ai_model: 'deepseek-chat',
-          context: context || null,
-        })
-        .select()
-        .single()
+      try {
+        // Calculate due date (7 days from now if not provided)
+        const dueDate = rec.due_date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        
+        const { data: savedRec, error: saveError } = await supabaseClient
+          .from('recommendations')
+          .insert({
+            user_id: userId,
+            relationship_id: relationshipId,
+            title: rec.title || 'Relationship Recommendation',
+            description: rec.description || 'AI-generated recommendation',
+            priority_level: rec.priority === 'high' ? 4 : rec.priority === 'medium' ? 3 : 2,
+            recommendation_type: 'ai_generated',
+            suggested_actions: {
+              category: rec.category || 'communication',
+              effort_level: `${rec.estimated_time_minutes || 30} minutes`,
+              how_to_execute: rec.suggested_actions || ['Follow the recommendation'],
+              why_appropriate: rec.reasoning || 'AI analysis suggests this action',
+              expected_impact: 'Improved relationship quality'
+            },
+            due_date: dueDate,
+            completed: false,
+          })
+          .select()
+          .single()
 
-      if (saveError) {
-        console.error('Error saving recommendation:', saveError)
-      } else {
-        savedRecommendations.push(savedRec)
+        if (saveError) {
+          console.error('Error saving recommendation:', saveError)
+        } else {
+          savedRecommendations.push(savedRec)
+        }
+      } catch (error) {
+        console.error('Error processing recommendation:', error)
       }
     }
 
@@ -208,7 +217,7 @@ Provide 1-3 specific, actionable recommendations to strengthen this relationship
         success: true,
         recommendations: savedRecommendations,
         relationship: relationship.name,
-        language: language
+        count: savedRecommendations.length
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
@@ -218,7 +227,8 @@ Provide 1-3 specific, actionable recommendations to strengthen this relationship
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message
+        error: error.message,
+        details: 'Check the function logs for more details'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

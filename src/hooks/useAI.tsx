@@ -10,22 +10,47 @@ export const useAI = () => {
   const generateRecommendations = async (userId: string, relationshipId: string, context?: string) => {
     setLoading(true);
     try {
+      console.log('🤖 Starting AI recommendation generation...');
+      
       const { data, error } = await supabase.functions.invoke('generate-recommendations', {
-        body: { userId, relationshipId, context, language: 'en' }
+        body: { 
+          userId, 
+          relationshipId, 
+          context: context || 'User requested AI analysis',
+          language: 'en' 
+        }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw new Error(error.message || 'Failed to generate recommendations');
+      }
+
+      if (!data) {
+        throw new Error('No data returned from AI service');
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || 'AI recommendation generation failed');
+      }
+
+      console.log('✅ AI recommendations generated successfully:', data);
       
-      // Toast notifications will be handled by the component that calls this.
-      // This makes the hook more reusable.
+      toast({
+        title: "AI Analysis Complete! 🤖",
+        description: `Generated ${data.count || 0} recommendations for ${data.relationship || 'your relationship'}.`,
+      });
       
       return data;
     } catch (error: any) {
+      console.error('❌ AI generation failed:', error);
+      
       toast({
-        title: "Recommendation Failed",
-        description: error.message,
+        title: "AI Analysis Failed",
+        description: error.message || "There was an error generating recommendations. Please try again.",
         variant: "destructive",
       });
+      
       throw error;
     } finally {
       setLoading(false);
