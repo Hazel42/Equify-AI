@@ -69,7 +69,7 @@ export const id = {
     missingInfoDesc: 'Harap isi semua field yang diperlukan.',
     errorSavingRelationship: 'Gagal menyimpan hubungan. Silakan coba lagi.',
     relationshipAdded: 'Hubungan Ditambahkan',
-    relationshipAddedDesc: 'Hubungan baru Anda telah ditambahkannya.',
+    relationshipAddedDesc: 'Hubungan baru Anda telah ditambahkan.',
     aiAutoAnalysisError: 'Analisis AI otomatis gagal.',
     aiAutoAnalysisSuccess: 'Analisis AI berhasil diselesaikan.',
     aiAutoAnalysisSuccessDesc: 'Wawasan dan rekomendasi baru telah dibuat.',
