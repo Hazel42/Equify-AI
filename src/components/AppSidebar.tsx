@@ -18,7 +18,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AppSidebarProps {
   activeTab: string;
@@ -26,22 +25,22 @@ interface AppSidebarProps {
 }
 
 // Menu items organized by categories
-const getMenuItems = (t: any) => [
+const getMenuItems = () => [
   {
-    group: t('navigation.main'),
+    group: 'Main',
     items: [
       {
-        title: t('navigation.dashboard'),
+        title: 'Dashboard',
         icon: Home,
         value: "dashboard",
       },
       {
-        title: t('navigation.relationships'),
+        title: 'Relationships',
         icon: Users,
         value: "relationships",
       },
       {
-        title: t('navigation.recommendations'),
+        title: 'AI Recommendations',
         icon: Brain,
         value: "recommendations",
       },
@@ -50,8 +49,7 @@ const getMenuItems = (t: any) => [
 ];
 
 export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
-  const { t } = useLanguage();
-  const menuItems = getMenuItems(t);
+  const menuItems = getMenuItems();
 
   return (
     <Sidebar>
@@ -59,8 +57,8 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
         <div className="flex items-center gap-3 p-4">
           <Heart className="h-8 w-8 text-green-600" />
           <div>
-            <h1 className="text-xl font-bold text-gray-900">{t('header.title')}</h1>
-            <p className="text-sm text-green-600">{t('header.subtitle')}</p>
+            <h1 className="text-xl font-bold text-gray-900">Reciprocity AI</h1>
+            <p className="text-sm text-green-600">Relationship Insights</p>
           </div>
         </div>
       </SidebarHeader>
@@ -91,7 +89,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
       
       <SidebarFooter className="border-t border-green-100">
         <div className="p-4 text-xs text-gray-500">
-          {t('footer.version')} 1.0.0
+          Version 1.0.0
         </div>
       </SidebarFooter>
     </Sidebar>

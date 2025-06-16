@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRelationships } from "@/hooks/useRelationships";
 import { useToast } from "@/hooks/use-toast";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useAutoAI } from "@/hooks/useAutoAI";
 import { Brain } from "lucide-react";
@@ -29,7 +28,6 @@ export const AddRelationshipDialog = ({ open, onOpenChange, onSave }: AddRelatio
 
   const { addRelationship } = useRelationships();
   const { toast } = useToast();
-  const { t } = useLanguage();
   const { user } = useAuth();
   
   const [newRelationshipId, setNewRelationshipId] = useState<string | null>(null);
@@ -45,25 +43,24 @@ export const AddRelationshipDialog = ({ open, onOpenChange, onSave }: AddRelatio
       if (success) {
         window.dispatchEvent(new CustomEvent("ai-recommendation-updated"));
         toast({
-          title: t('toast.aiAnalysisComplete'),
-          description: t('toast.aiAnalysisCompleteDesc'),
+          title: 'AI Analysis Complete',
+          description: 'Generated insights for your new relationship.',
         });
       } else {
         toast({
-          title: t('common.error'),
-          description: t('toast.aiAutoAnalysisError'),
+          title: 'Error',
+          description: 'AI analysis failed. You can try again later.',
           variant: "destructive",
         });
       }
     }
   });
 
-
   const handleSave = async () => {
     if (!relationshipData.name || !relationshipData.relationship_type) {
       toast({
-        title: t('toast.missingInfo'),
-        description: t('toast.missingInfoDesc'),
+        title: 'Missing Information',
+        description: 'Please fill in the name and relationship type.',
         variant: "destructive",
       });
       return;
@@ -85,8 +82,8 @@ export const AddRelationshipDialog = ({ open, onOpenChange, onSave }: AddRelatio
     } catch (error) {
       console.error('Error saving relationship:', error);
       toast({
-        title: t('common.error'),
-        description: t('toast.errorSavingRelationship'),
+        title: 'Error',
+        description: 'Failed to save relationship. Please try again.',
         variant: "destructive",
       });
     }
@@ -96,41 +93,41 @@ export const AddRelationshipDialog = ({ open, onOpenChange, onSave }: AddRelatio
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t('addRelationship.title')}</DialogTitle>
+          <DialogTitle>Add New Relationship</DialogTitle>
           <DialogDescription>
-            {t('addRelationship.description')}
+            Add someone important to your life and start tracking your interactions.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <Label htmlFor="name">{t('addRelationship.nameLabel')}</Label>
+            <Label htmlFor="name">Name</Label>
             <Input
               id="name"
-              placeholder={t('addRelationship.namePlaceholder')}
+              placeholder="Enter their name"
               value={relationshipData.name}
               onChange={(e) => setRelationshipData({...relationshipData, name: e.target.value})}
             />
           </div>
 
           <div>
-            <Label htmlFor="type">{t('addRelationship.typeLabel')}</Label>
+            <Label htmlFor="type">Relationship Type</Label>
             <Select onValueChange={(value) => setRelationshipData({...relationshipData, relationship_type: value})}>
               <SelectTrigger>
-                <SelectValue placeholder={t('addRelationship.typePlaceholder')} />
+                <SelectValue placeholder="Select relationship type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="family">{t('addRelationship.relationshipTypes.family')}</SelectItem>
-                <SelectItem value="friend">{t('addRelationship.relationshipTypes.friend')}</SelectItem>
-                <SelectItem value="colleague">{t('addRelationship.relationshipTypes.colleague')}</SelectItem>
-                <SelectItem value="neighbor">{t('addRelationship.relationshipTypes.neighbor')}</SelectItem>
-                <SelectItem value="mentor">{t('addRelationship.relationshipTypes.mentor')}</SelectItem>
-                <SelectItem value="other">{t('addRelationship.relationshipTypes.other')}</SelectItem>
+                <SelectItem value="family">Family</SelectItem>
+                <SelectItem value="friend">Friend</SelectItem>
+                <SelectItem value="colleague">Colleague</SelectItem>
+                <SelectItem value="neighbor">Neighbor</SelectItem>
+                <SelectItem value="mentor">Mentor</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div>
-            <Label>{t('addRelationship.importanceLabel', { level: relationshipData.importance_level })}</Label>
+            <Label>Importance Level: {relationshipData.importance_level}/5</Label>
             <div className="flex gap-1 mt-2">
               {[1, 2, 3, 4, 5].map((level) => (
                 <button
@@ -154,14 +151,14 @@ export const AddRelationshipDialog = ({ open, onOpenChange, onSave }: AddRelatio
               className="flex-1 bg-green-600 hover:bg-green-700"
               disabled={!relationshipData.name || !relationshipData.relationship_type || addRelationship.isPending || aiLoading}
             >
-              {addRelationship.isPending ? t('common.saving') : 
+              {addRelationship.isPending ? 'Saving...' : 
                aiLoading ? (
                   <div className="flex items-center gap-2">
                       <Brain className="h-4 w-4 animate-pulse" />
-                      {t('dashboard.analyzing')}
+                      Analyzing...
                   </div>
                ) :
-               t('addRelationship.saveButton')}
+               'Save Relationship'}
             </Button>
             <Button 
               variant="outline" 
@@ -169,7 +166,7 @@ export const AddRelationshipDialog = ({ open, onOpenChange, onSave }: AddRelatio
               className="flex-1"
               disabled={addRelationship.isPending || aiLoading}
             >
-              {t('common.cancel')}
+              Cancel
             </Button>
           </div>
         </div>

@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,6 @@ import { useFavors } from "@/hooks/useFavors";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useAI } from "@/hooks/useAI";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { QuickSetupGuide } from "@/components/QuickSetupGuide";
 import { AddRelationshipDialog } from "@/components/AddRelationshipDialog";
@@ -30,7 +28,6 @@ export const EnhancedDashboard = () => {
   const { profile } = useProfile();
   const { user } = useAuth();
   const { generateRecommendations, loading: aiLoading } = useAI();
-  const { t } = useLanguage();
   const { toast } = useToast();
   const [relationshipForAI, setRelationshipForAI] = useState<string | undefined>();
 
@@ -77,23 +74,23 @@ export const EnhancedDashboard = () => {
 
   const personalityInsights = {
     'giving': {
-      title: t('dashboard.personality.giver'),
-      tip: t('dashboard.personality.giverTip'),
+      title: 'Giver',
+      tip: 'You tend to give more than you receive',
       color: 'green'
     },
     'balanced': {
-      title: t('dashboard.personality.balanced'),
-      tip: t('dashboard.personality.balancedTip'),
+      title: 'Balanced',
+      tip: 'You maintain good reciprocity',
       color: 'blue'
     },
     'receiver': {
-      title: t('dashboard.personality.receiver'),
-      tip: t('dashboard.personality.receiverTip'),
+      title: 'Receiver',
+      tip: 'You tend to receive more than you give',
       color: 'orange'
     },
     'analyzer': {
-      title: t('dashboard.personality.analyzer'),
-      tip: t('dashboard.personality.analyzerTip'),
+      title: 'Analyzer',
+      tip: 'You think deeply about relationships',
       color: 'purple'
     }
   };
@@ -140,7 +137,7 @@ export const EnhancedDashboard = () => {
           <div className="h-8 w-8 text-green-600 mx-auto mb-4 animate-spin">
             <TrendingUp className="h-full w-full" />
           </div>
-          <p className="text-gray-600">{t('common.loading')}</p>
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     );
@@ -173,8 +170,8 @@ export const EnhancedDashboard = () => {
                       setRelationshipForAI(newId);
                   }
                   toast({
-                    title: t('toast.relationshipAdded'),
-                    description: t('toast.relationshipAddedDesc'),
+                    title: 'Relationship Added',
+                    description: 'Your new relationship has been saved successfully.',
                   });
               }
             });
@@ -217,8 +214,8 @@ export const EnhancedDashboard = () => {
               <div className="flex items-center gap-3">
                 <Brain className="h-8 w-8 text-blue-600" />
                 <div>
-                  <h3 className="font-semibold text-gray-900">{t('dashboard.aiPoweredInsights')}</h3>
-                  <p className="text-sm text-gray-600">{t('dashboard.getPersonalizedRecommendations')}</p>
+                  <h3 className="font-semibold text-gray-900">AI-Powered Insights</h3>
+                  <p className="text-sm text-gray-600">Get personalized recommendations for your relationships</p>
                 </div>
               </div>
               <Button 
@@ -229,12 +226,12 @@ export const EnhancedDashboard = () => {
                 {aiLoading ? (
                   <>
                     <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    {t('dashboard.analyzing')}
+                    Analyzing...
                   </>
                 ) : (
                   <>
                     <Sparkles className="h-4 w-4 mr-2" />
-                    {t('dashboard.generateInsights')}
+                    Generate Insights
                   </>
                 )}
               </Button>
@@ -248,10 +245,10 @@ export const EnhancedDashboard = () => {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              {t('dashboard.greeting', { name: profile?.full_name?.split(' ')[0] })}
+              Hello, {profile?.full_name?.split(' ')[0] || 'there'}!
             </h2>
             <p className="text-gray-600 mb-4">
-              {t('dashboard.overview')}
+              Here's an overview of your relationship dynamics
             </p>
             <div className="flex items-center gap-2">
               <Badge className={`bg-${currentPersonality.color}-100 text-${currentPersonality.color}-700`}>
@@ -262,7 +259,7 @@ export const EnhancedDashboard = () => {
           </div>
           <div className="text-right">
             <div className="text-3xl font-bold text-green-600">{averageBalance.toFixed(1)}/10</div>
-            <p className="text-sm text-gray-500">{t('dashboard.overallBalance')}</p>
+            <p className="text-sm text-gray-500">Overall Balance</p>
           </div>
         </div>
       </div>
@@ -273,14 +270,14 @@ export const EnhancedDashboard = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-green-600">{t('dashboard.totalRelationships')}</p>
+                <p className="text-sm font-medium text-green-600">Total Relationships</p>
                 <p className="text-2xl font-bold text-green-900">{totalRelationships}</p>
               </div>
               <Users className="h-8 w-8 text-green-600" />
             </div>
             <div className="mt-4">
               <Progress value={Math.min(totalRelationships * 10, 100)} className="h-2" />
-              <p className="text-xs text-green-600 mt-1">{t('dashboard.growingNetwork')}</p>
+              <p className="text-xs text-green-600 mt-1">Growing your network</p>
             </div>
           </CardContent>
         </Card>
@@ -289,7 +286,7 @@ export const EnhancedDashboard = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-blue-600">{t('dashboard.thisMonth')}</p>
+                <p className="text-sm font-medium text-blue-600">This Month</p>
                 <p className="text-2xl font-bold text-blue-900">{thisMonthFavors}</p>
               </div>
               <Calendar className="h-8 w-8 text-blue-600" />
@@ -297,7 +294,7 @@ export const EnhancedDashboard = () => {
             <div className="mt-4">
               <Badge className="bg-blue-100 text-blue-700">
                 <TrendingUp className="h-3 w-3 mr-1" />
-                {t('dashboard.vsLastMonth')}
+                vs last month
               </Badge>
             </div>
           </CardContent>
@@ -307,7 +304,7 @@ export const EnhancedDashboard = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-purple-600">{t('dashboard.healthyRelations')}</p>
+                <p className="text-sm font-medium text-purple-600">Healthy Relations</p>
                 <p className="text-2xl font-bold text-purple-900">{healthyRelationships}</p>
               </div>
               <Heart className="h-8 w-8 text-purple-600" />
@@ -326,14 +323,14 @@ export const EnhancedDashboard = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-orange-600">{t('dashboard.aiInsights')}</p>
+                <p className="text-sm font-medium text-orange-600">AI Insights</p>
                 <p className="text-2xl font-bold text-orange-900">3</p>
               </div>
               <Brain className="h-8 w-8 text-orange-600" />
             </div>
             <div className="mt-4">
               <Button size="sm" variant="outline" className="text-orange-600 border-orange-300">
-                {t('dashboard.viewAll')} <ArrowRight className="h-3 w-3 ml-1" />
+                View All <ArrowRight className="h-3 w-3 ml-1" />
               </Button>
             </div>
           </CardContent>
@@ -344,8 +341,8 @@ export const EnhancedDashboard = () => {
         {/* Weekly Activity Trend */}
         <Card>
           <CardHeader>
-            <CardTitle>{t('dashboard.weeklyActivity')}</CardTitle>
-            <CardDescription>{t('dashboard.weeklyActivityDesc')}</CardDescription>
+            <CardTitle>Weekly Activity</CardTitle>
+            <CardDescription>Your giving and receiving patterns this week</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -364,8 +361,8 @@ export const EnhancedDashboard = () => {
         {/* Balance Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle>{t('dashboard.relationshipHealth')}</CardTitle>
-            <CardDescription>{t('dashboard.relationshipHealthDesc')}</CardDescription>
+            <CardTitle>Relationship Health</CardTitle>
+            <CardDescription>Distribution of relationship balance scores</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -406,8 +403,8 @@ export const EnhancedDashboard = () => {
                       setRelationshipForAI(newId);
                   }
                   toast({
-                    title: t('toast.relationshipAdded'),
-                    description: t('toast.relationshipAddedDesc'),
+                    title: 'Relationship Added',
+                    description: 'Your new relationship has been saved successfully.',
                   });
               }
           });
