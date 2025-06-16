@@ -2,7 +2,6 @@
 import { useEffect } from "react";
 import { useAI } from "./useAI";
 import { useToast } from "@/hooks/use-toast";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 interface UseAutoAIProps {
   userId: string;
@@ -18,7 +17,6 @@ export const useAutoAI = ({
   onComplete,
 }: UseAutoAIProps) => {
   const { generateRecommendations, loading } = useAI();
-  const { t } = useLanguage();
 
   useEffect(() => {
     const runAutoAnalysis = async () => {
@@ -41,7 +39,7 @@ export const useAutoAI = ({
 
     const timeoutId = setTimeout(runAutoAnalysis, 1000);
     return () => clearTimeout(timeoutId);
-  }, [triggerAnalysis, relationshipId, userId, generateRecommendations, onComplete, t]);
+  }, [triggerAnalysis, relationshipId, userId, generateRecommendations, onComplete]);
 
   return { loading };
 };

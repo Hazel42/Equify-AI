@@ -8,12 +8,10 @@ import { AddFavorDialog } from "@/components/AddFavorDialog";
 import { OnboardingFlow } from "@/components/OnboardingFlow";
 import { AppSidebar } from "@/components/AppSidebar";
 import { MainNavigation } from "@/components/MainNavigation";
-import { LanguageSelector } from "@/components/LanguageSelector";
 import { NotificationSystem } from "@/components/NotificationSystem";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { useAIRealtimeUpdates } from "@/hooks/useAIRealtimeUpdates";
 
 const Index = () => {
@@ -21,7 +19,6 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const { user, loading: authLoading, signOut, isAuthenticated } = useAuth();
   const { profile, loading: profileLoading } = useProfile();
-  const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -42,8 +39,8 @@ const Index = () => {
 
   const handleAddFavor = (favorData: any) => {
     toast({
-      title: t('toast.favorAdded'),
-      description: t('toast.favorAddedDesc').replace('{description}', favorData.description),
+      title: 'Favor Added Successfully',
+      description: `Added "${favorData.description}" to your relationship tracking.`,
     });
     setShowAddFavor(false);
   };
@@ -52,14 +49,14 @@ const Index = () => {
     try {
       await signOut();
       toast({
-        title: t('toast.signedOut'),
-        description: t('toast.signedOutDesc'),
+        title: 'Signed out successfully',
+        description: "You've been signed out of your account.",
       });
       navigate("/auth");
     } catch (error) {
       toast({
-        title: t('toast.signOutError'),
-        description: t('toast.signOutErrorDesc'),
+        title: 'Error signing out',
+        description: 'There was a problem signing out. Please try again.',
         variant: "destructive",
       });
     }
@@ -73,7 +70,7 @@ const Index = () => {
           <div className="h-12 w-12 text-green-600 mx-auto mb-4 animate-pulse">
             <User className="h-full w-full" />
           </div>
-          <p className="text-lg text-gray-600">{t('common.loading')}</p>
+          <p className="text-lg text-gray-600">Loading...</p>
         </div>
       </div>
     );
@@ -87,13 +84,13 @@ const Index = () => {
   const getHeaderTitle = () => {
     switch (activeTab) {
       case 'dashboard':
-        return t('navigation.dashboard');
+        return 'Dashboard';
       case 'relationships':
-        return t('navigation.relationships');
+        return 'Relationships';
       case 'recommendations':
-        return t('navigation.recommendations');
+        return 'AI Recommendations';
       default:
-        return t('navigation.dashboard');
+        return 'Dashboard';
     }
   };
 
@@ -119,7 +116,6 @@ const Index = () => {
                   <Plus className="h-4 w-4" />
                 </Button>
                 <NotificationSystem />
-                <LanguageSelector />
               </div>
             </div>
           </header>
@@ -140,7 +136,7 @@ const Index = () => {
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  {t('header.addFavor')}
+                  Add Favor
                 </Button>
                 
                 <div className="flex items-center gap-2">
@@ -154,7 +150,6 @@ const Index = () => {
                 </div>
                 
                 <NotificationSystem />
-                <LanguageSelector />
                 
                 <Button 
                   onClick={handleSignOut}
@@ -162,7 +157,7 @@ const Index = () => {
                   size="sm"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
-                  {t('header.signOut')}
+                  Sign Out
                 </Button>
               </div>
             </div>

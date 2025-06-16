@@ -9,7 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useAI } from "@/hooks/useAI";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { RecommendationCard } from "@/components/RecommendationCard";
 import { RecommendationFilters } from "@/components/RecommendationFilters";
 
@@ -29,7 +28,6 @@ export const SmartRecommendationEngine = () => {
   const { user } = useAuth();
   const { relationships } = useRelationships();
   const { toast } = useToast();
-  const { t } = useLanguage();
   const { generateRecommendations, loading: aiLoading } = useAI();
   const queryClient = useQueryClient();
 
@@ -89,16 +87,16 @@ export const SmartRecommendationEngine = () => {
   const handleGenerateAllRecommendations = async () => {
     if (!user || relationships.length === 0) {
       toast({
-        title: t('recommendations.analysisError'),
-        description: t('recommendations.analysisErrorDesc'),
+        title: 'Cannot Generate Recommendations',
+        description: 'Please add at least one relationship first.',
         variant: "destructive"
       });
       return;
     }
 
     toast({
-      title: t('recommendations.analysisStart'),
-      description: t('recommendations.analysisStartDesc', { count: relationships.length }),
+      title: 'Starting AI Analysis',
+      description: `Generating recommendations for ${relationships.length} relationships. This may take a moment.`,
     });
 
     let successCount = 0;
@@ -109,8 +107,8 @@ export const SmartRecommendationEngine = () => {
       } catch (error) {
         console.error(`Failed to generate recommendations for ${rel.name}`, error);
         toast({
-            title: t('recommendations.analysisFailed', { name: rel.name }),
-            description: t('recommendations.analysisFailedDesc'),
+            title: `AI Failed for ${rel.name}`,
+            description: 'There was an error generating recommendations for this relationship.',
             variant: "destructive",
         });
       }
@@ -118,14 +116,14 @@ export const SmartRecommendationEngine = () => {
 
     if (successCount > 0) {
         toast({
-          title: t('recommendations.analysisComplete'),
-          description: t('recommendations.analysisCompleteDesc', { successCount: successCount, total: relationships.length }),
+          title: 'AI Analysis Complete',
+          description: `Finished generating recommendations. ${successCount} out of ${relationships.length} succeeded. Refreshing list...`,
         });
         refetchAIRecommendations();
     } else {
         toast({
-            title: t('recommendations.analysisFailedAll'),
-            description: t('recommendations.analysisFailedAllDesc'),
+            title: 'AI Analysis Failed',
+            description: 'Could not generate recommendations for any relationship.',
             variant: "destructive",
         });
     }
@@ -144,11 +142,11 @@ export const SmartRecommendationEngine = () => {
         .eq('id', dbId);
 
     if (error) {
-        toast({ title: t('common.error'), description: t('toast.errorAcceptingRecommendation'), variant: "destructive" });
+        toast({ title: 'Error', description: 'Failed to accept recommendation. Please try again.', variant: "destructive" });
     } else {
         toast({
-          title: t('recommendations.accepted'),
-          description: t('recommendations.acceptedDesc'),
+          title: 'Recommendation Accepted',
+          description: "This action has been added to your Today's Action Items.",
         });
         refetchAIRecommendations();
         queryClient.invalidateQueries({ queryKey: ['today-actions'] });
@@ -164,11 +162,11 @@ export const SmartRecommendationEngine = () => {
         .eq('id', dbId);
 
     if (error) {
-        toast({ title: "Error", description: t('toast.errorCompletingRecommendation'), variant: "destructive" });
+        toast({ title: "Error", description: 'Failed to complete recommendation. Please try again.', variant: "destructive" });
     } else {
         toast({
-          title: t('recommendations.dismissed'),
-          description: t('recommendations.dismissedDesc'),
+          title: 'Recommendation Dismissed',
+          description: "We'll generate new recommendations based on your preferences.",
         });
         refetchAIRecommendations();
     }
@@ -181,11 +179,11 @@ export const SmartRecommendationEngine = () => {
   });
 
   const filterTypes = useMemo(() => [
-    { key: 'all', label: t('recommendations.filterAll'), count: recommendations.length },
-    { key: 'ai', label: t('recommendations.filterAi'), count: recommendations.filter(r => r.isAIGenerated).length },
-    { key: 'communication', label: t('recommendations.filterCommunication'), count: recommendations.filter(r => r.type === 'communication').length },
-    { key: 'favor', label: t('recommendations.filterFavor'), count: recommendations.filter(r => r.type === 'favor').length },
-  ], [recommendations, t]);
+    { key: 'all', label: 'All', count: recommendations.length },
+    { key: 'ai', label: 'AI Generated', count: recommendations.filter(r => r.isAIGenerated).length },
+    { key: 'communication', label: 'Communication', count: recommendations.filter(r => r.type === 'communication').length },
+    { key: 'favor', label: 'Favor', count: recommendations.filter(r => r.type === 'favor').length },
+  ], [recommendations]);
 
   return (
     <div className="space-y-6">
@@ -193,13 +191,13 @@ export const SmartRecommendationEngine = () => {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
             <Brain className="h-6 w-6 text-blue-600" />
-            {t('recommendations.title')}
+            Smart Recommendations
           </h2>
-          <p className="text-gray-600">{t('recommendations.description')}</p>
+          <p className="text-gray-600">AI-powered suggestions to strengthen your relationships</p>
         </div>
         <Button onClick={handleGenerateAllRecommendations} disabled={aiLoading} className="bg-blue-600 hover:bg-blue-700">
             <RefreshCw className={`h-4 w-4 mr-2 ${aiLoading ? 'animate-spin' : ''}`} />
-            {aiLoading ? t('recommendations.analyzingButton') : t('recommendations.analyzeButton')}
+            {aiLoading ? 'Analyzing...' : 'Analyze All Relationships'}
         </Button>
       </div>
 
@@ -215,8 +213,8 @@ export const SmartRecommendationEngine = () => {
             <CardContent className="pt-6">
               <div className="text-center text-gray-500 py-8">
                 <Brain className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p className="font-semibold">{t('recommendations.emptyTitle')}</p>
-                <p className="text-sm">{t('recommendations.emptyDescription')}</p>
+                <p className="font-semibold">No recommendations yet</p>
+                <p className="text-sm">Analyze your relationships to get personalized AI suggestions.</p>
               </div>
             </CardContent>
           </Card>
