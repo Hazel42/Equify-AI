@@ -9,7 +9,7 @@ import { useRelationships } from "@/hooks/useRelationships";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useAutoAI } from "@/hooks/useAutoAI";
-import { Brain } from "lucide-react";
+import { Brain, Star } from "lucide-react";
 
 interface AddRelationshipDialogProps {
   open: boolean;
@@ -91,16 +91,22 @@ export const AddRelationshipDialog = ({ open, onOpenChange, onSave }: AddRelatio
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Add New Relationship</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            Add New Relationship
+            {aiLoading && (
+              <Brain className="h-4 w-4 animate-pulse text-blue-600" />
+            )}
+          </DialogTitle>
           <DialogDescription>
             Add someone important to your life and start tracking your interactions.
           </DialogDescription>
         </DialogHeader>
+        
         <div className="space-y-4">
-          <div>
-            <Label htmlFor="name">Name</Label>
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-sm font-medium">Name *</Label>
             <Input
               id="name"
               placeholder="Enter their name"
@@ -109,8 +115,8 @@ export const AddRelationshipDialog = ({ open, onOpenChange, onSave }: AddRelatio
             />
           </div>
 
-          <div>
-            <Label htmlFor="type">Relationship Type</Label>
+          <div className="space-y-2">
+            <Label htmlFor="type" className="text-sm font-medium">Relationship Type *</Label>
             <Select onValueChange={(value) => setRelationshipData({...relationshipData, relationship_type: value})}>
               <SelectTrigger>
                 <SelectValue placeholder="Select relationship type" />
@@ -126,26 +132,35 @@ export const AddRelationshipDialog = ({ open, onOpenChange, onSave }: AddRelatio
             </Select>
           </div>
 
-          <div>
-            <Label>Importance Level: {relationshipData.importance_level}/5</Label>
-            <div className="flex gap-1 mt-2">
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Importance Level: {relationshipData.importance_level}/5</Label>
+            <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((level) => (
                 <button
                   key={level}
                   onClick={() => setRelationshipData({...relationshipData, importance_level: level})}
-                  className={`p-2 rounded ${
+                  className={`p-3 rounded-lg border transition-colors ${
                     relationshipData.importance_level >= level 
-                      ? 'bg-green-100 text-green-600' 
-                      : 'bg-gray-100 text-gray-400'
+                      ? 'bg-green-100 text-green-600 border-green-300' 
+                      : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100'
                   }`}
                 >
-                  ★
+                  <Star className="h-4 w-4" />
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="flex gap-3 pt-4">
+          {aiLoading && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="flex items-center gap-2 text-blue-700">
+                <Brain className="h-4 w-4 animate-pulse" />
+                <span className="text-sm font-medium">AI is analyzing this relationship...</span>
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <Button 
               onClick={handleSave}
               className="flex-1 bg-green-600 hover:bg-green-700"
