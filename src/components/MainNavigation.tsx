@@ -1,5 +1,5 @@
 
-import { Dashboard } from "@/components/EnhancedDashboard";
+import { EnhancedDashboard } from "@/components/EnhancedDashboard";
 import { RelationshipManager } from "@/components/RelationshipManager";
 import { SmartRecommendationEngine } from "@/components/SmartRecommendationEngine";
 import { PerformanceAnalytics } from "@/components/PerformanceAnalytics";
@@ -17,7 +17,7 @@ export const MainNavigation = ({ userId, activeTab }: MainNavigationProps) => {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard />;
+        return <EnhancedDashboard />;
       case 'relationships':
         return <RelationshipManager />;
       case 'recommendations':
@@ -33,7 +33,7 @@ export const MainNavigation = ({ userId, activeTab }: MainNavigationProps) => {
       case 'settings':
         return <SettingsPage />;
       default:
-        return <Dashboard />;
+        return <EnhancedDashboard />;
     }
   };
 

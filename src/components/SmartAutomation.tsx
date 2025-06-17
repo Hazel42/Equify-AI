@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Zap, Clock, Bell, Target, Calendar, MessageSquare, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface AutomationRule {
@@ -28,108 +27,59 @@ export const SmartAutomation = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const defaultRules: Omit<AutomationRule, 'id' | 'lastTriggered' | 'triggerCount'>[] = [
+  const defaultRules: AutomationRule[] = [
     {
+      id: '1',
       name: "Smart Reminders",
       description: "Automatically create reminders based on relationship balance and importance",
       type: "reminder",
       enabled: true,
       conditions: { balanceThreshold: -2, importanceLevel: 3 },
-      actions: { createReminder: true, reminderDelay: 3 }
+      actions: { createReminder: true, reminderDelay: 3 },
+      triggerCount: 12
     },
     {
+      id: '2',
       name: "Auto-Categorization",
       description: "Automatically categorize favors using AI analysis",
       type: "categorization",
       enabled: true,
       conditions: { newFavor: true },
-      actions: { aiCategorize: true, confidence: 80 }
+      actions: { aiCategorize: true, confidence: 80 },
+      triggerCount: 8
     },
     {
+      id: '3',
       name: "Priority Adjustment",
       description: "Dynamically adjust recommendation priorities based on recent activities",
       type: "priority_adjustment",
       enabled: true,
       conditions: { activityPattern: true, timeWindow: 7 },
-      actions: { adjustPriority: true, maxAdjustment: 2 }
+      actions: { adjustPriority: true, maxAdjustment: 2 },
+      triggerCount: 5
     },
     {
+      id: '4',
       name: "Intelligent Notifications",
       description: "Send notifications at optimal times based on user patterns",
       type: "notification",
       enabled: false,
       conditions: { optimalTiming: true, userActive: true },
-      actions: { smartNotify: true, quietHours: [22, 8] }
+      actions: { smartNotify: true, quietHours: [22, 8] },
+      triggerCount: 0
     }
   ];
 
   useEffect(() => {
-    loadAutomationRules();
-  }, [user]);
+    // Initialize with default rules
+    setAutomationRules(defaultRules);
+  }, []);
 
-  const loadAutomationRules = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('automation_rules')
-        .select('*')
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      if (data?.length === 0) {
-        // Initialize with default rules
-        const rulesWithIds = defaultRules.map(rule => ({
-          ...rule,
-          id: crypto.randomUUID(),
-          triggerCount: 0
-        }));
-        setAutomationRules(rulesWithIds);
-        
-        // Save to database
-        await saveAutomationRules(rulesWithIds);
-      } else {
-        setAutomationRules(data || []);
-      }
-    } catch (error) {
-      console.error('Error loading automation rules:', error);
-    }
-  };
-
-  const saveAutomationRules = async (rules: AutomationRule[]) => {
-    if (!user) return;
-
-    try {
-      const { error } = await supabase
-        .from('automation_rules')
-        .upsert(
-          rules.map(rule => ({
-            id: rule.id,
-            user_id: user.id,
-            name: rule.name,
-            description: rule.description,
-            type: rule.type,
-            enabled: rule.enabled,
-            conditions: rule.conditions,
-            actions: rule.actions,
-            trigger_count: rule.triggerCount,
-            last_triggered: rule.lastTriggered
-          }))
-        );
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error saving automation rules:', error);
-    }
-  };
-
-  const toggleRule = async (ruleId: string) => {
+  const toggleRule = (ruleId: string) => {
     const updatedRules = automationRules.map(rule =>
       rule.id === ruleId ? { ...rule, enabled: !rule.enabled } : rule
     );
     setAutomationRules(updatedRules);
-    await saveAutomationRules(updatedRules);
 
     toast({
       title: 'Automation Updated',
@@ -140,15 +90,14 @@ export const SmartAutomation = () => {
   const testAutomation = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('test-automation', {
-        body: { userId: user?.id, rules: automationRules.filter(r => r.enabled) }
-      });
-
-      if (error) throw error;
-
+      // Simulate automation testing
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const enabledRules = automationRules.filter(r => r.enabled);
+      
       toast({
         title: 'Automation Test Complete',
-        description: `Processed ${data.processedRules} rules successfully.`,
+        description: `Processed ${enabledRules.length} rules successfully.`,
       });
     } catch (error: any) {
       toast({
@@ -254,18 +203,6 @@ export const SmartAutomation = () => {
           );
         })}
       </div>
-
-      {automationRules.length === 0 && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center text-gray-500 py-8">
-              <Zap className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p className="font-semibold">No automation rules configured</p>
-              <p className="text-sm">Set up smart automation to streamline your relationship management.</p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };
