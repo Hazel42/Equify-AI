@@ -36,7 +36,7 @@ export const ActivityFeed = () => {
         .limit(20);
 
       if (data && !error) {
-        setActivities(data);
+        setActivities(data as ActivityItem[]);
       }
       setLoading(false);
     };

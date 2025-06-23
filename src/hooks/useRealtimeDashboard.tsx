@@ -32,17 +32,19 @@ export const useRealtimeDashboard = () => {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id);
 
-      // Fetch favors given
+      // Fetch favors given (direction = 'given')
       const { count: favorsGivenCount } = await supabase
         .from('favors')
         .select('*', { count: 'exact', head: true })
-        .eq('from_user_id', user.id);
+        .eq('user_id', user.id)
+        .eq('direction', 'given');
 
-      // Fetch favors received
+      // Fetch favors received (direction = 'received')
       const { count: favorsReceivedCount } = await supabase
         .from('favors')
         .select('*', { count: 'exact', head: true })
-        .eq('to_user_id', user.id);
+        .eq('user_id', user.id)
+        .eq('direction', 'received');
 
       // Fetch recent activity (last 7 days)
       const weekAgo = new Date();
@@ -111,13 +113,9 @@ export const useRealtimeDashboard = () => {
           event: '*',
           schema: 'public',
           table: 'favors',
+          filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
-          // Only update if the favor involves this user
-          if (payload.new?.from_user_id === user.id || payload.new?.to_user_id === user.id) {
-            fetchStats();
-          }
-        }
+        () => fetchStats()
       )
       .subscribe();
 

@@ -34,7 +34,7 @@ export const useRealtimeNotifications = () => {
         .limit(50);
 
       if (data && !error) {
-        setNotifications(data);
+        setNotifications(data as Notification[]);
         setUnreadCount(data.filter(n => !n.read).length);
       }
     };
