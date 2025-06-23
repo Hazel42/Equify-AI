@@ -1,209 +1,227 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, LogOut, User, Menu } from "lucide-react";
-import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
-import { AddFavorDialog } from "@/components/AddFavorDialog";
-import { OnboardingFlow } from "@/components/OnboardingFlow";
-import { AppSidebar } from "@/components/AppSidebar";
-import { MainNavigation } from "@/components/MainNavigation";
-import { NotificationSystem } from "@/components/NotificationSystem";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Heart, ArrowRight, Users, TrendingUp, Gift, LogOut } from "lucide-react";
 import { ResponsiveContainer } from "@/components/ResponsiveContainer";
-import { useToast } from "@/hooks/use-toast";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
-import { useAIRealtimeUpdates } from "@/hooks/useAIRealtimeUpdates";
+import { NotificationCenter } from "@/components/NotificationCenter";
+import { ActivityFeed } from "@/components/ActivityFeed";
+import { RealtimeStatsCard } from "@/components/RealtimeStatsCard";
 
 const Index = () => {
-  const [showAddFavor, setShowAddFavor] = useState(false);
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const { user, loading: authLoading, signOut, isAuthenticated } = useAuth();
-  const { profile, loading: profileLoading } = useProfile();
+  const { user, isAuthenticated, signOut } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
-  // Add realtime updates hook
-  useAIRealtimeUpdates();
-
-  // Redirect to auth if not authenticated
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      navigate("/auth");
-    }
-  }, [authLoading, isAuthenticated, navigate]);
-
-  // Show onboarding if user hasn't completed it
-  if (profile && !profile.onboarding_completed) {
-    return <OnboardingFlow onComplete={() => window.location.reload()} />;
-  }
-
-  const handleAddFavor = (favorData: any) => {
-    toast({
-      title: 'Favor Added Successfully',
-      description: `Added "${favorData.description}" to your relationship tracking.`,
-    });
-    setShowAddFavor(false);
-  };
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast({
-        title: 'Signed out successfully',
-        description: "You've been signed out of your account.",
-      });
-      navigate("/auth");
-    } catch (error) {
-      toast({
-        title: 'Error signing out',
-        description: 'There was a problem signing out. Please try again.',
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Show loading while checking auth
-  if (authLoading || profileLoading) {
+  if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-orange-50 dark:from-gray-950 dark:via-blue-950 dark:to-green-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="h-12 w-12 text-green-600 dark:text-green-400 mx-auto mb-4 animate-pulse">
-            <User className="h-full w-full" />
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-orange-50">
+        <ResponsiveContainer maxWidth="2xl" className="py-12">
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center mb-6">
+              <Heart className="h-12 w-12 text-green-600 mr-4" />
+              <div>
+                <h1 className="text-4xl font-bold text-gray-900">RelationshipDebt AI</h1>
+                <p className="text-xl text-green-600 mt-2">Building balanced connections with AI insights</p>
+              </div>
+            </div>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Track favors, build stronger relationships, and get AI-powered insights to maintain healthy social connections.
+            </p>
           </div>
-          <p className="text-lg text-gray-600 dark:text-gray-300">Loading...</p>
-        </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
+              <div className="space-y-6">
+                <div className="flex items-start space-x-4">
+                  <div className="bg-green-100 p-3 rounded-full">
+                    <Users className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Track Relationships</h3>
+                    <p className="text-gray-600">Keep track of favors given and received with friends, family, and colleagues.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-4">
+                  <div className="bg-blue-100 p-3 rounded-full">
+                    <TrendingUp className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">AI Insights</h3>
+                    <p className="text-gray-600">Get personalized recommendations to strengthen your relationships.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-4">
+                  <div className="bg-orange-100 p-3 rounded-full">
+                    <Gift className="h-6 w-6 text-orange-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Balance Tracker</h3>
+                    <p className="text-gray-600">Maintain healthy give-and-take in all your relationships.</p>
+                  </div>
+                </div>
+              </div>
+
+              <Button 
+                onClick={() => navigate("/auth")} 
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg"
+              >
+                Get Started
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+
+            <Card className="bg-white/80 backdrop-blur-sm border-green-200">
+              <CardHeader>
+                <CardTitle className="text-center">Quick Preview</CardTitle>
+                <CardDescription className="text-center">
+                  See how RelationshipDebt AI helps you build better connections
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">12</div>
+                    <div className="text-sm text-gray-600">Active Relationships</div>
+                  </div>
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">8</div>
+                    <div className="text-sm text-gray-600">Favors This Month</div>
+                  </div>
+                </div>
+                <div className="p-4 bg-orange-50 rounded-lg">
+                  <div className="text-sm font-medium text-orange-800">💡 AI Insight</div>
+                  <div className="text-sm text-orange-700 mt-1">
+                    Consider reaching out to Sarah - you haven't connected in 2 weeks!
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </ResponsiveContainer>
       </div>
     );
   }
 
-  // Don't render if not authenticated (will redirect)
-  if (!isAuthenticated) {
-    return null;
-  }
-
-  const getHeaderTitle = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return 'Dashboard';
-      case 'relationships':
-        return 'Relationships';
-      case 'recommendations':
-        return 'AI Recommendations';
-      case 'analytics':
-        return 'Analytics';
-      case 'ai-chat':
-        return 'AI Assistant';
-      case 'ai-insights':
-        return 'AI Insights';
-      case 'automation':
-        return 'Automation';
-      case 'settings':
-        return 'Settings';
-      default:
-        return 'Dashboard';
-    }
-  };
-
   return (
-    <ErrorBoundary>
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gradient-to-br from-green-50 via-blue-50 to-orange-50 dark:from-gray-950 dark:via-blue-950 dark:to-green-950">
-          <AppSidebar activeTab={activeTab} onTabChange={setActiveTab} />
-          
-          <SidebarInset className="flex-1">
-            {/* Mobile Header */}
-            <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-green-100 dark:border-gray-800 sticky top-0 z-50 lg:hidden">
-              <div className="flex items-center justify-between p-3 sm:p-4">
-                <div className="flex items-center gap-2">
-                  <SidebarTrigger className="lg:hidden">
-                    <Menu className="h-5 w-5" />
-                  </SidebarTrigger>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                    {getHeaderTitle()}
-                  </h2>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <ThemeToggle />
-                  <Button 
-                    onClick={() => setShowAddFavor(true)}
-                    className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white"
-                    size="sm"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                  <NotificationSystem />
-                </div>
-              </div>
-            </header>
-
-            {/* Desktop Header */}
-            <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-green-100 dark:border-gray-800 sticky top-0 z-50 hidden lg:block">
-              <div className="flex items-center justify-between p-4 xl:p-6">
-                <div className="flex items-center gap-4">
-                  <SidebarTrigger />
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    {getHeaderTitle()}
-                  </h2>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <ThemeToggle />
-                  
-                  <Button 
-                    onClick={() => setShowAddFavor(true)}
-                    className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Favor
-                  </Button>
-                  
-                  <div className="hidden sm:flex items-center gap-2">
-                    <User className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                    <div className="text-sm">
-                      <span className="text-gray-600 dark:text-gray-300">{profile?.full_name}</span>
-                      {profile?.personality_type && (
-                        <p className="text-xs text-green-600 dark:text-green-400">{profile.personality_type}</p>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <NotificationSystem />
-                  
-                  <Button 
-                    onClick={handleSignOut}
-                    variant="outline"
-                    size="sm"
-                    className="border-gray-300 dark:border-gray-600"
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Sign Out</span>
-                  </Button>
-                </div>
-              </div>
-            </header>
-
-            {/* Main Content */}
-            <main className="flex-1">
-              <ResponsiveContainer className="py-4 lg:py-6">
-                <ErrorBoundary>
-                  <MainNavigation userId={user?.id || ""} activeTab={activeTab} />
-                </ErrorBoundary>
-              </ResponsiveContainer>
-            </main>
-          </SidebarInset>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-orange-50">
+      <ResponsiveContainer maxWidth="2xl" className="py-6">
+        {/* Header with Notification Center */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">RelationshipDebt AI</h1>
+            <p className="text-green-600">Building balanced connections with AI insights</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <NotificationCenter />
+            <Button
+              variant="outline"
+              onClick={signOut}
+              className="text-green-600 border-green-300 hover:bg-green-50"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
 
-        {/* Add Favor Dialog */}
-        <AddFavorDialog 
-          open={showAddFavor}
-          onOpenChange={setShowAddFavor}
-          onSave={handleAddFavor}
-        />
-      </SidebarProvider>
-    </ErrorBoundary>
+        {/* Real-time Stats Dashboard */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <RealtimeStatsCard
+            title="Total Relationships"
+            icon={<Users className="h-8 w-8" />}
+            type="relationships"
+          />
+          <RealtimeStatsCard
+            title="Favors Given"
+            icon={<Gift className="h-8 w-8" />}
+            type="favorsGiven"
+          />
+          <RealtimeStatsCard
+            title="Favors Received"
+            icon={<Heart className="h-8 w-8" />}
+            type="favorsReceived"
+          />
+          <RealtimeStatsCard
+            title="Weekly Activity"
+            icon={<TrendingUp className="h-8 w-8" />}
+            type="activity"
+          />
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Main Features */}
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="bg-white/80 backdrop-blur-sm border-green-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-green-600" />
+                  Relationship Manager
+                </CardTitle>
+                <CardDescription>
+                  Manage your relationships and track favors
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Your relationship management tools will appear here once you start adding connections.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/80 backdrop-blur-sm border-blue-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-blue-600" />
+                  Enhanced Dashboard
+                </CardTitle>
+                <CardDescription>
+                  AI-powered insights and analytics
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Your personalized dashboard with AI insights will be displayed here.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column - Activity Feed */}
+          <div className="space-y-6">
+            <ActivityFeed />
+            
+            <Card className="bg-white/80 backdrop-blur-sm border-orange-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Gift className="h-5 w-5 text-orange-600" />
+                  Quick Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button className="w-full bg-green-600 hover:bg-green-700">
+                  Add New Relationship
+                </Button>
+                <Button variant="outline" className="w-full">
+                  Record a Favor
+                </Button>
+                <Button variant="outline" className="w-full">
+                  View AI Insights
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </ResponsiveContainer>
+    </div>
   );
 };
 
