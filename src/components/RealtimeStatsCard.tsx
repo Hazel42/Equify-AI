@@ -6,7 +6,6 @@ import { useRealtimeDashboard } from '@/hooks/useRealtimeDashboard';
 
 interface StatCardProps {
   title: string;
-  value: number;
   icon: React.ReactNode;
   type: 'relationships' | 'favorsGiven' | 'favorsReceived' | 'activity';
   format?: 'number' | 'percentage';
