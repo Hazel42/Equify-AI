@@ -287,8 +287,8 @@ export const EnhancedMobileBottomNavigation = ({
       </div>
 
       {/* Home indicator for iPhone-like devices */}
-      <div className="flex justify-center pt-2">
-        <div className="w-32 h-1 bg-gray-300 rounded-full"></div>
+      <div className="flex justify-center pt-3 pb-1">
+        <div className="w-36 h-1 bg-gray-300 rounded-full opacity-60"></div>
       </div>
     </motion.div>
   );
