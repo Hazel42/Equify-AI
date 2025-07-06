@@ -1,12 +1,10 @@
 
-import { EnhancedDashboard } from "@/components/EnhancedDashboard";
+import { SimpleDashboard } from "@/components/SimpleDashboard";
 import { RelationshipManager } from "@/components/RelationshipManager";
 import { SmartRecommendationEngine } from "@/components/SmartRecommendationEngine";
 import { PerformanceAnalytics } from "@/components/PerformanceAnalytics";
 import { SettingsPage } from "@/components/SettingsPage";
 import { AIChatAssistant } from "@/components/AIChatAssistant";
-import { EnhancedAIInsights } from "@/components/EnhancedAIInsights";
-import { SmartAutomation } from "@/components/SmartAutomation";
 
 interface MainNavigationProps {
   userId: string;
@@ -17,23 +15,17 @@ export const MainNavigation = ({ userId, activeTab }: MainNavigationProps) => {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <EnhancedDashboard />;
+        return <SimpleDashboard />;
       case 'relationships':
         return <RelationshipManager />;
-      case 'recommendations':
-        return <SmartRecommendationEngine />;
-      case 'analytics':
-        return <PerformanceAnalytics />;
       case 'ai-chat':
         return <AIChatAssistant />;
-      case 'ai-insights':
-        return <EnhancedAIInsights />;
-      case 'automation':
-        return <SmartAutomation />;
+      case 'analytics':
+        return <PerformanceAnalytics />;
       case 'settings':
         return <SettingsPage />;
       default:
-        return <EnhancedDashboard />;
+        return <SimpleDashboard />;
     }
   };
 
