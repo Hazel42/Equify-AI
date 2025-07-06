@@ -35,28 +35,35 @@ export const MobileLayout = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+      {/* Fixed Header */}
       <EnhancedMobileHeader
         title={title}
         showSearch={shouldShowSearchButton}
         onSearchClick={() => setShowSearch(true)}
       />
 
-      <main
-        className="flex-1 overflow-y-auto"
-        style={{
-          paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))",
-        }}
-      >
-        <div className="p-4">{children}</div>
+      {/* Scrollable Main Content */}
+      <main className="flex-1 overflow-y-auto">
+        <div
+          className="p-4 pb-32"
+          style={{
+            minHeight: "calc(100vh - 140px)", // Account for header + bottom nav
+            paddingBottom: "calc(8rem + env(safe-area-inset-bottom, 0px))",
+          }}
+        >
+          {children}
+        </div>
       </main>
 
+      {/* Fixed Bottom Navigation */}
       <EnhancedMobileBottomNavigation
         activeTab={activeTab}
         onTabChange={onTabChange}
         onQuickAction={handleQuickAction}
       />
 
+      {/* Search Modal */}
       <GlobalSearch
         open={showSearch}
         onOpenChange={setShowSearch}
