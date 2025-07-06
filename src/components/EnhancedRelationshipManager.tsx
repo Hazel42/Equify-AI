@@ -21,11 +21,10 @@ import {
   Mail,
 } from "lucide-react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useRelationships } from "@/hooks/useRelationships";
+import { useFavorsEnhanced } from "@/hooks/useFavorsEnhanced";
 import { AddRelationshipDialog } from "@/components/AddRelationshipDialog";
-import { AddFavorDialog } from "@/components/AddFavorDialog";
+import { EnhancedAddFavorDialog } from "@/components/EnhancedAddFavorDialog";
 
 interface Relationship {
   id: string;
@@ -41,7 +40,6 @@ interface Relationship {
 }
 
 export const EnhancedRelationshipManager = () => {
-  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -51,71 +49,44 @@ export const EnhancedRelationshipManager = () => {
   >(null);
   const [swipedCard, setSwipedCard] = useState<string | null>(null);
 
-  const {
-    data: relationships,
-    isLoading,
-    refetch,
-  } = useQuery({
-    queryKey: ["relationships", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
+  const { relationships, isLoading } = useRelationships();
+  const { getFavorsForRelationship, getRelationshipBalance } =
+    useFavorsEnhanced();
 
-      const { data: relationshipsData, error } = await supabase
-        .from("relationships")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+  // Enrich relationships with favor data
+  const enrichedRelationships =
+    relationships?.map((rel) => {
+      const relationshipFavors = getFavorsForRelationship(rel.id);
+      const balance = getRelationshipBalance(rel.id);
+      const lastFavor = relationshipFavors[0];
 
-      if (error) throw error;
-
-      // Get favor counts and balance for each relationship
-      const enrichedRelationships = await Promise.all(
-        (relationshipsData || []).map(async (rel) => {
-          const { data: favors } = await supabase
-            .from("favors")
-            .select("*")
-            .eq("relationship_id", rel.id);
-
-          const given =
-            favors?.filter((f) => f.direction === "given").length || 0;
-          const received =
-            favors?.filter((f) => f.direction === "received").length || 0;
-          const lastFavor = favors?.[0];
-
-          return {
-            ...rel,
-            favorCount: favors?.length || 0,
-            balance: given - received,
-            lastContact: lastFavor?.created_at,
-          };
-        }),
-      );
-
-      return enrichedRelationships;
-    },
-    enabled: !!user?.id,
-  });
-
-  const filteredRelationships =
-    relationships?.filter((rel) => {
-      const matchesSearch = rel.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-
-      if (selectedFilter === "all") return matchesSearch;
-      if (selectedFilter === "family")
-        return matchesSearch && rel.relationship_type === "family";
-      if (selectedFilter === "friends")
-        return matchesSearch && rel.relationship_type === "friend";
-      if (selectedFilter === "colleagues")
-        return matchesSearch && rel.relationship_type === "colleague";
-      if (selectedFilter === "positive")
-        return matchesSearch && (rel.balance || 0) > 0;
-      if (selectedFilter === "negative")
-        return matchesSearch && (rel.balance || 0) < 0;
-
-      return matchesSearch;
+      return {
+        ...rel,
+        favorCount: relationshipFavors.length,
+        balance,
+        lastContact: lastFavor?.created_at,
+      };
     }) || [];
+
+  const filteredRelationships = enrichedRelationships.filter((rel) => {
+    const matchesSearch = rel.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    if (selectedFilter === "all") return matchesSearch;
+    if (selectedFilter === "family")
+      return matchesSearch && rel.relationship_type === "family";
+    if (selectedFilter === "friends")
+      return matchesSearch && rel.relationship_type === "friend";
+    if (selectedFilter === "colleagues")
+      return matchesSearch && rel.relationship_type === "colleague";
+    if (selectedFilter === "positive")
+      return matchesSearch && (rel.balance || 0) > 0;
+    if (selectedFilter === "negative")
+      return matchesSearch && (rel.balance || 0) < 0;
+
+    return matchesSearch;
+  });
 
   const handleSwipe = (relationshipId: string, direction: "left" | "right") => {
     if (direction === "right") {
@@ -124,12 +95,29 @@ export const EnhancedRelationshipManager = () => {
       setShowFavorDialog(true);
     } else if (direction === "left") {
       // Quick contact
-      const relationship = relationships?.find((r) => r.id === relationshipId);
-      if (relationship?.contact_info?.phone) {
-        window.location.href = `tel:${relationship.contact_info.phone}`;
+      const relationship = enrichedRelationships.find(
+        (r) => r.id === relationshipId,
+      );
+      const contactInfo = relationship?.contact_info as any;
+      if (contactInfo?.phone) {
+        window.location.href = `tel:${contactInfo.phone}`;
+      } else {
+        // If no phone, show a message
+        alert("No phone number available for this contact");
       }
     }
     setSwipedCard(null);
+  };
+
+  const handleContactClick = (relationship: any) => {
+    const contactInfo = relationship?.contact_info as any;
+    if (contactInfo?.phone) {
+      window.location.href = `tel:${contactInfo.phone}`;
+    } else if (contactInfo?.email) {
+      window.location.href = `mailto:${contactInfo.email}`;
+    } else {
+      alert("No contact information available");
+    }
   };
 
   const getRelationshipEmoji = (type: string) => {
@@ -268,9 +256,7 @@ export const EnhancedRelationshipManager = () => {
               size="sm"
               variant="outline"
               className="flex-1 h-8"
-              onClick={() => {
-                // TODO: Open chat or contact
-              }}
+              onClick={() => handleContactClick(relationship)}
             >
               <MessageCircle className="h-3 w-3 mr-1" />
               Contact
@@ -298,7 +284,7 @@ export const EnhancedRelationshipManager = () => {
         <div>
           <h2 className="text-xl font-bold text-gray-900">My People</h2>
           <p className="text-sm text-gray-600">
-            {relationships?.length || 0} relationships
+            {enrichedRelationships.length} relationships
           </p>
         </div>
         <Button
@@ -390,17 +376,16 @@ export const EnhancedRelationshipManager = () => {
         onOpenChange={setShowAddDialog}
         onSuccess={() => {
           setShowAddDialog(false);
-          refetch();
         }}
       />
 
-      <AddFavorDialog
+      <EnhancedAddFavorDialog
         open={showFavorDialog}
         onOpenChange={setShowFavorDialog}
         relationshipId={selectedRelationship}
         onSuccess={() => {
           setShowFavorDialog(false);
-          refetch();
+          setSelectedRelationship(null);
         }}
       />
     </div>
