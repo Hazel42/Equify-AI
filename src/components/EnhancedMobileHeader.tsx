@@ -86,7 +86,7 @@ export const EnhancedMobileHeader = ({
   return (
     <>
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-200 safe-area-top">
+      <header className="relative bg-white border-b border-gray-200 safe-area-top">
         <div className="flex items-center justify-between px-4 py-3">
           {/* Left side - Menu/Back and Title */}
           <div className="flex items-center gap-3 flex-1">
