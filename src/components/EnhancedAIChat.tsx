@@ -54,6 +54,37 @@ export const EnhancedAIChat = () => {
   const { relationships } = useRelationships();
   const { favors, getFavorStats } = useFavorsEnhanced();
 
+  const handleQuickAction = async (action: string) => {
+    const quickMessages = {
+      insights: "Can you give me insights about my relationships?",
+      balance: "How is my give-and-take balance with my relationships?",
+      suggestions: "What are some ways I can strengthen my relationships?",
+      patterns: "What patterns do you notice in my relationship interactions?",
+      goals: "Help me set relationship goals for this month",
+    };
+
+    const messageText = quickMessages[action as keyof typeof quickMessages];
+    if (messageText) {
+      const userMessage: ChatMessage = {
+        id: Date.now().toString(),
+        content: messageText,
+        sender: "user",
+        timestamp: new Date().toISOString(),
+        type: "text",
+      };
+
+      setConversation((prev) => [...prev, userMessage]);
+      setIsTyping(true);
+
+      try {
+        await chatMutation.mutateAsync(messageText);
+      } catch (error) {
+        console.error("Quick action error:", error);
+        setIsTyping(false);
+      }
+    }
+  };
+
   // Listen for quick actions
   useEffect(() => {
     const handleGlobalQuickAction = (event: CustomEvent) => {
