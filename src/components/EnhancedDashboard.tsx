@@ -262,7 +262,18 @@ export const EnhancedDashboard = () => {
                 <Gift className="h-4 w-4 mr-2" />
                 Record Favor
               </Button>
-              <Button variant="outline" className="h-12">
+              <Button
+                variant="outline"
+                className="h-12"
+                onClick={() => {
+                  // Dispatch event to switch to AI chat tab
+                  window.dispatchEvent(
+                    new CustomEvent("navigate-to-tab", {
+                      detail: { tab: "ai-chat" },
+                    }),
+                  );
+                }}
+              >
                 <MessageCircle className="h-4 w-4 mr-2" />
                 Ask AI
               </Button>

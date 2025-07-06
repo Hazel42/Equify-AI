@@ -47,6 +47,26 @@ const Index = () => {
     }
   }, [profile]);
 
+  // Listen for tab navigation events
+  useEffect(() => {
+    const handleTabNavigation = (event: CustomEvent) => {
+      const { tab } = event.detail;
+      if (tab) {
+        setActiveTab(tab);
+      }
+    };
+
+    window.addEventListener(
+      "navigate-to-tab",
+      handleTabNavigation as EventListener,
+    );
+    return () =>
+      window.removeEventListener(
+        "navigate-to-tab",
+        handleTabNavigation as EventListener,
+      );
+  }, []);
+
   // Landing page untuk user yang belum login
   if (!isAuthenticated) {
     return (
