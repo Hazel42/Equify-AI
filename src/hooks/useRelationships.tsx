@@ -1,30 +1,30 @@
 
-import { useEffect, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "./useAuth";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 interface Relationship {
   id: string;
-  user_id: string;
   name: string;
   relationship_type: string;
   importance_level: number;
-  contact_info: any;
-  preferences: any;
   created_at: string;
   updated_at: string;
+  user_id: string;
 }
 
 export const useRelationships = () => {
+  const [relationships, setRelationships] = useState<Relationship[]>([]);
+  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-  const { data: relationships = [], isLoading } = useQuery({
-    queryKey: ['relationships', user?.id],
-    queryFn: async () => {
-      if (!user) return [];
-      
+  const fetchRelationships = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
       const { data, error } = await supabase
         .from('relationships')
         .select('*')
@@ -32,68 +32,61 @@ export const useRelationships = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
-    },
-    enabled: !!user,
-  });
+      setRelationships(data || []);
+    } catch (error: any) {
+      console.error('Error fetching relationships:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch relationships',
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const addRelationship = useMutation({
-    mutationFn: async (newRelationship: Omit<Relationship, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-      if (!user) throw new Error('User not authenticated');
+  useEffect(() => {
+    fetchRelationships();
+  }, [user]);
 
+  const addRelationship = async (relationshipData: Omit<Relationship, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
+    if (!user) return;
+
+    try {
       const { data, error } = await supabase
         .from('relationships')
         .insert({
-          ...newRelationship,
-          user_id: user.id,
+          ...relationshipData,
+          user_id: user.id
         })
         .select()
         .single();
 
       if (error) throw error;
+
+      setRelationships(prev => [data, ...prev]);
+      
+      toast({
+        title: 'Success',
+        description: 'Relationship added successfully',
+      });
+      
       return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['relationships', user?.id] });
-    },
-  });
-
-  const updateRelationship = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Relationship> }) => {
-      const { data, error } = await supabase
-        .from('relationships')
-        .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['relationships', user?.id] });
-    },
-  });
-
-  const deleteRelationship = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('relationships')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['relationships', user?.id] });
-    },
-  });
+    } catch (error: any) {
+      console.error('Error adding relationship:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to add relationship',
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
 
   return {
     relationships,
-    isLoading,
+    loading,
     addRelationship,
-    updateRelationship,
-    deleteRelationship,
+    refetch: fetchRelationships
   };
 };

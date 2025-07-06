@@ -1,204 +1,121 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { useRelationships } from "@/hooks/useRelationships";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
-import { useAutoAI } from "@/hooks/useAutoAI";
-import { Brain, Star } from "lucide-react";
 
 interface AddRelationshipDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (relationshipData: any) => void;
 }
 
-export const AddRelationshipDialog = ({ open, onOpenChange, onSave }: AddRelationshipDialogProps) => {
-  const [relationshipData, setRelationshipData] = useState({
-    name: "",
-    relationship_type: "",
-    importance_level: 3,
-    contact_info: {},
-    preferences: {}
-  });
-
+export const AddRelationshipDialog = ({ open, onOpenChange }: AddRelationshipDialogProps) => {
+  const [name, setName] = useState("");
+  const [relationshipType, setRelationshipType] = useState("");
+  const [importanceLevel, setImportanceLevel] = useState([3]);
+  const [loading, setLoading] = useState(false);
   const { addRelationship } = useRelationships();
-  const { toast } = useToast();
-  const { user } = useAuth();
-  
-  const [newRelationshipId, setNewRelationshipId] = useState<string | null>(null);
-  const [triggerAI, setTriggerAI] = useState(false);
 
-  const { loading: aiLoading } = useAutoAI({
-    userId: user?.id || "",
-    relationshipId: newRelationshipId || undefined,
-    triggerAnalysis: triggerAI,
-    onComplete: (success) => {
-      setTriggerAI(false);
-      setNewRelationshipId(null);
-      if (success) {
-        window.dispatchEvent(new CustomEvent("ai-recommendation-updated"));
-        toast({
-          title: 'AI Analysis Complete',
-          description: 'Generated insights for your new relationship.',
-        });
-      } else {
-        toast({
-          title: 'Error',
-          description: 'AI analysis failed. You can try again later.',
-          variant: "destructive",
-        });
-      }
-    }
-  });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !relationshipType) return;
 
-  const handleSave = async () => {
-    if (!relationshipData.name || !relationshipData.relationship_type) {
-      toast({
-        title: 'Missing Information',
-        description: 'Please fill in the name and relationship type.',
-        variant: "destructive",
-      });
-      return;
-    }
-
+    setLoading(true);
     try {
-      const newRelationship = await addRelationship.mutateAsync(relationshipData);
-      onSave(newRelationship);
-      setNewRelationshipId(newRelationship.id);
-      setTriggerAI(true);
+      await addRelationship({
+        name,
+        relationship_type: relationshipType,
+        importance_level: importanceLevel[0]
+      });
       
-      setRelationshipData({
-        name: "",
-        relationship_type: "",
-        importance_level: 3,
-        contact_info: {},
-        preferences: {}
-      });
+      // Reset form
+      setName("");
+      setRelationshipType("");
+      setImportanceLevel([3]);
+      onOpenChange(false);
     } catch (error) {
-      console.error('Error saving relationship:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save relationship. Please try again.',
-        variant: "destructive",
-      });
+      console.error('Failed to add relationship:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const relationshipTypes = [
+    { value: "family", label: "Family" },
+    { value: "friend", label: "Friend" },
+    { value: "colleague", label: "Colleague" },
+    { value: "partner", label: "Partner" },
+    { value: "mentor", label: "Mentor" },
+    { value: "acquaintance", label: "Acquaintance" },
+    { value: "other", label: "Other" }
+  ];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md mx-4 sm:mx-auto rounded-lg">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-lg">
-            Add New Relationship
-            {aiLoading && (
-              <Brain className="h-4 w-4 animate-pulse text-blue-600 dark:text-blue-400" aria-label="AI analyzing" />
-            )}
-          </DialogTitle>
-          <DialogDescription className="text-sm text-gray-600 dark:text-gray-400">
-            Add someone important to your life and start tracking your interactions.
+          <DialogTitle>Add New Relationship</DialogTitle>
+          <DialogDescription>
+            Add someone important to your relationship network.
           </DialogDescription>
         </DialogHeader>
-        
-        <div className="space-y-5 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Name *
-            </Label>
+            <Label htmlFor="name">Name</Label>
             <Input
               id="name"
-              placeholder="Enter their name"
-              value={relationshipData.name}
-              onChange={(e) => setRelationshipData({...relationshipData, name: e.target.value})}
-              className="w-full"
-              aria-required="true"
-              disabled={addRelationship.isPending || aiLoading}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter person's name"
+              required
             />
           </div>
-
+          
           <div className="space-y-2">
-            <Label htmlFor="type" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Relationship Type *
-            </Label>
-            <Select 
-              onValueChange={(value) => setRelationshipData({...relationshipData, relationship_type: value})}
-              disabled={addRelationship.isPending || aiLoading}
-            >
-              <SelectTrigger id="type" aria-required="true">
+            <Label htmlFor="type">Relationship Type</Label>
+            <Select value={relationshipType} onValueChange={setRelationshipType} required>
+              <SelectTrigger>
                 <SelectValue placeholder="Select relationship type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="family">Family</SelectItem>
-                <SelectItem value="friend">Friend</SelectItem>
-                <SelectItem value="colleague">Colleague</SelectItem>
-                <SelectItem value="neighbor">Neighbor</SelectItem>
-                <SelectItem value="mentor">Mentor</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                {relationshipTypes.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
 
-          <div className="space-y-3">
-            <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Importance Level: {relationshipData.importance_level}/5
-            </Label>
-            <div className="flex gap-2 justify-center sm:justify-start">
-              {[1, 2, 3, 4, 5].map((level) => (
-                <button
-                  key={level}
-                  type="button"
-                  onClick={() => setRelationshipData({...relationshipData, importance_level: level})}
-                  disabled={addRelationship.isPending || aiLoading}
-                  className={`p-2.5 rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 ${
-                    relationshipData.importance_level >= level 
-                      ? 'bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 border-green-300 dark:border-green-700 scale-110' 
-                      : 'bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-105'
-                  }`}
-                  aria-label={`Set importance level to ${level}`}
-                >
-                  <Star className="h-4 w-4" />
-                </button>
-              ))}
+          <div className="space-y-2">
+            <Label>Importance Level: {importanceLevel[0]}/5</Label>
+            <Slider
+              value={importanceLevel}
+              onValueChange={setImportanceLevel}
+              min={1}
+              max={5}
+              step={1}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-gray-500">
+              <span>Low</span>
+              <span>High</span>
             </div>
           </div>
 
-          {aiLoading && (
-            <div className="bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-lg p-3" role="status" aria-live="polite">
-              <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
-                <Brain className="h-4 w-4 animate-pulse" />
-                <span className="text-sm font-medium">AI is analyzing this relationship...</span>
-              </div>
-            </div>
-          )}
-
-          <div className="flex flex-col gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <Button 
-              onClick={handleSave}
-              className="w-full bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 focus:ring-green-500"
-              disabled={!relationshipData.name || !relationshipData.relationship_type || addRelationship.isPending || aiLoading}
-            >
-              {addRelationship.isPending ? 'Saving...' : 
-               aiLoading ? (
-                  <div className="flex items-center gap-2">
-                      <Brain className="h-4 w-4 animate-pulse" />
-                      Analyzing...
-                  </div>
-               ) :
-               'Save Relationship'}
+          <div className="flex gap-2 pt-4">
+            <Button type="submit" disabled={loading || !name || !relationshipType}>
+              {loading ? 'Adding...' : 'Add Relationship'}
             </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-              className="w-full border-gray-300 dark:border-gray-600"
-              disabled={addRelationship.isPending || aiLoading}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
           </div>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

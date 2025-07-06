@@ -1,109 +1,74 @@
 
-import { useState } from 'react';
-import { Bell, Check, CheckCheck, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Bell } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuHeader,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
-import { formatDistanceToNow } from 'date-fns';
+} from "@/components/ui/dropdown-menu";
 
 export const NotificationCenter = () => {
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useRealtimeNotifications();
-  const [isOpen, setIsOpen] = useState(false);
-
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'success':
-        return '✅';
-      case 'warning':
-        return '⚠️';
-      case 'error':
-        return '❌';
-      default:
-        return 'ℹ️';
+  const [notifications] = useState([
+    {
+      id: 1,
+      title: "AI Recommendation Ready",
+      message: "New suggestions for Sarah available",
+      time: "5m ago",
+      read: false
+    },
+    {
+      id: 2,
+      title: "Relationship Reminder",
+      message: "Haven't connected with Mike in 2 weeks",
+      time: "1h ago",
+      read: false
     }
-  };
+  ]);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="relative">
+        <Button variant="ghost" size="sm" className="relative">
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
-            <Badge
-              variant="destructive"
+            <Badge 
+              variant="destructive" 
               className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs"
             >
-              {unreadCount > 99 ? '99+' : unreadCount}
+              {unreadCount}
             </Badge>
           )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
-        <DropdownMenuLabel className="flex items-center justify-between">
-          <span>Notifications</span>
-          {unreadCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={markAllAsRead}
-              className="h-6 px-2"
-            >
-              <CheckCheck className="h-3 w-3 mr-1" />
-              Mark all read
-            </Button>
-          )}
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        
+        <DropdownMenuHeader className="font-semibold">
+          Notifications
+        </DropdownMenuHeader>
         {notifications.length === 0 ? (
-          <div className="p-4 text-center text-muted-foreground">
-            No notifications yet
-          </div>
+          <DropdownMenuItem className="text-center text-gray-500">
+            No notifications
+          </DropdownMenuItem>
         ) : (
-          <ScrollArea className="h-80">
-            {notifications.map((notification) => (
-              <DropdownMenuItem
-                key={notification.id}
-                className={`p-3 cursor-pointer ${
-                  !notification.read ? 'bg-blue-50 dark:bg-blue-950' : ''
-                }`}
-                onClick={() => {
-                  if (!notification.read) {
-                    markAsRead(notification.id);
-                  }
-                }}
-              >
-                <div className="flex items-start space-x-3 w-full">
-                  <div className="text-lg">
-                    {getNotificationIcon(notification.type)}
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium">{notification.title}</p>
-                      {!notification.read && (
-                        <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {notification.message}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
-                    </p>
-                  </div>
+          notifications.map((notification) => (
+            <DropdownMenuItem key={notification.id} className="flex flex-col items-start p-3">
+              <div className="flex justify-between w-full items-start">
+                <div className="flex-1">
+                  <p className="font-medium text-sm">{notification.title}</p>
+                  <p className="text-xs text-gray-600">{notification.message}</p>
                 </div>
-              </DropdownMenuItem>
-            ))}
-          </ScrollArea>
+                <span className="text-xs text-gray-500">{notification.time}</span>
+              </div>
+              {!notification.read && (
+                <div className="w-2 h-2 bg-blue-600 rounded-full mt-1"></div>
+              )}
+            </DropdownMenuItem>
+          ))
         )}
       </DropdownMenuContent>
     </DropdownMenu>

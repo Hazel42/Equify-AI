@@ -1,7 +1,6 @@
 
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface FilterType {
   key: string;
@@ -15,22 +14,24 @@ interface RecommendationFiltersProps {
   onFilterChange: (filter: string) => void;
 }
 
-export const RecommendationFilters = ({ filterTypes, activeFilter, onFilterChange }: RecommendationFiltersProps) => {
+export const RecommendationFilters = ({ 
+  filterTypes, 
+  activeFilter, 
+  onFilterChange 
+}: RecommendationFiltersProps) => {
   return (
     <div className="flex flex-wrap gap-2">
-      {filterTypes.map(filter => (
-        filter.count > 0 &&
+      {filterTypes.map((type) => (
         <Button
-          key={filter.key}
-          variant={activeFilter === filter.key ? "default" : "outline"}
+          key={type.key}
+          variant={activeFilter === type.key ? "default" : "outline"}
           size="sm"
-          onClick={() => onFilterChange(filter.key)}
+          onClick={() => onFilterChange(type.key)}
           className="flex items-center gap-2"
         >
-          {filter.key === 'ai' && <Sparkles className="h-3 w-3" />}
-          {filter.label}
-          <Badge variant="secondary" className="ml-1">
-            {filter.count}
+          {type.label}
+          <Badge variant="secondary" className="text-xs">
+            {type.count}
           </Badge>
         </Button>
       ))}

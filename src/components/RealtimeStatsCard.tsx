@@ -1,107 +1,61 @@
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { useRealtimeDashboard } from '@/hooks/useRealtimeDashboard';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRelationships } from "@/hooks/useRelationships";
+import { useFavors } from "@/hooks/useFavors";
+import { ReactNode } from "react";
 
-interface StatCardProps {
+interface RealtimeStatsCardProps {
   title: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   type: 'relationships' | 'favorsGiven' | 'favorsReceived' | 'activity';
-  format?: 'number' | 'percentage';
 }
 
-export const RealtimeStatsCard = ({ title, icon, type, format = 'number' }: StatCardProps) => {
-  const { stats, loading } = useRealtimeDashboard();
+export const RealtimeStatsCard = ({ title, icon, type }: RealtimeStatsCardProps) => {
+  const { relationships } = useRelationships();
+  const { favors } = useFavors();
 
   const getValue = () => {
     switch (type) {
       case 'relationships':
-        return stats.totalRelationships;
+        return relationships.length;
       case 'favorsGiven':
-        return stats.favorsGiven;
+        return favors.filter(f => f.direction === 'given').length;
       case 'favorsReceived':
-        return stats.favorsReceived;
+        return favors.filter(f => f.direction === 'received').length;
       case 'activity':
-        return stats.recentActivity;
+        const thisMonth = new Date();
+        thisMonth.setDate(1);
+        return favors.filter(f => new Date(f.date_occurred) >= thisMonth).length;
       default:
         return 0;
     }
   };
 
-  const getGrowthIndicator = () => {
-    if (type !== 'activity') return null;
-    
-    const growth = stats.weeklyGrowth;
-    
-    if (growth > 0) {
-      return (
-        <Badge variant="outline" className="text-green-600 border-green-200">
-          <TrendingUp className="h-3 w-3 mr-1" />
-          +{growth}%
-        </Badge>
-      );
-    } else if (growth < 0) {
-      return (
-        <Badge variant="outline" className="text-red-600 border-red-200">
-          <TrendingDown className="h-3 w-3 mr-1" />
-          {growth}%
-        </Badge>
-      );
-    } else {
-      return (
-        <Badge variant="outline" className="text-gray-600 border-gray-200">
-          <Minus className="h-3 w-3 mr-1" />
-          0%
-        </Badge>
-      );
+  const getColor = () => {
+    switch (type) {
+      case 'relationships':
+        return 'text-blue-600';
+      case 'favorsGiven':
+        return 'text-green-600';
+      case 'favorsReceived':
+        return 'text-purple-600';
+      case 'activity':
+        return 'text-orange-600';
+      default:
+        return 'text-gray-600';
     }
   };
-
-  const formatValue = (value: number) => {
-    if (format === 'percentage') {
-      return `${value}%`;
-    }
-    return value.toLocaleString();
-  };
-
-  if (loading) {
-    return (
-      <Card className="animate-pulse">
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-20" />
-              <div className="h-8 bg-gray-200 rounded w-16" />
-            </div>
-            <div className="h-8 w-8 bg-gray-200 rounded" />
-          </div>
-          <div className="mt-4 flex items-center gap-2">
-            <div className="h-4 bg-gray-200 rounded w-12" />
-            <div className="h-4 bg-gray-200 rounded w-20" />
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
-    <Card className="transition-all duration-200 hover:shadow-md">
-      <CardContent className="pt-6">
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold">{formatValue(getValue())}</p>
-          </div>
-          <div className="text-muted-foreground">{icon}</div>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <div className={getColor()}>
+          {icon}
         </div>
-        
-        {type === 'activity' && (
-          <div className="mt-4 flex items-center gap-2">
-            {getGrowthIndicator()}
-            <span className="text-xs text-muted-foreground">vs last week</span>
-          </div>
-        )}
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{getValue()}</div>
       </CardContent>
     </Card>
   );

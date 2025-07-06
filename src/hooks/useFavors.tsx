@@ -1,92 +1,59 @@
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "./useAuth";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 interface Favor {
   id: string;
-  user_id: string;
-  relationship_id: string;
-  direction: 'given' | 'received';
-  category: string;
   description: string;
-  estimated_value?: number;
-  emotional_weight: number;
-  context?: string;
+  category: string;
+  direction: 'given' | 'received';
+  estimated_value: number;
   date_occurred: string;
-  reciprocated: boolean;
+  relationship_id: string;
+  user_id: string;
   created_at: string;
-  updated_at: string;
 }
 
-export const useFavors = (relationshipId?: string) => {
+export const useFavors = () => {
+  const [favors, setFavors] = useState<Favor[]>([]);
+  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-  const { data: favors = [], isLoading } = useQuery({
-    queryKey: ['favors', user?.id, relationshipId],
-    queryFn: async () => {
-      if (!user) return [];
-      
-      let query = supabase
+  const fetchFavors = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
         .from('favors')
         .select('*')
-        .eq('user_id', user.id);
-
-      if (relationshipId) {
-        query = query.eq('relationship_id', relationshipId);
-      }
-
-      const { data, error } = await query.order('date_occurred', { ascending: false });
+        .eq('user_id', user.id)
+        .order('date_occurred', { ascending: false });
 
       if (error) throw error;
-      return data;
-    },
-    enabled: !!user,
-  });
+      setFavors(data || []);
+    } catch (error: any) {
+      console.error('Error fetching favors:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch favors',
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const createFavor = useMutation({
-    mutationFn: async (newFavor: Omit<Favor, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-      if (!user) throw new Error('User not authenticated');
-
-      const { data, error } = await supabase
-        .from('favors')
-        .insert({
-          ...newFavor,
-          user_id: user.id,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['favors', user?.id] });
-    },
-  });
-
-  const updateFavor = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Favor> }) => {
-      const { data, error } = await supabase
-        .from('favors')
-        .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['favors', user?.id] });
-    },
-  });
+  useEffect(() => {
+    fetchFavors();
+  }, [user]);
 
   return {
     favors,
-    isLoading,
-    createFavor,
-    updateFavor,
+    loading,
+    refetch: fetchFavors
   };
 };
