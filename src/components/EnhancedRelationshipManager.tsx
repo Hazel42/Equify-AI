@@ -49,6 +49,26 @@ export const EnhancedRelationshipManager = () => {
   >(null);
   const [swipedCard, setSwipedCard] = useState<string | null>(null);
 
+  // Listen for quick actions
+  useEffect(() => {
+    const handleQuickAction = (event: CustomEvent) => {
+      const { action, activeTab } = event.detail;
+
+      if (activeTab === "relationships") {
+        if (action === "add-relationship") {
+          setShowAddDialog(true);
+        }
+      }
+    };
+
+    window.addEventListener("quick-action", handleQuickAction as EventListener);
+    return () =>
+      window.removeEventListener(
+        "quick-action",
+        handleQuickAction as EventListener,
+      );
+  }, []);
+
   const { relationships, isLoading } = useRelationships();
   const { getFavorsForRelationship, getRelationshipBalance } =
     useFavorsEnhanced();

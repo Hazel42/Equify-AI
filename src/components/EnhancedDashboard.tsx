@@ -43,6 +43,28 @@ export const EnhancedDashboard = () => {
     useState(false);
   const [showAddFavorDialog, setShowAddFavorDialog] = useState(false);
 
+  // Listen for quick actions
+  useEffect(() => {
+    const handleQuickAction = (event: CustomEvent) => {
+      const { action, activeTab } = event.detail;
+
+      if (activeTab === "dashboard") {
+        if (action === "add-favor") {
+          setShowAddFavorDialog(true);
+        } else if (action === "add-relationship") {
+          setShowAddRelationshipDialog(true);
+        }
+      }
+    };
+
+    window.addEventListener("quick-action", handleQuickAction as EventListener);
+    return () =>
+      window.removeEventListener(
+        "quick-action",
+        handleQuickAction as EventListener,
+      );
+  }, []);
+
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dashboard-stats", user?.id, selectedTimeframe],
     queryFn: async () => {

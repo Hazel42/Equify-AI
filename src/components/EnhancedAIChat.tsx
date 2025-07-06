@@ -54,6 +54,25 @@ export const EnhancedAIChat = () => {
   const { relationships } = useRelationships();
   const { favors, getFavorStats } = useFavorsEnhanced();
 
+  // Listen for quick actions
+  useEffect(() => {
+    const handleQuickAction = (event: CustomEvent) => {
+      const { action, activeTab } = event.detail;
+
+      if (activeTab === "ai-chat" && action === "quick-ai-message") {
+        // Send a quick AI message
+        handleQuickAction("insights");
+      }
+    };
+
+    window.addEventListener("quick-action", handleQuickAction as EventListener);
+    return () =>
+      window.removeEventListener(
+        "quick-action",
+        handleQuickAction as EventListener,
+      );
+  }, []);
+
   const [conversation, setConversation] = useState<ChatMessage[]>([
     {
       id: "1",
