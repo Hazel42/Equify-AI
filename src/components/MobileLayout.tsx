@@ -35,33 +35,36 @@ export const MobileLayout = ({
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+    <div className="h-screen bg-gray-50 relative overflow-hidden">
       {/* Fixed Header */}
-      <EnhancedMobileHeader
-        title={title}
-        showSearch={shouldShowSearchButton}
-        onSearchClick={() => setShowSearch(true)}
-      />
+      <div className="absolute top-0 left-0 right-0 z-40">
+        <EnhancedMobileHeader
+          title={title}
+          showSearch={shouldShowSearchButton}
+          onSearchClick={() => setShowSearch(true)}
+        />
+      </div>
 
-      {/* Scrollable Main Content */}
-      <main className="flex-1 overflow-y-auto">
-        <div
-          className="p-4 pb-32"
-          style={{
-            minHeight: "calc(100vh - 140px)", // Account for header + bottom nav
-            paddingBottom: "calc(8rem + env(safe-area-inset-bottom, 0px))",
-          }}
-        >
-          {children}
-        </div>
+      {/* Scrollable Main Content - Positioned between header and bottom nav */}
+      <main
+        className="absolute inset-0 overflow-y-auto"
+        style={{
+          top: "60px", // Header height
+          bottom: "88px", // Bottom nav height + safe area
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        }}
+      >
+        <div className="p-4">{children}</div>
       </main>
 
       {/* Fixed Bottom Navigation */}
-      <EnhancedMobileBottomNavigation
-        activeTab={activeTab}
-        onTabChange={onTabChange}
-        onQuickAction={handleQuickAction}
-      />
+      <div className="absolute bottom-0 left-0 right-0 z-50">
+        <EnhancedMobileBottomNavigation
+          activeTab={activeTab}
+          onTabChange={onTabChange}
+          onQuickAction={handleQuickAction}
+        />
+      </div>
 
       {/* Search Modal */}
       <GlobalSearch
