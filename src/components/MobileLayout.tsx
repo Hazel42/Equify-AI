@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { MobileHeader } from "@/components/MobileHeader";
+import { EnhancedMobileHeader } from "@/components/EnhancedMobileHeader";
 import { EnhancedMobileBottomNavigation } from "@/components/EnhancedMobileBottomNavigation";
 
 interface MobileLayoutProps {
@@ -15,9 +15,18 @@ export const MobileLayout = ({
   activeTab,
   onTabChange,
 }: MobileLayoutProps) => {
+  const showSearch = activeTab === "relationships" || activeTab === "dashboard";
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <MobileHeader title={title} />
+      <EnhancedMobileHeader
+        title={title}
+        showSearch={showSearch}
+        onSearchClick={() => {
+          // TODO: Implement search functionality
+          console.log("Search clicked");
+        }}
+      />
 
       <main className="flex-1 overflow-y-auto pb-24 safe-area-bottom">
         <div className="p-4">{children}</div>

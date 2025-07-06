@@ -1,73 +1,298 @@
-# Welcome to your Lovable project
+# 🌟 Equify - AI-Powered Relationship Management
 
-## Project info
+<div align="center">
+  <img src="https://img.shields.io/badge/React-18.3.1-blue" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-5.5.3-blue" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Supabase-Latest-green" alt="Supabase" />
+  <img src="https://img.shields.io/badge/DeepSeek-AI-purple" alt="DeepSeek AI" />
+  <img src="https://img.shields.io/badge/Mobile-First-orange" alt="Mobile First" />
+</div>
 
-**URL**: https://lovable.dev/projects/62d379fe-41a5-43ec-ac72-d2149f5b81c6
+## ✨ Overview
 
-## How can I edit this code?
+Equify is a sophisticated, mobile-first relationship management application that helps users build and maintain meaningful connections through AI-powered insights. Track favors, understand relationship dynamics, and receive personalized advice to strengthen your social bonds.
 
-There are several ways of editing your application.
+## 🚀 Key Features
 
-**Use Lovable**
+### 📱 Mobile-First Experience
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/62d379fe-41a5-43ec-ac72-d2149f5b81c6) and start prompting.
+- **Responsive Design**: Optimized for all screen sizes with mobile-priority
+- **Touch Gestures**: Swipe actions for quick favor logging and contact
+- **Native-like UX**: Smooth animations and haptic feedback simulation
+- **Safe Area Support**: Proper handling for notched and dynamic island devices
 
-Changes made via Lovable will be committed automatically to this repo.
+### 🤖 AI-Powered Insights
 
-**Use your preferred IDE**
+- **Conversational AI**: Chat with your personal relationship advisor
+- **Smart Recommendations**: Get personalized suggestions based on your patterns
+- **Relationship Analysis**: Understand your interaction dynamics
+- **Personality Assessment**: Discover your unique relationship style
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 💫 Relationship Management
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Favor Tracking**: Log and balance give-and-take interactions
+- **Relationship Types**: Organize family, friends, colleagues, and more
+- **Importance Levels**: Prioritize your most meaningful connections
+- **Balance Monitoring**: Visualize reciprocity in your relationships
 
-Follow these steps:
+### 📊 Advanced Analytics
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+- **Visual Insights**: Beautiful charts showing relationship patterns
+- **Trend Analysis**: Track how your relationships evolve over time
+- **Goal Setting**: Set and monitor relationship improvement targets
+- **Progress Tracking**: See your growth in building connections
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### 🎯 Smart Features
 
-# Step 3: Install the necessary dependencies.
-npm i
+- **Onboarding Flow**: Guided setup with personality assessment
+- **Real-time Updates**: Live data synchronization across devices
+- **Smart Notifications**: Contextual reminders and insights
+- **Offline Support**: Core functionality works without internet
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+## 🏗️ Technical Architecture
+
+### Frontend Stack
+
+```
+React 18.3.1 + TypeScript 5.5.3
+├── 🎨 UI Framework: Tailwind CSS + Shadcn/UI
+├── ⚡ Build Tool: Vite 5.4.1
+├── 🔄 State Management: React Query + Context
+├── 🎭 Animations: Framer Motion
+├── 📱 Routing: React Router 6.26.2
+└── 🎯 Mobile-First: PWA Ready
 ```
 
-**Edit a file directly in GitHub**
+### Backend Stack
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+Supabase (Backend-as-a-Service)
+├── 🗄️ Database: PostgreSQL with RLS
+├── 🔐 Authentication: JWT-based auth
+├── ⚡ Edge Functions: Serverless API
+├── 📡 Real-time: WebSocket subscriptions
+└── 🤖 AI Integration: DeepSeek API
+```
 
-**Use GitHub Codespaces**
+### Database Schema
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```sql
+Core Tables:
+├── profiles (user data + personality)
+├── relationships (connections + metadata)
+├── favors (interaction tracking)
+├── ai_insights (generated insights)
+├── notifications (smart alerts)
+└── activity_feed (timeline)
+```
 
-## What technologies are used for this project?
+## ���️ Quick Start
 
-This project is built with:
+### Prerequisites
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- Node.js 18+
+- npm or yarn
+- Supabase account
+- DeepSeek AI API key
 
-## How can I deploy this project?
+### Installation
 
-Simply open [Lovable](https://lovable.dev/projects/62d379fe-41a5-43ec-ac72-d2149f5b81c6) and click on Share -> Publish.
+```bash
+# Clone the repository
+git clone <repository-url>
+cd equify
 
-## Can I connect a custom domain to my Lovable project?
+# Install dependencies
+npm install
 
-Yes, you can!
+# Set up environment
+cp .env.example .env.local
+# Add your DeepSeek API key to .env.local
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Configuration
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+1. **DeepSeek AI Setup**:
+   - Get API key from [DeepSeek Platform](https://platform.deepseek.com/)
+   - Add to Supabase Edge Functions environment variables
+
+2. **Supabase Configuration**:
+   - Database is pre-configured
+   - Edge Functions handle AI integration
+   - RLS policies ensure data security
+
+### Development
+
+```bash
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+## 🎯 Feature Highlights
+
+### 1. **Smart Dashboard**
+
+- Real-time relationship statistics
+- Quick action buttons
+- AI-generated insights
+- Activity timeline
+- Goal progress tracking
+
+### 2. **Relationship Manager**
+
+- Gesture-based interactions
+- Advanced filtering and search
+- Relationship type categorization
+- Balance visualization
+- Contact integration
+
+### 3. **AI Chat Assistant**
+
+- Contextual conversation memory
+- Personality-aware responses
+- Relationship pattern analysis
+- Actionable advice generation
+- Conversation history
+
+### 4. **Analytics Engine**
+
+- Relationship type distribution
+- Monthly activity trends
+- Balance analysis over time
+- Personality insights
+- Goal achievement tracking
+
+### 5. **Mobile Optimizations**
+
+- Touch-friendly interface
+- Swipe gestures for actions
+- Bottom navigation
+- Safe area handling
+- Haptic feedback simulation
+
+## 🧠 AI Capabilities
+
+### DeepSeek Integration
+
+- **Conversational AI**: Natural relationship advice
+- **Pattern Recognition**: Identify relationship trends
+- **Personalized Insights**: Based on user personality
+- **Smart Recommendations**: Actionable relationship tips
+- **Context Awareness**: Considers full relationship history
+
+### AI Features
+
+```typescript
+✨ Chat Assistant: Personal relationship advisor
+🎯 Smart Recommendations: Automated suggestions
+📈 Pattern Analysis: Relationship trend detection
+🧭 Personality Assessment: Relationship style analysis
+⚡ Real-time Insights: Live relationship scoring
+```
+
+## 📱 Mobile Experience
+
+### Touch Interactions
+
+- **Swipe Right**: Quick favor logging
+- **Swipe Left**: Instant contact/call
+- **Long Press**: Context menus
+- **Pull to Refresh**: Data updates
+- **Haptic Feedback**: Tactile responses
+
+### Responsive Design
+
+- **Mobile First**: 320px+ support
+- **Tablet Optimized**: Enhanced layouts
+- **Desktop Ready**: Full feature parity
+- **Dynamic Scaling**: Adaptive UI elements
+
+## 🔐 Security & Privacy
+
+### Data Protection
+
+- **Row Level Security**: Supabase RLS policies
+- **JWT Authentication**: Secure user sessions
+- **API Key Management**: Environment-based secrets
+- **Data Encryption**: In-transit and at-rest
+
+### Privacy Features
+
+- **Data Control**: User-controlled sharing
+- **Local Processing**: Sensitive data stays local
+- **Anonymization**: Optional analytics sharing
+- **Export Options**: User data portability
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
+
+```bash
+# Connect to Vercel
+vercel
+
+# Configure environment variables
+vercel env add DEEPSEEK_API_KEY
+```
+
+### Netlify
+
+```bash
+# Build command
+npm run build
+
+# Publish directory
+dist/
+```
+
+### Environment Variables
+
+```env
+DEEPSEEK_API_KEY=your_api_key_here
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_anon_key
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Development Setup
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+### Code Standards
+
+- **TypeScript**: Strict type checking
+- **ESLint**: Code quality enforcement
+- **Prettier**: Consistent formatting
+- **Conventional Commits**: Semantic versioning
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Shadcn/UI**: Beautiful, accessible components
+- **Supabase**: Powerful backend infrastructure
+- **DeepSeek**: Advanced AI capabilities
+- **Framer Motion**: Smooth animations
+- **React Query**: Excellent data management
+
+---
+
+<div align="center">
+  <p>Built with ❤️ for better relationships</p>
+  <p>© 2024 Equify. All rights reserved.</p>
+</div>
