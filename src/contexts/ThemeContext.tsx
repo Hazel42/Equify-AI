@@ -1,65 +1,23 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-
-type Theme = 'dark' | 'light' | 'system';
+import React, { createContext, useContext } from 'react';
 
 interface ThemeContextType {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-  actualTheme: 'dark' | 'light';
+  theme: 'light';
+  setTheme: (theme: 'light') => void;
+  actualTheme: 'light';
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [theme, setTheme] = useState<Theme>(() => {
-    const stored = localStorage.getItem('theme') as Theme;
-    return stored || 'system';
-  });
-
-  const [actualTheme, setActualTheme] = useState<'dark' | 'light'>('light');
-
-  useEffect(() => {
-    const root = window.document.documentElement;
-    
-    const getSystemTheme = () => {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    };
-
-    let resolvedTheme: 'dark' | 'light';
-    
-    if (theme === 'system') {
-      resolvedTheme = getSystemTheme();
-    } else {
-      resolvedTheme = theme;
-    }
-
-    setActualTheme(resolvedTheme);
-    
-    root.classList.remove('light', 'dark');
-    root.classList.add(resolvedTheme);
-    
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = () => {
-      if (theme === 'system') {
-        const systemTheme = mediaQuery.matches ? 'dark' : 'light';
-        setActualTheme(systemTheme);
-        const root = window.document.documentElement;
-        root.classList.remove('light', 'dark');
-        root.classList.add(systemTheme);
-      }
-    };
-
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [theme]);
+  const value: ThemeContextType = {
+    theme: 'light',
+    setTheme: () => {}, // No-op since we only support light mode
+    actualTheme: 'light'
+  };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, actualTheme }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );

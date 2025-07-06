@@ -23,8 +23,8 @@ const Index = () => {
             <div className="flex items-center justify-center mb-4">
               <Heart className="h-10 w-10 text-green-600 mr-3" />
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">RelationshipDebt AI</h1>
-                <p className="text-lg text-green-600 mt-1">Build balanced connections</p>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Equify</h1>
+                <p className="text-lg text-green-600 mt-1">Empowering relationships through equity and empathy</p>
               </div>
             </div>
             <p className="text-base text-gray-600 max-w-xl mx-auto">
@@ -115,7 +115,7 @@ const Index = () => {
       case 'settings':
         return 'Settings';
       default:
-        return 'RelationshipDebt AI';
+        return 'Equify';
     }
   };
 
