@@ -5,13 +5,11 @@ import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Heart,
   Users,
-  MessageCircle,
-  Gift,
   Sparkles,
+  Brain,
   ArrowRight,
   ArrowLeft,
   Check,
@@ -20,6 +18,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { PersonalityAssessment } from "@/components/PersonalityAssessment";
+import { AssessmentResults } from "@/components/AssessmentResults";
 
 interface OnboardingData {
   fullName: string;
@@ -33,73 +33,13 @@ interface OnboardingData {
   };
 }
 
-const personalityQuestions = [
-  {
-    id: "social_energy",
-    question: "How do you prefer to recharge after social interactions?",
-    options: [
-      {
-        value: "alone_time",
-        label: "Alone time and quiet activities",
-        type: "introvert",
-      },
-      {
-        value: "more_social",
-        label: "More social activities and group settings",
-        type: "extrovert",
-      },
-      { value: "balanced", label: "A balance of both", type: "ambivert" },
-    ],
-  },
-  {
-    id: "favor_approach",
-    question: "When someone needs help, you typically:",
-    options: [
-      {
-        value: "immediate_help",
-        label: "Offer help immediately without being asked",
-        type: "proactive",
-      },
-      {
-        value: "wait_asked",
-        label: "Wait to be asked, then help enthusiastically",
-        type: "responsive",
-      },
-      {
-        value: "think_first",
-        label: "Think carefully about what help you can provide",
-        type: "thoughtful",
-      },
-    ],
-  },
-  {
-    id: "reciprocity_style",
-    question: "Your approach to reciprocity is:",
-    options: [
-      {
-        value: "immediate",
-        label: "I prefer immediate exchange of favors",
-        type: "immediate",
-      },
-      {
-        value: "flexible",
-        label: "I'm flexible about timing and form",
-        type: "flexible",
-      },
-      {
-        value: "long_term",
-        label: "I think in terms of long-term balance",
-        type: "long_term",
-      },
-    ],
-  },
-];
-
-interface OnboardingFlowProps {
+interface EnhancedOnboardingFlowProps {
   onComplete: () => void;
 }
 
-export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
+export const EnhancedOnboardingFlow = ({
+  onComplete,
+}: EnhancedOnboardingFlowProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showAssessment, setShowAssessment] = useState(false);
   const [showResults, setShowResults] = useState(false);
@@ -115,41 +55,11 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
       aiInsightsEnabled: true,
     },
   });
-  const [personalityAnswers, setPersonalityAnswers] = useState<
-    Record<string, string>
-  >({});
+
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const totalSteps = 4; // Reduced since assessment is separate
-
-  const analyzePersonality = () => {
-    const answers = Object.values(personalityAnswers);
-
-    // Simple personality analysis based on answers
-    if (answers.includes("proactive") && answers.includes("immediate")) {
-      return "activist";
-    } else if (
-      answers.includes("thoughtful") &&
-      answers.includes("long_term")
-    ) {
-      return "strategist";
-    } else if (answers.includes("responsive") && answers.includes("flexible")) {
-      return "harmonizer";
-    } else {
-      return "balanced";
-    }
-  };
-
-  const analyzeReciprocityStyle = () => {
-    if (personalityAnswers.reciprocity_style === "immediate") {
-      return "immediate_reciprocator";
-    } else if (personalityAnswers.reciprocity_style === "flexible") {
-      return "flexible_giver";
-    } else {
-      return "long_term_balancer";
-    }
-  };
+  const totalSteps = 3;
 
   const handleNext = () => {
     if (currentStep < totalSteps - 1) {
@@ -163,17 +73,29 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
     }
   };
 
-  const handleComplete = async () => {
-    try {
-      const personalityType = analyzePersonality();
-      const reciprocityStyle = analyzeReciprocityStyle();
+  const handleStartAssessment = () => {
+    setShowAssessment(true);
+  };
 
+  const handleAssessmentComplete = (result: any) => {
+    setAssessmentResult(result);
+    setOnboardingData((prev) => ({
+      ...prev,
+      personalityType: result.personalityType,
+      reciprocityStyle: result.reciprocityStyle,
+    }));
+    setShowAssessment(false);
+    setShowResults(true);
+  };
+
+  const handleFinalComplete = async () => {
+    try {
       await supabase
         .from("profiles")
         .update({
           full_name: onboardingData.fullName,
-          personality_type: personalityType,
-          reciprocity_style: reciprocityStyle,
+          personality_type: onboardingData.personalityType,
+          reciprocity_style: onboardingData.reciprocityStyle,
           onboarding_completed: true,
           updated_at: new Date().toISOString(),
         })
@@ -209,8 +131,8 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
               Welcome to Equify!
             </h2>
             <p className="text-gray-600">
-              Let's set up your profile to provide personalized relationship
-              insights and recommendations.
+              Track your relationships, understand patterns, and get AI-powered
+              insights to build stronger connections.
             </p>
           </div>
           <div className="space-y-4">
@@ -227,9 +149,9 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
               </span>
             </div>
             <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
-              <Gift className="h-5 w-5 text-purple-600" />
+              <Brain className="h-5 w-5 text-purple-600" />
               <span className="text-sm text-purple-800">
-                Maintain healthy balance
+                Understand your relationship style
               </span>
             </div>
           </div>
@@ -303,90 +225,35 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
         </div>
       ),
     },
-    ...personalityQuestions.map((q, index) => ({
-      title: `Personality Assessment ${index + 1}/3`,
-      content: (
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">{q.question}</h3>
-          <RadioGroup
-            value={personalityAnswers[q.id] || ""}
-            onValueChange={(value) =>
-              setPersonalityAnswers({
-                ...personalityAnswers,
-                [q.id]: value,
-              })
-            }
-          >
-            {q.options.map((option) => (
-              <div
-                key={option.value}
-                className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50"
-              >
-                <RadioGroupItem value={option.value} id={option.value} />
-                <Label htmlFor={option.value} className="flex-1 cursor-pointer">
-                  {option.label}
-                </Label>
-              </div>
-            ))}
-          </RadioGroup>
-        </div>
-      ),
-    })),
     {
-      title: "Preferences",
+      title: "Personality Assessment",
       content: (
-        <div className="space-y-4">
-          <div>
-            <Label>How often would you like AI insights?</Label>
-            <RadioGroup
-              value={onboardingData.preferences.reminderFrequency}
-              onValueChange={(value) =>
-                setOnboardingData({
-                  ...onboardingData,
-                  preferences: {
-                    ...onboardingData.preferences,
-                    reminderFrequency: value,
-                  },
-                })
-              }
-              className="mt-2"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="daily" id="daily" />
-                <Label htmlFor="daily">Daily</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="weekly" id="weekly" />
-                <Label htmlFor="weekly">Weekly</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="monthly" id="monthly" />
-                <Label htmlFor="monthly">Monthly</Label>
-              </div>
-            </RadioGroup>
+        <div className="text-center space-y-6">
+          <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
+            <Brain className="h-8 w-8 text-purple-600" />
           </div>
-
-          <div className="flex items-center justify-between p-3 border rounded-lg">
-            <div>
-              <Label className="font-medium">Enable AI Insights</Label>
-              <p className="text-xs text-gray-500">
-                Get personalized relationship recommendations
-              </p>
-            </div>
-            <input
-              type="checkbox"
-              checked={onboardingData.preferences.aiInsightsEnabled}
-              onChange={(e) =>
-                setOnboardingData({
-                  ...onboardingData,
-                  preferences: {
-                    ...onboardingData.preferences,
-                    aiInsightsEnabled: e.target.checked,
-                  },
-                })
-              }
-              className="rounded"
-            />
+          <div>
+            <h3 className="text-lg font-semibold">
+              Ready for Your Assessment?
+            </h3>
+            <p className="text-gray-600 mb-4">
+              We'll help you understand your unique relationship style with a
+              quick personality assessment.
+            </p>
+          </div>
+          <div className="bg-purple-50 p-4 rounded-lg space-y-2">
+            <p className="text-sm text-purple-800 font-medium">
+              What you'll discover:
+            </p>
+            <ul className="text-xs text-purple-700 space-y-1">
+              <li>• Your relationship personality type</li>
+              <li>• Your preferred reciprocity style</li>
+              <li>• Personalized strengths & recommendations</li>
+              <li>• AI insights tailored to your style</li>
+            </ul>
+          </div>
+          <div className="text-xs text-gray-500">
+            📝 Takes 3-5 minutes • Can be retaken anytime
           </div>
         </div>
       ),
@@ -400,11 +267,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
       case 1:
         return onboardingData.fullName.length > 0;
       case 2:
-        return personalityAnswers.social_energy;
-      case 3:
-        return personalityAnswers.favor_approach;
-      case 4:
-        return personalityAnswers.reciprocity_style;
+        return true;
       default:
         return true;
     }
@@ -418,7 +281,6 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
           onComplete={handleAssessmentComplete}
           onSkip={() => {
             setShowAssessment(false);
-            setShowResults(false);
             handleFinalComplete();
           }}
         />
@@ -490,12 +352,12 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                       disabled={!isStepComplete()}
                       className="flex-1 bg-green-600 hover:bg-green-700"
                     >
-                      {currentStep === 2 ? "Start Assessment" : "Next"}
+                      Next
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
                   ) : (
                     <Button
-                      onClick={handleBasicComplete}
+                      onClick={handleStartAssessment}
                       disabled={!isStepComplete()}
                       className="flex-1 bg-purple-600 hover:bg-purple-700"
                     >

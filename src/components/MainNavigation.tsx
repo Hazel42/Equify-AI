@@ -1,10 +1,8 @@
-
-import { SimpleDashboard } from "@/components/SimpleDashboard";
-import { RelationshipManager } from "@/components/RelationshipManager";
-import { SmartRecommendationEngine } from "@/components/SmartRecommendationEngine";
-import { PerformanceAnalytics } from "@/components/PerformanceAnalytics";
-import { SettingsPage } from "@/components/SettingsPage";
-import { AIChatAssistant } from "@/components/AIChatAssistant";
+import { EnhancedDashboard } from "@/components/EnhancedDashboard";
+import { EnhancedRelationshipManager } from "@/components/EnhancedRelationshipManager";
+import { EnhancedAIChat } from "@/components/EnhancedAIChat";
+import { EnhancedAnalytics } from "@/components/EnhancedAnalytics";
+import { EnhancedSettings } from "@/components/EnhancedSettings";
 
 interface MainNavigationProps {
   userId: string;
@@ -14,23 +12,23 @@ interface MainNavigationProps {
 export const MainNavigation = ({ userId, activeTab }: MainNavigationProps) => {
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard':
-        return <SimpleDashboard />;
-      case 'relationships':
-        return <RelationshipManager />;
-      case 'ai-chat':
-        return <AIChatAssistant />;
-      case 'analytics':
-        return <PerformanceAnalytics />;
-      case 'settings':
-        return <SettingsPage />;
+      case "dashboard":
+        return <EnhancedDashboard key="dashboard" />;
+      case "relationships":
+        return <EnhancedRelationshipManager key="relationships" />;
+      case "ai-chat":
+        return <EnhancedAIChat key="ai-chat" />;
+      case "analytics":
+        return <EnhancedAnalytics key="analytics" />;
+      case "settings":
+        return <EnhancedSettings key="settings" />;
       default:
-        return <SimpleDashboard />;
+        return <EnhancedDashboard key="dashboard" />;
     }
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full" key={activeTab}>
       {renderContent()}
     </div>
   );
