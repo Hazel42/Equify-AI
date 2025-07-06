@@ -1,10 +1,8 @@
-
-import { SimpleDashboard } from "@/components/SimpleDashboard";
-import { RelationshipManager } from "@/components/RelationshipManager";
-import { SmartRecommendationEngine } from "@/components/SmartRecommendationEngine";
-import { PerformanceAnalytics } from "@/components/PerformanceAnalytics";
-import { SettingsPage } from "@/components/SettingsPage";
-import { AIChatAssistant } from "@/components/AIChatAssistant";
+import { EnhancedDashboard } from "@/components/EnhancedDashboard";
+import { EnhancedRelationshipManager } from "@/components/EnhancedRelationshipManager";
+import { EnhancedAIChat } from "@/components/EnhancedAIChat";
+import { EnhancedAnalytics } from "@/components/EnhancedAnalytics";
+import { EnhancedSettings } from "@/components/EnhancedSettings";
 
 interface MainNavigationProps {
   userId: string;
@@ -14,24 +12,20 @@ interface MainNavigationProps {
 export const MainNavigation = ({ userId, activeTab }: MainNavigationProps) => {
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard':
-        return <SimpleDashboard />;
-      case 'relationships':
-        return <RelationshipManager />;
-      case 'ai-chat':
-        return <AIChatAssistant />;
-      case 'analytics':
-        return <PerformanceAnalytics />;
-      case 'settings':
-        return <SettingsPage />;
+      case "dashboard":
+        return <EnhancedDashboard />;
+      case "relationships":
+        return <EnhancedRelationshipManager />;
+      case "ai-chat":
+        return <EnhancedAIChat />;
+      case "analytics":
+        return <EnhancedAnalytics />;
+      case "settings":
+        return <EnhancedSettings />;
       default:
-        return <SimpleDashboard />;
+        return <EnhancedDashboard />;
     }
   };
 
-  return (
-    <div className="w-full">
-      {renderContent()}
-    </div>
-  );
+  return <div className="w-full">{renderContent()}</div>;
 };
