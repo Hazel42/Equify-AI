@@ -13,7 +13,7 @@ import { ResponsiveContainer } from "@/components/ResponsiveContainer";
 import { useAuth } from "@/hooks/useAuth";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MainNavigation } from "@/components/MainNavigation";
-import { OnboardingFlow } from "@/components/OnboardingFlow";
+import { EnhancedOnboardingFlow } from "@/components/EnhancedOnboardingFlow";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -193,7 +193,7 @@ const Index = () => {
   // Show onboarding if needed
   if (showOnboarding) {
     return (
-      <OnboardingFlow
+      <EnhancedOnboardingFlow
         onComplete={() => {
           setShowOnboarding(false);
           // Refresh profile data
