@@ -443,10 +443,17 @@ const EnhancedRelationshipManagerComponent = () => {
       {/* Dialogs */}
       <AddRelationshipDialog
         open={showAddDialog}
-        onOpenChange={setShowAddDialog}
+        onOpenChange={(open) => {
+          setShowAddDialog(open);
+          if (!open) {
+            setEditingRelationship(null);
+          }
+        }}
         onSuccess={() => {
           setShowAddDialog(false);
+          setEditingRelationship(null);
         }}
+        editingRelationship={editingRelationship}
       />
 
       <EnhancedAddFavorDialog
