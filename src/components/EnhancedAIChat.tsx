@@ -24,6 +24,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useRelationships } from "@/hooks/useRelationships";
+import { useFavorsEnhanced } from "@/hooks/useFavorsEnhanced";
 
 interface ChatMessage {
   id: string;
@@ -49,6 +51,9 @@ export const EnhancedAIChat = () => {
   const [isTyping, setIsTyping] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
+  const { relationships } = useRelationships();
+  const { favors, getFavorStats } = useFavorsEnhanced();
+
   const [conversation, setConversation] = useState<ChatMessage[]>([
     {
       id: "1",
@@ -61,40 +66,34 @@ export const EnhancedAIChat = () => {
   ]);
 
   // Get user context for AI
-  const { data: context } = useQuery({
-    queryKey: ["ai-context", user?.id],
+  const { data: profile } = useQuery({
+    queryKey: ["profile", user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
 
-      const [profile, relationships, favors] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", user.id).single(),
-        supabase
-          .from("relationships")
-          .select("*")
-          .eq("user_id", user.id)
-          .limit(5),
-        supabase
-          .from("favors")
-          .select("*, relationships(name)")
-          .eq("user_id", user.id)
-          .limit(10),
-      ]);
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
 
-      return {
-        profile: profile.data,
-        recentRelationships: relationships.data || [],
-        recentFavors: favors.data || [],
-      };
+      if (error) throw error;
+      return data;
     },
     enabled: !!user?.id,
   });
 
+  // Prepare context using enhanced hooks
+  const favorStats = getFavorStats();
+  const recentFavors = favors?.slice(0, 10) || [];
+  const recentRelationships = relationships?.slice(0, 5) || [];
+
   const chatMutation = useMutation({
     mutationFn: async (userMessage: string) => {
       const contextData: ConversationContext = {
-        recentRelationships: context?.recentRelationships || [],
-        recentFavors: context?.recentFavors || [],
-        userPersonality: context?.profile?.personality_type || "unknown",
+        recentRelationships: recentRelationships,
+        recentFavors: recentFavors,
+        userPersonality: profile?.personality_type || "unknown",
         conversationHistory: conversation.slice(-5), // Last 5 messages for context
       };
 
@@ -165,9 +164,20 @@ export const EnhancedAIChat = () => {
       goals: "Help me set relationship goals for this month",
     };
 
-    if (quickMessages[action as keyof typeof quickMessages]) {
-      setMessage(quickMessages[action as keyof typeof quickMessages]);
-      await handleSendMessage();
+    const messageText = quickMessages[action as keyof typeof quickMessages];
+    if (messageText) {
+      const userMessage: ChatMessage = {
+        id: Date.now().toString(),
+        content: messageText,
+        sender: "user",
+        timestamp: new Date().toISOString(),
+        type: "text",
+      };
+
+      setConversation((prev) => [...prev, userMessage]);
+      setIsTyping(true);
+
+      await chatMutation.mutateAsync(messageText);
     }
   };
 
