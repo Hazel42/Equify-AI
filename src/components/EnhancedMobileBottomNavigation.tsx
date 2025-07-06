@@ -252,14 +252,25 @@ export const EnhancedMobileBottomNavigation = ({
         </div>
 
         {/* Center - Enhanced Quick Action Button */}
-        <div className="flex-shrink-0 mx-4">
+        <div className="flex-shrink-0 mx-6 relative">
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full blur-lg opacity-30"
+            animate={{
+              scale: [1, 1.1, 1],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
           <motion.button
-            className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-4 rounded-full shadow-lg elevation-8"
+            className="relative bg-gradient-to-r from-green-500 to-emerald-600 text-white p-4 rounded-full shadow-lg"
             whileTap={{ scale: 0.9 }}
             whileHover={{ scale: 1.05 }}
             style={{
               boxShadow:
-                "0 8px 25px rgba(34, 197, 94, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)",
+                "0 8px 25px rgba(34, 197, 94, 0.3), 0 4px 12px rgba(0, 0, 0, 0.15)",
             }}
             onClick={() => {
               // Quick add action based on current tab
