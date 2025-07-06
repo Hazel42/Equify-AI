@@ -411,3 +411,7 @@ const EnhancedRelationshipManagerComponent = () => {
     </div>
   );
 };
+
+export const EnhancedRelationshipManager = memo(
+  EnhancedRelationshipManagerComponent,
+);

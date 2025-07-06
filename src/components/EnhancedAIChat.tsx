@@ -433,3 +433,5 @@ const EnhancedAIChatComponent = () => {
     </div>
   );
 };
+
+export const EnhancedAIChat = memo(EnhancedAIChatComponent);
