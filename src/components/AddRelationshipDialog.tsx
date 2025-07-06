@@ -26,7 +26,7 @@ export const AddRelationshipDialog = ({ open, onOpenChange }: AddRelationshipDia
 
     setLoading(true);
     try {
-      await addRelationship({
+      await addRelationship.mutateAsync({
         name,
         relationship_type: relationshipType,
         importance_level: importanceLevel[0]

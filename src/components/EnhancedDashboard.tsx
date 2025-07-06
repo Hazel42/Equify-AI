@@ -162,21 +162,6 @@ export const EnhancedDashboard = () => {
         <AddRelationshipDialog 
           open={showAddRelationship}
           onOpenChange={setShowAddRelationship}
-          onSave={(data) => {
-            addRelationship.mutate(data, {
-              onSuccess: (result: any) => {
-                  const newId = result?.data?.[0]?.id;
-                  if (newId) {
-                      setRelationshipForAI(newId);
-                  }
-                  toast({
-                    title: 'Relationship Added',
-                    description: 'Your new relationship has been saved successfully.',
-                  });
-              }
-            });
-            setShowAddRelationship(false);
-          }}
         />
 
         {/* Add Favor Dialog */}

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -125,8 +124,6 @@ export const ExportImportManager = () => {
             name: relationship.name,
             relationship_type: relationship.relationship_type,
             importance_level: relationship.importance_level,
-            contact_info: relationship.contact_info,
-            preferences: relationship.preferences,
           });
           importedRelationships++;
         } catch (error) {
