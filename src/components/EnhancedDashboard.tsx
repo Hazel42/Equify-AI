@@ -45,38 +45,6 @@ export const EnhancedDashboard = () => {
   const [showAddFavorDialog, setShowAddFavorDialog] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
 
-  // Listen for quick actions
-  useEffect(() => {
-    const handleQuickAction = (event: CustomEvent) => {
-      const { action, activeTab } = event.detail;
-
-      if (activeTab === "dashboard") {
-        if (action === "add-favor") {
-          setShowAddFavorDialog(true);
-        } else if (action === "add-relationship") {
-          setShowAddRelationshipDialog(true);
-        }
-      }
-    };
-
-    window.addEventListener("quick-action", handleQuickAction as EventListener);
-    return () =>
-      window.removeEventListener(
-        "quick-action",
-        handleQuickAction as EventListener,
-      );
-  }, []);
-
-  // Show tutorial for new users
-  useEffect(() => {
-    if (stats && stats.totalRelationships === 0 && stats.totalFavors === 0) {
-      const hasSeenTutorial = localStorage.getItem("equify_tutorial_completed");
-      if (!hasSeenTutorial) {
-        setTimeout(() => setShowTutorial(true), 2000); // Show after 2 seconds
-      }
-    }
-  }, [stats]);
-
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dashboard-stats", user?.id, selectedTimeframe],
     queryFn: async () => {
@@ -110,6 +78,38 @@ export const EnhancedDashboard = () => {
     },
     enabled: !!user?.id,
   });
+
+  // Listen for quick actions
+  useEffect(() => {
+    const handleQuickAction = (event: CustomEvent) => {
+      const { action, activeTab } = event.detail;
+
+      if (activeTab === "dashboard") {
+        if (action === "add-favor") {
+          setShowAddFavorDialog(true);
+        } else if (action === "add-relationship") {
+          setShowAddRelationshipDialog(true);
+        }
+      }
+    };
+
+    window.addEventListener("quick-action", handleQuickAction as EventListener);
+    return () =>
+      window.removeEventListener(
+        "quick-action",
+        handleQuickAction as EventListener,
+      );
+  }, []);
+
+  // Show tutorial for new users
+  useEffect(() => {
+    if (stats && stats.totalRelationships === 0 && stats.totalFavors === 0) {
+      const hasSeenTutorial = localStorage.getItem("equify_tutorial_completed");
+      if (!hasSeenTutorial) {
+        setTimeout(() => setShowTutorial(true), 2000); // Show after 2 seconds
+      }
+    }
+  }, [stats]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
