@@ -101,6 +101,9 @@ interface OnboardingFlowProps {
 
 export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [showAssessment, setShowAssessment] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const [assessmentResult, setAssessmentResult] = useState<any>(null);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     fullName: "",
     personalityType: "",
@@ -118,7 +121,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const totalSteps = 5;
+  const totalSteps = 4; // Reduced since assessment is separate
 
   const analyzePersonality = () => {
     const answers = Object.values(personalityAnswers);
@@ -407,6 +410,38 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
     }
   };
 
+  // Show assessment if requested
+  if (showAssessment) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50 p-4">
+        <PersonalityAssessment
+          onComplete={handleAssessmentComplete}
+          onSkip={() => {
+            setShowAssessment(false);
+            setShowResults(false);
+            handleFinalComplete();
+          }}
+        />
+      </div>
+    );
+  }
+
+  // Show results if assessment is complete
+  if (showResults && assessmentResult) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 p-4">
+        <AssessmentResults
+          result={assessmentResult}
+          onContinue={handleFinalComplete}
+          onRetake={() => {
+            setShowResults(false);
+            setShowAssessment(true);
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 p-4">
       <div className="max-w-md mx-auto">
@@ -455,17 +490,17 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                       disabled={!isStepComplete()}
                       className="flex-1 bg-green-600 hover:bg-green-700"
                     >
-                      Next
+                      {currentStep === 2 ? "Start Assessment" : "Next"}
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
                   ) : (
                     <Button
-                      onClick={handleComplete}
+                      onClick={handleBasicComplete}
                       disabled={!isStepComplete()}
-                      className="flex-1 bg-green-600 hover:bg-green-700"
+                      className="flex-1 bg-purple-600 hover:bg-purple-700"
                     >
-                      Complete Setup
-                      <Check className="h-4 w-4 ml-2" />
+                      <Brain className="h-4 w-4 mr-2" />
+                      Start Assessment
                     </Button>
                   )}
                 </div>
