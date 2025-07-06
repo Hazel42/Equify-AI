@@ -42,7 +42,12 @@ export const MobileLayout = ({
         onSearchClick={() => setShowSearch(true)}
       />
 
-      <main className="flex-1 overflow-y-auto pb-24 safe-area-bottom">
+      <main
+        className="flex-1 overflow-y-auto"
+        style={{
+          paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))",
+        }}
+      >
         <div className="p-4">{children}</div>
       </main>
 
