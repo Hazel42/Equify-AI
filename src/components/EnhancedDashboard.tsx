@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { RealtimeStatsCard } from "@/components/RealtimeStatsCard";
+import { AddRelationshipDialog } from "@/components/AddRelationshipDialog";
+import { EnhancedAddFavorDialog } from "@/components/EnhancedAddFavorDialog";
 import {
   Users,
   Heart,
@@ -37,6 +39,9 @@ interface DashboardStats {
 export const EnhancedDashboard = () => {
   const { user } = useAuth();
   const [selectedTimeframe, setSelectedTimeframe] = useState("week");
+  const [showAddRelationshipDialog, setShowAddRelationshipDialog] =
+    useState(false);
+  const [showAddFavorDialog, setShowAddFavorDialog] = useState(false);
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dashboard-stats", user?.id, selectedTimeframe],
@@ -219,12 +224,19 @@ export const EnhancedDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white h-12">
+            <Button
+              onClick={() => setShowAddRelationshipDialog(true)}
+              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white h-12"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add New Relationship
             </Button>
             <div className="grid grid-cols-2 gap-3">
-              <Button variant="outline" className="h-12">
+              <Button
+                variant="outline"
+                className="h-12"
+                onClick={() => setShowAddFavorDialog(true)}
+              >
                 <Gift className="h-4 w-4 mr-2" />
                 Record Favor
               </Button>
@@ -326,6 +338,25 @@ export const EnhancedDashboard = () => {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Dialogs */}
+      <AddRelationshipDialog
+        open={showAddRelationshipDialog}
+        onOpenChange={setShowAddRelationshipDialog}
+        onSuccess={() => {
+          setShowAddRelationshipDialog(false);
+          // Refresh data will happen automatically via React Query
+        }}
+      />
+
+      <EnhancedAddFavorDialog
+        open={showAddFavorDialog}
+        onOpenChange={setShowAddFavorDialog}
+        onSuccess={() => {
+          setShowAddFavorDialog(false);
+          // Refresh data will happen automatically via React Query
+        }}
+      />
     </motion.div>
   );
 };
