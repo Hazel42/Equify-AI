@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { RealtimeStatsCard } from "@/components/RealtimeStatsCard";
 import { AddRelationshipDialog } from "@/components/AddRelationshipDialog";
 import { EnhancedAddFavorDialog } from "@/components/EnhancedAddFavorDialog";
+import { QuickStartTutorial } from "@/components/QuickStartTutorial";
 import {
   Users,
   Heart,
@@ -42,6 +43,7 @@ export const EnhancedDashboard = () => {
   const [showAddRelationshipDialog, setShowAddRelationshipDialog] =
     useState(false);
   const [showAddFavorDialog, setShowAddFavorDialog] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   // Listen for quick actions
   useEffect(() => {
@@ -64,6 +66,16 @@ export const EnhancedDashboard = () => {
         handleQuickAction as EventListener,
       );
   }, []);
+
+  // Show tutorial for new users
+  useEffect(() => {
+    if (stats && stats.totalRelationships === 0 && stats.totalFavors === 0) {
+      const hasSeenTutorial = localStorage.getItem("equify_tutorial_completed");
+      if (!hasSeenTutorial) {
+        setTimeout(() => setShowTutorial(true), 2000); // Show after 2 seconds
+      }
+    }
+  }, [stats]);
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dashboard-stats", user?.id, selectedTimeframe],
@@ -390,6 +402,20 @@ export const EnhancedDashboard = () => {
           // Refresh data will happen automatically via React Query
         }}
       />
+
+      {/* Tutorial */}
+      {showTutorial && (
+        <QuickStartTutorial
+          onComplete={() => {
+            setShowTutorial(false);
+            localStorage.setItem("equify_tutorial_completed", "true");
+          }}
+          onSkip={() => {
+            setShowTutorial(false);
+            localStorage.setItem("equify_tutorial_completed", "true");
+          }}
+        />
+      )}
     </motion.div>
   );
 };
