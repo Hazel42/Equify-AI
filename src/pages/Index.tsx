@@ -1,18 +1,51 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, ArrowRight, Users, TrendingUp, Gift } from "lucide-react";
 import { ResponsiveContainer } from "@/components/ResponsiveContainer";
 import { useAuth } from "@/hooks/useAuth";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MainNavigation } from "@/components/MainNavigation";
+import { OnboardingFlow } from "@/components/OnboardingFlow";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Check if user needs onboarding
+  const { data: profile } = useQuery({
+    queryKey: ["profile-onboarding", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("onboarding_completed")
+        .eq("id", user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id && isAuthenticated,
+  });
+
+  useEffect(() => {
+    if (profile && !profile.onboarding_completed) {
+      setShowOnboarding(true);
+    }
+  }, [profile]);
 
   // Landing page untuk user yang belum login
   if (!isAuthenticated) {
@@ -23,12 +56,17 @@ const Index = () => {
             <div className="flex items-center justify-center mb-4">
               <Heart className="h-10 w-10 text-green-600 mr-3" />
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Equify</h1>
-                <p className="text-lg text-green-600 mt-1">Empowering relationships through equity and empathy</p>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                  Equify
+                </h1>
+                <p className="text-lg text-green-600 mt-1">
+                  Empowering relationships through equity and empathy
+                </p>
               </div>
             </div>
             <p className="text-base text-gray-600 max-w-xl mx-auto">
-              Track favors, build stronger relationships, and get AI-powered insights for healthy social connections.
+              Track favors, build stronger relationships, and get AI-powered
+              insights for healthy social connections.
             </p>
           </div>
 
@@ -38,35 +76,43 @@ const Index = () => {
                 <Users className="h-5 w-5 text-green-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Track Relationships</h3>
-                <p className="text-sm text-gray-600">Keep track of favors with friends and family.</p>
+                <h3 className="font-semibold text-gray-900">
+                  Track Relationships
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Keep track of favors with friends and family.
+                </p>
               </div>
             </div>
-            
+
             <div className="flex items-start space-x-3 p-4 bg-white rounded-lg shadow-sm">
               <div className="bg-blue-100 p-2 rounded-full">
                 <TrendingUp className="h-5 w-5 text-blue-600" />
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">AI Insights</h3>
-                <p className="text-sm text-gray-600">Get personalized relationship recommendations.</p>
+                <p className="text-sm text-gray-600">
+                  Get personalized relationship recommendations.
+                </p>
               </div>
             </div>
-            
+
             <div className="flex items-start space-x-3 p-4 bg-white rounded-lg shadow-sm">
               <div className="bg-orange-100 p-2 rounded-full">
                 <Gift className="h-5 w-5 text-orange-600" />
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">Balance Tracker</h3>
-                <p className="text-sm text-gray-600">Maintain healthy give-and-take relationships.</p>
+                <p className="text-sm text-gray-600">
+                  Maintain healthy give-and-take relationships.
+                </p>
               </div>
             </div>
           </div>
 
           <div className="text-center">
-            <Button 
-              onClick={() => navigate("/auth")} 
+            <Button
+              onClick={() => navigate("/auth")}
               className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 w-full md:w-auto"
             >
               Get Started
@@ -76,7 +122,9 @@ const Index = () => {
 
           <Card className="mt-8 bg-white/80 backdrop-blur-sm border-green-200">
             <CardHeader>
-              <CardTitle className="text-center text-lg">Quick Preview</CardTitle>
+              <CardTitle className="text-center text-lg">
+                Quick Preview
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -90,9 +138,12 @@ const Index = () => {
                 </div>
               </div>
               <div className="p-3 bg-orange-50 rounded-lg">
-                <div className="text-sm font-medium text-orange-800">💡 AI Insight</div>
+                <div className="text-sm font-medium text-orange-800">
+                  💡 AI Insight
+                </div>
                 <div className="text-xs text-orange-700 mt-1">
-                  Consider reaching out to Sarah - you haven't connected in 2 weeks!
+                  Consider reaching out to Sarah - you haven't connected in 2
+                  weeks!
                 </div>
               </div>
             </CardContent>
@@ -104,29 +155,42 @@ const Index = () => {
 
   const getTitle = () => {
     switch (activeTab) {
-      case 'dashboard':
-        return 'Dashboard';
-      case 'relationships':
-        return 'My People';
-      case 'ai-chat':
-        return 'AI Assistant';
-      case 'analytics':
-        return 'Analytics';
-      case 'settings':
-        return 'Settings';
+      case "dashboard":
+        return "Dashboard";
+      case "relationships":
+        return "My People";
+      case "ai-chat":
+        return "AI Assistant";
+      case "analytics":
+        return "Analytics";
+      case "settings":
+        return "Settings";
       default:
-        return 'Equify';
+        return "Equify";
     }
   };
 
+  // Show onboarding if needed
+  if (showOnboarding) {
+    return (
+      <OnboardingFlow
+        onComplete={() => {
+          setShowOnboarding(false);
+          // Refresh profile data
+          window.location.reload();
+        }}
+      />
+    );
+  }
+
   // Main app dengan mobile layout
   return (
-    <MobileLayout 
+    <MobileLayout
       title={getTitle()}
-      activeTab={activeTab} 
+      activeTab={activeTab}
       onTabChange={setActiveTab}
     >
-      <MainNavigation userId={user?.id || ''} activeTab={activeTab} />
+      <MainNavigation userId={user?.id || ""} activeTab={activeTab} />
     </MobileLayout>
   );
 };
