@@ -26,6 +26,7 @@ import {
   BarChart,
   Bar,
   PieChart as RechartsPieChart,
+  Pie,
   Cell,
   ResponsiveContainer,
   XAxis,
