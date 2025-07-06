@@ -1,46 +1,63 @@
-
 import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { useRelationships } from "@/hooks/useRelationships";
 
 interface AddRelationshipDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
-export const AddRelationshipDialog = ({ open, onOpenChange }: AddRelationshipDialogProps) => {
+export const AddRelationshipDialog = ({
+  open,
+  onOpenChange,
+  onSuccess,
+}: AddRelationshipDialogProps) => {
   const [name, setName] = useState("");
   const [relationshipType, setRelationshipType] = useState("");
   const [importanceLevel, setImportanceLevel] = useState([3]);
-  const [loading, setLoading] = useState(false);
+  const [contactInfo, setContactInfo] = useState({ phone: "", email: "" });
   const { addRelationship } = useRelationships();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !relationshipType) return;
 
-    setLoading(true);
     try {
       await addRelationship.mutateAsync({
         name,
         relationship_type: relationshipType,
-        importance_level: importanceLevel[0]
+        importance_level: importanceLevel[0],
+        contact_info:
+          contactInfo.phone || contactInfo.email ? contactInfo : null,
       });
-      
+
       // Reset form
       setName("");
       setRelationshipType("");
       setImportanceLevel([3]);
+      setContactInfo({ phone: "", email: "" });
       onOpenChange(false);
+      onSuccess?.();
     } catch (error) {
-      console.error('Failed to add relationship:', error);
-    } finally {
-      setLoading(false);
+      console.error("Failed to add relationship:", error);
     }
   };
 
@@ -51,7 +68,7 @@ export const AddRelationshipDialog = ({ open, onOpenChange }: AddRelationshipDia
     { value: "partner", label: "Partner" },
     { value: "mentor", label: "Mentor" },
     { value: "acquaintance", label: "Acquaintance" },
-    { value: "other", label: "Other" }
+    { value: "other", label: "Other" },
   ];
 
   return (
@@ -74,10 +91,14 @@ export const AddRelationshipDialog = ({ open, onOpenChange }: AddRelationshipDia
               required
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="type">Relationship Type</Label>
-            <Select value={relationshipType} onValueChange={setRelationshipType} required>
+            <Select
+              value={relationshipType}
+              onValueChange={setRelationshipType}
+              required
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select relationship type" />
               </SelectTrigger>
@@ -107,11 +128,44 @@ export const AddRelationshipDialog = ({ open, onOpenChange }: AddRelationshipDia
             </div>
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone (Optional)</Label>
+            <Input
+              id="phone"
+              type="tel"
+              value={contactInfo.phone}
+              onChange={(e) =>
+                setContactInfo((prev) => ({ ...prev, phone: e.target.value }))
+              }
+              placeholder="Enter phone number"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email (Optional)</Label>
+            <Input
+              id="email"
+              type="email"
+              value={contactInfo.email}
+              onChange={(e) =>
+                setContactInfo((prev) => ({ ...prev, email: e.target.value }))
+              }
+              placeholder="Enter email address"
+            />
+          </div>
+
           <div className="flex gap-2 pt-4">
-            <Button type="submit" disabled={loading || !name || !relationshipType}>
-              {loading ? 'Adding...' : 'Add Relationship'}
+            <Button
+              type="submit"
+              disabled={addRelationship.isPending || !name || !relationshipType}
+            >
+              {addRelationship.isPending ? "Adding..." : "Add Relationship"}
             </Button>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
           </div>
