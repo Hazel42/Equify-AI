@@ -1,210 +1,478 @@
-
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import { Heart, ArrowRight, ArrowLeft } from "lucide-react";
-import { useProfile } from "@/hooks/useProfile";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Heart,
+  Users,
+  MessageCircle,
+  Gift,
+  Sparkles,
+  ArrowRight,
+  ArrowLeft,
+  Check,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+
+interface OnboardingData {
+  fullName: string;
+  personalityType: string;
+  reciprocityStyle: string;
+  relationshipGoals: string[];
+  preferences: {
+    reminderFrequency: string;
+    privacyLevel: string;
+    aiInsightsEnabled: boolean;
+  };
+}
+
+const personalityQuestions = [
+  {
+    id: "social_energy",
+    question: "How do you prefer to recharge after social interactions?",
+    options: [
+      {
+        value: "alone_time",
+        label: "Alone time and quiet activities",
+        type: "introvert",
+      },
+      {
+        value: "more_social",
+        label: "More social activities and group settings",
+        type: "extrovert",
+      },
+      { value: "balanced", label: "A balance of both", type: "ambivert" },
+    ],
+  },
+  {
+    id: "favor_approach",
+    question: "When someone needs help, you typically:",
+    options: [
+      {
+        value: "immediate_help",
+        label: "Offer help immediately without being asked",
+        type: "proactive",
+      },
+      {
+        value: "wait_asked",
+        label: "Wait to be asked, then help enthusiastically",
+        type: "responsive",
+      },
+      {
+        value: "think_first",
+        label: "Think carefully about what help you can provide",
+        type: "thoughtful",
+      },
+    ],
+  },
+  {
+    id: "reciprocity_style",
+    question: "Your approach to reciprocity is:",
+    options: [
+      {
+        value: "immediate",
+        label: "I prefer immediate exchange of favors",
+        type: "immediate",
+      },
+      {
+        value: "flexible",
+        label: "I'm flexible about timing and form",
+        type: "flexible",
+      },
+      {
+        value: "long_term",
+        label: "I think in terms of long-term balance",
+        type: "long_term",
+      },
+    ],
+  },
+];
 
 interface OnboardingFlowProps {
   onComplete: () => void;
 }
 
-const personalityQuestions = [
-  {
-    id: "reciprocity_awareness",
-    question: "How aware are you of reciprocity in your relationships?",
-    options: [
-      { value: "very_aware", label: "Very aware - I always notice who gives and receives" },
-      { value: "somewhat_aware", label: "Somewhat aware - I notice sometimes" },
-      { value: "not_very_aware", label: "Not very aware - I don't think about it much" },
-      { value: "unaware", label: "Unaware - I've never really considered this" }
-    ]
-  },
-  {
-    id: "giving_style",
-    question: "What's your natural giving style?",
-    options: [
-      { value: "spontaneous_giver", label: "Spontaneous giver - I help when I see a need" },
-      { value: "planned_giver", label: "Planned giver - I like to think about what to give" },
-      { value: "responsive_giver", label: "Responsive giver - I give back when others give to me" },
-      { value: "careful_giver", label: "Careful giver - I'm selective about when I give" }
-    ]
-  },
-  {
-    id: "social_anxiety",
-    question: "How do you feel about social obligations?",
-    options: [
-      { value: "comfortable", label: "Comfortable - I'm at ease with social expectations" },
-      { value: "sometimes_anxious", label: "Sometimes anxious - It depends on the situation" },
-      { value: "often_anxious", label: "Often anxious - I worry about doing the right thing" },
-      { value: "very_anxious", label: "Very anxious - Social obligations stress me out" }
-    ]
-  },
-  {
-    id: "relationship_priority",
-    question: "What's most important to you in relationships?",
-    options: [
-      { value: "balance", label: "Balance - Equal give and take" },
-      { value: "connection", label: "Connection - Deep emotional bonds" },
-      { value: "support", label: "Support - Being there for each other" },
-      { value: "growth", label: "Growth - Helping each other improve" }
-    ]
-  },
-  {
-    id: "reciprocity_concern",
-    question: "What concerns you most about reciprocity?",
-    options: [
-      { value: "being_used", label: "Being taken advantage of" },
-      { value: "being_selfish", label: "Appearing selfish or ungrateful" },
-      { value: "forgetting", label: "Forgetting to reciprocate" },
-      { value: "overdoing", label: "Overdoing it and making others uncomfortable" }
-    ]
-  }
-];
-
 export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const { updateProfile } = useProfile();
+  const [onboardingData, setOnboardingData] = useState<OnboardingData>({
+    fullName: "",
+    personalityType: "",
+    reciprocityStyle: "",
+    relationshipGoals: [],
+    preferences: {
+      reminderFrequency: "weekly",
+      privacyLevel: "private",
+      aiInsightsEnabled: true,
+    },
+  });
+  const [personalityAnswers, setPersonalityAnswers] = useState<
+    Record<string, string>
+  >({});
+  const { user } = useAuth();
   const { toast } = useToast();
 
-  const handleAnswer = (questionId: string, value: string) => {
-    setAnswers(prev => ({ ...prev, [questionId]: value }));
-  };
+  const totalSteps = 5;
 
-  const nextStep = () => {
-    if (currentStep < personalityQuestions.length - 1) {
-      setCurrentStep(prev => prev + 1);
+  const analyzePersonality = () => {
+    const answers = Object.values(personalityAnswers);
+
+    // Simple personality analysis based on answers
+    if (answers.includes("proactive") && answers.includes("immediate")) {
+      return "activist";
+    } else if (
+      answers.includes("thoughtful") &&
+      answers.includes("long_term")
+    ) {
+      return "strategist";
+    } else if (answers.includes("responsive") && answers.includes("flexible")) {
+      return "harmonizer";
     } else {
-      completeOnboarding();
+      return "balanced";
     }
   };
 
-  const prevStep = () => {
-    setCurrentStep(prev => prev - 1);
+  const analyzeReciprocityStyle = () => {
+    if (personalityAnswers.reciprocity_style === "immediate") {
+      return "immediate_reciprocator";
+    } else if (personalityAnswers.reciprocity_style === "flexible") {
+      return "flexible_giver";
+    } else {
+      return "long_term_balancer";
+    }
   };
 
-  const completeOnboarding = async () => {
-    try {
-      // Determine personality type based on answers
-      const personalityType = determinePersonalityType(answers);
-      const reciprocityStyle = determineReciprocityStyle(answers);
+  const handleNext = () => {
+    if (currentStep < totalSteps - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
 
-      await updateProfile({
-        personality_type: personalityType,
-        reciprocity_style: reciprocityStyle,
-        onboarding_completed: true
-      });
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleComplete = async () => {
+    try {
+      const personalityType = analyzePersonality();
+      const reciprocityStyle = analyzeReciprocityStyle();
+
+      await supabase
+        .from("profiles")
+        .update({
+          full_name: onboardingData.fullName,
+          personality_type: personalityType,
+          reciprocity_style: reciprocityStyle,
+          onboarding_completed: true,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user?.id);
 
       toast({
-        title: "Welcome to RelationshipDebt AI! 🎉",
-        description: `Your personality type: ${personalityType}. Let's build better relationships together!`,
+        title: "Welcome to Equify! 🎉",
+        description: "Your profile has been set up successfully.",
       });
 
       onComplete();
     } catch (error) {
+      console.error("Onboarding error:", error);
       toast({
-        title: "Onboarding Error",
-        description: "There was an issue completing your setup. Please try again.",
+        title: "Setup Error",
+        description:
+          "There was an error setting up your profile. Please try again.",
         variant: "destructive",
       });
     }
   };
 
-  const determinePersonalityType = (answers: Record<string, string>) => {
-    // Simple algorithm to determine personality type based on answers
-    if (answers.giving_style === 'spontaneous_giver' && answers.relationship_priority === 'support') {
-      return 'Natural Giver';
-    } else if (answers.reciprocity_awareness === 'very_aware' && answers.relationship_priority === 'balance') {
-      return 'Balance Keeper';
-    } else if (answers.social_anxiety === 'often_anxious' || answers.social_anxiety === 'very_anxious') {
-      return 'Thoughtful Reciprocator';
-    } else if (answers.giving_style === 'planned_giver' && answers.reciprocity_concern === 'overdoing') {
-      return 'Strategic Giver';
-    } else {
-      return 'Relationship Builder';
-    }
-  };
-
-  const determineReciprocityStyle = (answers: Record<string, string>) => {
-    if (answers.giving_style === 'responsive_giver') {
-      return 'Mirror Style';
-    } else if (answers.giving_style === 'spontaneous_giver') {
-      return 'Proactive Style';
-    } else if (answers.giving_style === 'planned_giver') {
-      return 'Strategic Style';
-    } else {
-      return 'Adaptive Style';
-    }
-  };
-
-  const currentQuestion = personalityQuestions[currentStep];
-  const progress = ((currentStep + 1) / personalityQuestions.length) * 100;
-  const currentAnswer = answers[currentQuestion.id];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-orange-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl">
-        <div className="flex items-center justify-center mb-8">
-          <Heart className="h-10 w-10 text-green-600 mr-3" />
+  const steps = [
+    {
+      title: "Welcome to Equify",
+      content: (
+        <div className="text-center space-y-6">
+          <div className="mx-auto w-20 h-20 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
+            <Heart className="h-10 w-10 text-white" />
+          </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Welcome to RelationshipDebt AI</h1>
-            <p className="text-sm text-green-600">Let's understand your relationship style</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Welcome to Equify!
+            </h2>
+            <p className="text-gray-600">
+              Let's set up your profile to provide personalized relationship
+              insights and recommendations.
+            </p>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+              <Users className="h-5 w-5 text-green-600" />
+              <span className="text-sm text-green-800">
+                Track your relationships
+              </span>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+              <Sparkles className="h-5 w-5 text-blue-600" />
+              <span className="text-sm text-blue-800">
+                Get AI-powered insights
+              </span>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
+              <Gift className="h-5 w-5 text-purple-600" />
+              <span className="text-sm text-purple-800">
+                Maintain healthy balance
+              </span>
+            </div>
           </div>
         </div>
-
-        <Card className="bg-white/80 backdrop-blur-sm border-green-200">
-          <CardHeader>
-            <div className="flex items-center justify-between mb-4">
-              <CardTitle className="text-lg">Step {currentStep + 1} of {personalityQuestions.length}</CardTitle>
-              <span className="text-sm text-gray-500">{Math.round(progress)}% complete</span>
-            </div>
-            <Progress value={progress} className="mb-4" />
-            <CardDescription className="text-lg font-medium text-gray-900">
-              {currentQuestion.question}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <RadioGroup
-              value={currentAnswer}
-              onValueChange={(value) => handleAnswer(currentQuestion.id, value)}
-            >
-              {currentQuestion.options.map((option) => (
-                <div key={option.value} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-green-50 transition-colors">
-                  <RadioGroupItem value={option.value} id={option.value} className="mt-1" />
-                  <Label htmlFor={option.value} className="flex-1 cursor-pointer text-sm leading-relaxed">
-                    {option.label}
+      ),
+    },
+    {
+      title: "Tell us about yourself",
+      content: (
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="fullName">Full Name</Label>
+            <Input
+              id="fullName"
+              value={onboardingData.fullName}
+              onChange={(e) =>
+                setOnboardingData({
+                  ...onboardingData,
+                  fullName: e.target.value,
+                })
+              }
+              placeholder="Enter your full name"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label>
+              What are your relationship goals? (Select all that apply)
+            </Label>
+            <div className="mt-2 space-y-2">
+              {[
+                "Build stronger friendships",
+                "Maintain family connections",
+                "Professional networking",
+                "Community involvement",
+                "Support others more",
+              ].map((goal) => (
+                <div key={goal} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id={goal}
+                    checked={onboardingData.relationshipGoals.includes(goal)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setOnboardingData({
+                          ...onboardingData,
+                          relationshipGoals: [
+                            ...onboardingData.relationshipGoals,
+                            goal,
+                          ],
+                        });
+                      } else {
+                        setOnboardingData({
+                          ...onboardingData,
+                          relationshipGoals:
+                            onboardingData.relationshipGoals.filter(
+                              (g) => g !== goal,
+                            ),
+                        });
+                      }
+                    }}
+                    className="rounded"
+                  />
+                  <Label htmlFor={goal} className="text-sm">
+                    {goal}
                   </Label>
                 </div>
               ))}
-            </RadioGroup>
-
-            <div className="flex justify-between pt-6">
-              <Button
-                variant="outline"
-                onClick={prevStep}
-                disabled={currentStep === 0}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Previous
-              </Button>
-              
-              <Button
-                onClick={nextStep}
-                disabled={!currentAnswer}
-                className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-              >
-                {currentStep === personalityQuestions.length - 1 ? 'Complete Setup' : 'Next'}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+      ),
+    },
+    ...personalityQuestions.map((q, index) => ({
+      title: `Personality Assessment ${index + 1}/3`,
+      content: (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">{q.question}</h3>
+          <RadioGroup
+            value={personalityAnswers[q.id] || ""}
+            onValueChange={(value) =>
+              setPersonalityAnswers({
+                ...personalityAnswers,
+                [q.id]: value,
+              })
+            }
+          >
+            {q.options.map((option) => (
+              <div
+                key={option.value}
+                className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50"
+              >
+                <RadioGroupItem value={option.value} id={option.value} />
+                <Label htmlFor={option.value} className="flex-1 cursor-pointer">
+                  {option.label}
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
+        </div>
+      ),
+    })),
+    {
+      title: "Preferences",
+      content: (
+        <div className="space-y-4">
+          <div>
+            <Label>How often would you like AI insights?</Label>
+            <RadioGroup
+              value={onboardingData.preferences.reminderFrequency}
+              onValueChange={(value) =>
+                setOnboardingData({
+                  ...onboardingData,
+                  preferences: {
+                    ...onboardingData.preferences,
+                    reminderFrequency: value,
+                  },
+                })
+              }
+              className="mt-2"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="daily" id="daily" />
+                <Label htmlFor="daily">Daily</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="weekly" id="weekly" />
+                <Label htmlFor="weekly">Weekly</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="monthly" id="monthly" />
+                <Label htmlFor="monthly">Monthly</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div>
+              <Label className="font-medium">Enable AI Insights</Label>
+              <p className="text-xs text-gray-500">
+                Get personalized relationship recommendations
+              </p>
+            </div>
+            <input
+              type="checkbox"
+              checked={onboardingData.preferences.aiInsightsEnabled}
+              onChange={(e) =>
+                setOnboardingData({
+                  ...onboardingData,
+                  preferences: {
+                    ...onboardingData.preferences,
+                    aiInsightsEnabled: e.target.checked,
+                  },
+                })
+              }
+              className="rounded"
+            />
+          </div>
+        </div>
+      ),
+    },
+  ];
+
+  const isStepComplete = () => {
+    switch (currentStep) {
+      case 0:
+        return true;
+      case 1:
+        return onboardingData.fullName.length > 0;
+      case 2:
+        return personalityAnswers.social_energy;
+      case 3:
+        return personalityAnswers.favor_approach;
+      case 4:
+        return personalityAnswers.reciprocity_style;
+      default:
+        return true;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 p-4">
+      <div className="max-w-md mx-auto">
+        <div className="mb-6">
+          <Progress
+            value={((currentStep + 1) / totalSteps) * 100}
+            className="h-2"
+          />
+          <p className="text-xs text-gray-500 mt-2 text-center">
+            Step {currentStep + 1} of {totalSteps}
+          </p>
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-center">
+                  {steps[currentStep].title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {steps[currentStep].content}
+
+                <div className="flex gap-3">
+                  {currentStep > 0 && (
+                    <Button
+                      variant="outline"
+                      onClick={handleBack}
+                      className="flex-1"
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Back
+                    </Button>
+                  )}
+
+                  {currentStep < totalSteps - 1 ? (
+                    <Button
+                      onClick={handleNext}
+                      disabled={!isStepComplete()}
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                    >
+                      Next
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleComplete}
+                      disabled={!isStepComplete()}
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                    >
+                      Complete Setup
+                      <Check className="h-4 w-4 ml-2" />
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

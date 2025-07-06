@@ -1,398 +1,331 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { TrendingUp, Users, Heart, Brain, Calendar, Star, ArrowRight, Target } from "lucide-react";
-import { useRelationships } from "@/hooks/useRelationships";
-import { useFavors } from "@/hooks/useFavors";
-import { useProfile } from "@/hooks/useProfile";
+import { RealtimeStatsCard } from "@/components/RealtimeStatsCard";
+import {
+  Users,
+  Heart,
+  Gift,
+  TrendingUp,
+  Plus,
+  MessageCircle,
+  Calendar,
+  Zap,
+  Target,
+  Award,
+  Bell,
+  Activity,
+  ChevronRight,
+  Sparkles,
+} from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useAI } from "@/hooks/useAI";
-import { useToast } from "@/hooks/use-toast";
-import { QuickSetupGuide } from "@/components/QuickSetupGuide";
-import { AddRelationshipDialog } from "@/components/AddRelationshipDialog";
-import { AddFavorDialog } from "@/components/AddFavorDialog";
-import { TodayActionItems } from "@/components/TodayActionItems";
-import { useState } from "react";
-import { RefreshCw, Sparkles } from "lucide-react";
-import { useAutoAI } from "@/hooks/useAutoAI";
+import { motion } from "framer-motion";
 
-const COLORS = ['#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#8B5CF6'];
+interface DashboardStats {
+  totalRelationships: number;
+  favorsGiven: number;
+  favorsReceived: number;
+  balance: number;
+  weeklyActivity: number;
+  streakDays: number;
+}
 
 export const EnhancedDashboard = () => {
-  const [showAddFavor, setShowAddFavor] = useState(false);
-  const [showAddRelationship, setShowAddRelationship] = useState(false);
-  const { relationships, loading: relationshipsLoading, addRelationship } = useRelationships();
-  const { favors, loading: favorsLoading } = useFavors();
-  const { profile } = useProfile();
   const { user } = useAuth();
-  const { generateRecommendations, loading: aiLoading } = useAI();
-  const { toast } = useToast();
-  const [relationshipForAI, setRelationshipForAI] = useState<string | undefined>();
+  const [selectedTimeframe, setSelectedTimeframe] = useState("week");
 
-  useAutoAI({
-    userId: user?.id,
-    relationshipId: relationshipForAI,
-    triggerAnalysis: !!relationshipForAI,
-    onComplete: () => {
-      console.log('Auto AI analysis complete for new relationship');
-      setRelationshipForAI(undefined);
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ["dashboard-stats", user?.id, selectedTimeframe],
+    queryFn: async () => {
+      if (!user?.id) return null;
+
+      // Get comprehensive stats
+      const [relationships, favors, recentActivity] = await Promise.all([
+        supabase.from("relationships").select("*").eq("user_id", user.id),
+        supabase.from("favors").select("*").eq("user_id", user.id),
+        supabase
+          .from("activity_feed")
+          .select("*")
+          .eq("user_id", user.id)
+          .limit(5),
+      ]);
+
+      const given =
+        favors.data?.filter((f) => f.direction === "given").length || 0;
+      const received =
+        favors.data?.filter((f) => f.direction === "received").length || 0;
+
+      return {
+        totalRelationships: relationships.data?.length || 0,
+        favorsGiven: given,
+        favorsReceived: received,
+        balance: given - received,
+        weeklyActivity: recentActivity.data?.length || 0,
+        streakDays: 7, // Calculate actual streak
+        recentActivity: recentActivity.data || [],
+      };
     },
+    enabled: !!user?.id,
   });
 
-  // Calculate key metrics
-  const totalRelationships = relationships.length;
-  const averageBalance = relationships.length > 0 ? 
-    relationships.reduce((sum, rel) => sum + 7.5, 0) / totalRelationships : 0;
-  const healthyRelationships = relationships.filter(() => Math.random() > 0.3).length;
-  
-  const thisMonthFavors = favors.filter(f => {
-    const favorDate = new Date(f.date_occurred);
-    const thisMonth = new Date();
-    return favorDate.getMonth() === thisMonth.getMonth() && 
-           favorDate.getFullYear() === thisMonth.getFullYear();
-  }).length;
-
-  // Mock data for enhanced visualizations
-  const weeklyTrend = [
-    { day: 'Mon', given: 3, received: 2 },
-    { day: 'Tue', given: 1, received: 4 },
-    { day: 'Wed', given: 4, received: 3 },
-    { day: 'Thu', given: 2, received: 1 },
-    { day: 'Fri', given: 5, received: 3 },
-    { day: 'Sat', given: 2, received: 2 },
-    { day: 'Sun', given: 3, received: 4 }
-  ];
-
-  const balanceDistribution = [
-    { range: 'Very Healthy', count: Math.floor(totalRelationships * 0.4), fill: '#10B981' },
-    { range: 'Healthy', count: Math.floor(totalRelationships * 0.3), fill: '#3B82F6' },
-    { range: 'Balanced', count: Math.floor(totalRelationships * 0.2), fill: '#F59E0B' },
-    { range: 'Needs Attention', count: Math.floor(totalRelationships * 0.1), fill: '#EF4444' }
-  ];
-
-  const personalityInsights = {
-    'giving': {
-      title: 'Giver',
-      tip: 'You tend to give more than you receive',
-      color: 'green'
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 },
     },
-    'balanced': {
-      title: 'Balanced',
-      tip: 'You maintain good reciprocity',
-      color: 'blue'
-    },
-    'receiver': {
-      title: 'Receiver',
-      tip: 'You tend to receive more than you give',
-      color: 'orange'
-    },
-    'analyzer': {
-      title: 'Analyzer',
-      tip: 'You think deeply about relationships',
-      color: 'purple'
-    }
   };
 
-  const currentPersonality = personalityInsights[profile?.personality_type as keyof typeof personalityInsights] || personalityInsights.balanced;
-
-  const handleGenerateAIForAll = async () => {
-    if (!user || relationships.length === 0) {
-      toast({
-        title: "Cannot Generate AI Recommendations",
-        description: "Please add at least one relationship first.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    toast({
-      title: "Starting AI Analysis",
-      description: `Analyzing ${relationships.length} relationships. This may take a moment.`,
-    });
-
-    let successCount = 0;
-    for (const rel of relationships) {
-      try {
-        await generateRecommendations(user.id, rel.id, 'Dashboard full analysis');
-        successCount++;
-      } catch (error) {
-        console.error(`Failed to generate recommendations for ${rel.name}`, error);
-      }
-    }
-
-    if (successCount > 0) {
-      toast({
-        title: "AI Analysis Complete",
-        description: `Generated recommendations for ${successCount} relationships. Check the AI Recommendations tab!`,
-      });
-    }
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 },
   };
 
-  if (relationshipsLoading || favorsLoading) {
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="h-8 w-8 text-green-600 mx-auto mb-4 animate-spin">
-            <TrendingUp className="h-full w-full" />
-          </div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show setup guide if no data exists
-  if (relationships.length === 0) {
-    return (
-      <div className="space-y-6">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Reciprocity AI!</h2>
-          <p className="text-gray-600">Track your relationships and get AI-powered insights to strengthen your connections.</p>
-        </div>
-        
-        <QuickSetupGuide 
-          onAddRelationship={() => setShowAddRelationship(true)}
-          onAddFavor={() => setShowAddFavor(true)}
-          onGenerateAI={handleGenerateAIForAll}
-        />
-
-        {/* Add Relationship Dialog */}
-        <AddRelationshipDialog 
-          open={showAddRelationship}
-          onOpenChange={setShowAddRelationship}
-        />
-
-        {/* Add Favor Dialog */}
-        <AddFavorDialog 
-          open={showAddFavor}
-          onOpenChange={setShowAddFavor}
-          onSave={() => {
-            setShowAddFavor(false);
-            toast({
-              title: "Favor Added",
-              description: "Your interaction has been recorded!",
-            });
-          }}
-        />
+      <div className="space-y-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-24 bg-gray-200 rounded-lg animate-pulse" />
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Quick Setup Guide for incomplete setups */}
-      {(relationships.length > 0 && favors.length < 2) && (
-        <QuickSetupGuide 
-          onAddRelationship={() => setShowAddRelationship(true)}
-          onAddFavor={() => setShowAddFavor(true)}
-          onGenerateAI={handleGenerateAIForAll}
-        />
-      )}
-
-      {/* AI Quick Actions */}
-      {relationships.length > 0 && favors.length >= 2 && (
-        <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-green-50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Brain className="h-8 w-8 text-blue-600" />
-                <div>
-                  <h3 className="font-semibold text-gray-900">AI-Powered Insights</h3>
-                  <p className="text-sm text-gray-600">Get personalized recommendations for your relationships</p>
-                </div>
-              </div>
-              <Button 
-                onClick={handleGenerateAIForAll}
-                disabled={aiLoading}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                {aiLoading ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Generate Insights
-                  </>
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200">
+    <motion.div
+      className="space-y-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Welcome Header */}
+      <motion.div
+        variants={itemVariants}
+        className="bg-gradient-to-r from-green-500 to-blue-500 rounded-2xl p-6 text-white"
+      >
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Hello, {profile?.full_name?.split(' ')[0] || 'there'}!
-            </h2>
-            <p className="text-gray-600 mb-4">
-              Here's an overview of your relationship dynamics
+            <h2 className="text-xl font-bold">Good morning! 👋</h2>
+            <p className="text-green-100 text-sm">
+              You have {stats?.weeklyActivity || 0} activities this week
             </p>
-            <div className="flex items-center gap-2">
-              <Badge className={`bg-${currentPersonality.color}-100 text-${currentPersonality.color}-700`}>
-                {currentPersonality.title}
-              </Badge>
-              <span className="text-sm text-gray-500">• {currentPersonality.tip}</span>
-            </div>
           </div>
           <div className="text-right">
-            <div className="text-3xl font-bold text-green-600">{averageBalance.toFixed(1)}/10</div>
-            <p className="text-sm text-gray-500">Overall Balance</p>
+            <div className="text-2xl font-bold">{stats?.streakDays}🔥</div>
+            <p className="text-xs text-green-100">Day streak</p>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-green-600">Total Relationships</p>
-                <p className="text-2xl font-bold text-green-900">{totalRelationships}</p>
-              </div>
-              <Users className="h-8 w-8 text-green-600" />
-            </div>
-            <div className="mt-4">
-              <Progress value={Math.min(totalRelationships * 10, 100)} className="h-2" />
-              <p className="text-xs text-green-600 mt-1">Growing your network</p>
-            </div>
-          </CardContent>
-        </Card>
-
+      {/* Quick Stats Grid */}
+      <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-          <CardContent className="pt-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-blue-600">This Month</p>
-                <p className="text-2xl font-bold text-blue-900">{thisMonthFavors}</p>
+                <p className="text-xs text-blue-600 font-medium">
+                  Relationships
+                </p>
+                <p className="text-2xl font-bold text-blue-700">
+                  {stats?.totalRelationships || 0}
+                </p>
               </div>
-              <Calendar className="h-8 w-8 text-blue-600" />
+              <Users className="h-8 w-8 text-blue-500" />
             </div>
-            <div className="mt-4">
-              <Badge className="bg-blue-100 text-blue-700">
-                <TrendingUp className="h-3 w-3 mr-1" />
-                vs last month
-              </Badge>
+            <div className="mt-2">
+              <Progress
+                value={Math.min((stats?.totalRelationships || 0) * 10, 100)}
+                className="h-1"
+              />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-          <CardContent className="pt-6">
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-purple-600">Healthy Relations</p>
-                <p className="text-2xl font-bold text-purple-900">{healthyRelationships}</p>
+                <p className="text-xs text-green-600 font-medium">Balance</p>
+                <p className="text-2xl font-bold text-green-700">
+                  {stats?.balance > 0 ? "+" : ""}
+                  {stats?.balance || 0}
+                </p>
               </div>
-              <Heart className="h-8 w-8 text-purple-600" />
+              <Heart className="h-8 w-8 text-green-500" />
             </div>
-            <div className="mt-4">
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className={`h-3 w-3 ${i < 4 ? 'fill-purple-400 text-purple-400' : 'text-gray-300'}`} />
-                ))}
-              </div>
+            <div className="mt-2">
+              <Badge
+                variant={stats?.balance >= 0 ? "default" : "secondary"}
+                className="text-xs"
+              >
+                {stats?.balance >= 0 ? "Positive" : "Negative"}
+              </Badge>
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-          <CardContent className="pt-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-orange-600">AI Insights</p>
-                <p className="text-2xl font-bold text-orange-900">3</p>
+                <p className="text-xs text-orange-600 font-medium">Given</p>
+                <p className="text-2xl font-bold text-orange-700">
+                  {stats?.favorsGiven || 0}
+                </p>
               </div>
-              <Brain className="h-8 w-8 text-orange-600" />
+              <Gift className="h-8 w-8 text-orange-500" />
             </div>
-            <div className="mt-4">
-              <Button size="sm" variant="outline" className="text-orange-600 border-orange-300">
-                View All <ArrowRight className="h-3 w-3 ml-1" />
+            <div className="mt-2">
+              <Progress
+                value={Math.min((stats?.favorsGiven || 0) * 5, 100)}
+                className="h-1"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-purple-600 font-medium">Received</p>
+                <p className="text-2xl font-bold text-purple-700">
+                  {stats?.favorsReceived || 0}
+                </p>
+              </div>
+              <Heart className="h-8 w-8 text-purple-500" />
+            </div>
+            <div className="mt-2">
+              <Progress
+                value={Math.min((stats?.favorsReceived || 0) * 5, 100)}
+                className="h-1"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Quick Actions */}
+      <motion.div variants={itemVariants}>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Zap className="h-5 w-5 text-yellow-500" />
+              Quick Actions
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white h-12">
+              <Plus className="h-4 w-4 mr-2" />
+              Add New Relationship
+            </Button>
+            <div className="grid grid-cols-2 gap-3">
+              <Button variant="outline" className="h-12">
+                <Gift className="h-4 w-4 mr-2" />
+                Record Favor
+              </Button>
+              <Button variant="outline" className="h-12">
+                <MessageCircle className="h-4 w-4 mr-2" />
+                Ask AI
               </Button>
             </div>
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Weekly Activity Trend */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Weekly Activity</CardTitle>
-            <CardDescription>Your giving and receiving patterns this week</CardDescription>
+      {/* AI Insights */}
+      <motion.div variants={itemVariants}>
+        <Card className="bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Sparkles className="h-5 w-5 text-indigo-500" />
+              AI Insights
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={weeklyTrend}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="given" stroke="#10B981" strokeWidth={2} name="Given" />
-                <Line type="monotone" dataKey="received" stroke="#3B82F6" strokeWidth={2} name="Received" />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="space-y-3">
+              <div className="p-3 bg-white rounded-lg border">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">
+                      💡 Relationship Tip
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Consider reaching out to Sarah - you haven't connected in
+                      2 weeks!
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-gray-400 ml-2" />
+                </div>
+              </div>
+              <div className="p-3 bg-white rounded-lg border">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">
+                      🎯 Goal Progress
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1">
+                      You're 3 favors away from your monthly goal!
+                    </p>
+                  </div>
+                  <Badge variant="secondary" className="text-xs">
+                    75%
+                  </Badge>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
+      </motion.div>
 
-        {/* Balance Distribution */}
+      {/* Recent Activity */}
+      <motion.div variants={itemVariants}>
         <Card>
-          <CardHeader>
-            <CardTitle>Relationship Health</CardTitle>
-            <CardDescription>Distribution of relationship balance scores</CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Activity className="h-5 w-5 text-blue-500" />
+              Recent Activity
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={balanceDistribution}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ range, count }) => `${range}: ${count}`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="count"
-                >
-                  {balanceDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="space-y-3">
+              {stats?.recentActivity?.length ? (
+                stats.recentActivity.map((activity: any, index: number) => (
+                  <div
+                    key={activity.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <div>
+                        <p className="text-sm font-medium">{activity.title}</p>
+                        <p className="text-xs text-gray-600">
+                          {activity.description}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-500">
+                      {new Date(activity.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <Activity className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-sm text-gray-500">No recent activity</p>
+                  <p className="text-xs text-gray-400">
+                    Start by adding a relationship or recording a favor!
+                  </p>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Action Items */}
-      <TodayActionItems />
-
-      {/* Add relationship and favor dialogs */}
-      <AddRelationshipDialog 
-        open={showAddRelationship}
-        onOpenChange={setShowAddRelationship}
-      />
-
-      <AddFavorDialog 
-        open={showAddFavor}
-        onOpenChange={setShowAddFavor}
-        onSave={() => {
-          setShowAddFavor(false);
-          toast({
-            title: "Favor Added",
-            description: "Your interaction has been recorded!",
-          });
-        }}
-      />
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
