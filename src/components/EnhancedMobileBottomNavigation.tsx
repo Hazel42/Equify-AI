@@ -196,8 +196,8 @@ export const EnhancedMobileBottomNavigation = ({
         {/* Icon */}
         <motion.div
           animate={{
-            scale: isActive ? 1.1 : 1,
-            rotate: isActive ? [0, -10, 10, 0] : 0,
+            scale: isActive ? 1.15 : 1,
+            rotate: isActive ? [0, -8, 8, 0] : 0,
           }}
           transition={{ duration: 0.3 }}
         >
@@ -208,7 +208,7 @@ export const EnhancedMobileBottomNavigation = ({
 
         {/* Label */}
         <span
-          className={`text-xs mt-1 font-medium transition-colors ${
+          className={`text-xs mt-1.5 font-medium transition-colors leading-none ${
             isActive ? item.activeColor : item.inactiveColor
           }`}
         >
@@ -249,32 +249,48 @@ export const EnhancedMobileBottomNavigation = ({
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
-      {/* Quick Action Button */}
-      <motion.button
-        className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-green-600 text-white p-3 rounded-full shadow-lg"
-        whileTap={{ scale: 0.9 }}
-        whileHover={{ scale: 1.1 }}
-        onClick={() => {
-          // Quick add action based on current tab
-          if (activeTab === "relationships") {
-            onQuickAction?.("add-relationship");
-          } else if (activeTab === "dashboard") {
-            onQuickAction?.("add-favor");
-          } else if (activeTab === "ai-chat") {
-            onQuickAction?.("quick-ai-message");
-          } else {
-            onQuickAction?.("add-relationship"); // Default action
-          }
-        }}
-      >
-        <Plus className="h-6 w-6" />
-      </motion.button>
+      {/* Enhanced Layout: 2 items - Large Add Button - 2 items */}
+      <div className="flex items-center justify-between px-2 pt-2">
+        {/* Left Section - Home & People */}
+        <div className="flex flex-1 justify-around">
+          {navigationItems.slice(0, 2).map((item) => (
+            <NavigationButton key={item.id} item={item} />
+          ))}
+        </div>
 
-      {/* Navigation Items */}
-      <div className="flex justify-around items-center pt-2">
-        {navigationItems.map((item) => (
-          <NavigationButton key={item.id} item={item} />
-        ))}
+        {/* Center - Enhanced Quick Action Button */}
+        <div className="flex-shrink-0 mx-4">
+          <motion.button
+            className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-4 rounded-full shadow-lg elevation-8"
+            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.05 }}
+            style={{
+              boxShadow:
+                "0 8px 25px rgba(34, 197, 94, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)",
+            }}
+            onClick={() => {
+              // Quick add action based on current tab
+              if (activeTab === "relationships") {
+                onQuickAction?.("add-relationship");
+              } else if (activeTab === "dashboard") {
+                onQuickAction?.("add-favor");
+              } else if (activeTab === "ai-chat") {
+                onQuickAction?.("quick-ai-message");
+              } else {
+                onQuickAction?.("add-relationship"); // Default action
+              }
+            }}
+          >
+            <Plus className="h-7 w-7" />
+          </motion.button>
+        </div>
+
+        {/* Right Section - AI Chat & Analytics */}
+        <div className="flex flex-1 justify-around">
+          {navigationItems.slice(2, 4).map((item) => (
+            <NavigationButton key={item.id} item={item} />
+          ))}
+        </div>
       </div>
 
       {/* Home indicator for iPhone-like devices */}
