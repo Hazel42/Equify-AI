@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -19,35 +19,78 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { useRelationships } from "@/hooks/useRelationships";
 
+interface Relationship {
+  id: string;
+  name: string;
+  relationship_type: string;
+  importance_level: number;
+  contact_info?: any;
+}
+
 interface AddRelationshipDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  editingRelationship?: Relationship | null;
 }
 
 export const AddRelationshipDialog = ({
   open,
   onOpenChange,
   onSuccess,
+  editingRelationship,
 }: AddRelationshipDialogProps) => {
   const [name, setName] = useState("");
   const [relationshipType, setRelationshipType] = useState("");
   const [importanceLevel, setImportanceLevel] = useState([3]);
   const [contactInfo, setContactInfo] = useState({ phone: "", email: "" });
-  const { addRelationship } = useRelationships();
+  const { addRelationship, updateRelationship } = useRelationships();
+
+  // Pre-fill form when editing
+  useEffect(() => {
+    if (editingRelationship) {
+      setName(editingRelationship.name);
+      setRelationshipType(editingRelationship.relationship_type);
+      setImportanceLevel([editingRelationship.importance_level]);
+      setContactInfo(
+        editingRelationship.contact_info || { phone: "", email: "" },
+      );
+    } else {
+      // Reset form for new relationship
+      setName("");
+      setRelationshipType("");
+      setImportanceLevel([3]);
+      setContactInfo({ phone: "", email: "" });
+    }
+  }, [editingRelationship, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !relationshipType) return;
 
     try {
-      await addRelationship.mutateAsync({
-        name,
-        relationship_type: relationshipType,
-        importance_level: importanceLevel[0],
-        contact_info:
-          contactInfo.phone || contactInfo.email ? contactInfo : null,
-      });
+      if (editingRelationship) {
+        // Update existing relationship
+        await updateRelationship.mutateAsync({
+          id: editingRelationship.id,
+          updates: {
+            name,
+            relationship_type: relationshipType,
+            importance_level: importanceLevel[0],
+            contact_info:
+              contactInfo.phone || contactInfo.email ? contactInfo : null,
+          },
+        });
+      } else {
+        // Add new relationship
+        await addRelationship.mutateAsync({
+          name,
+          relationship_type: relationshipType,
+          importance_level: importanceLevel[0],
+          contact_info:
+            contactInfo.phone || contactInfo.email ? contactInfo : null,
+        });
+      }
 
       // Reset form
       setName("");
@@ -57,7 +100,7 @@ export const AddRelationshipDialog = ({
       onOpenChange(false);
       onSuccess?.();
     } catch (error) {
-      console.error("Failed to add relationship:", error);
+      console.error("Failed to save relationship:", error);
     }
   };
 
@@ -75,7 +118,9 @@ export const AddRelationshipDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Relationship</DialogTitle>
+          <DialogTitle>
+            {editingRelationship ? "Edit Relationship" : "Add New Relationship"}
+          </DialogTitle>
           <DialogDescription>
             Add someone important to your relationship network.
           </DialogDescription>
