@@ -6,6 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Users,
   Plus,
   Search,
@@ -19,6 +26,8 @@ import {
   MoreVertical,
   Phone,
   Mail,
+  Edit,
+  Trash2,
 } from "lucide-react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { useRelationships } from "@/hooks/useRelationships";
@@ -48,6 +57,11 @@ const EnhancedRelationshipManagerComponent = () => {
     string | null
   >(null);
   const [swipedCard, setSwipedCard] = useState<string | null>(null);
+  const [editingRelationship, setEditingRelationship] =
+    useState<Relationship | null>(null);
+  const [deletingRelationship, setDeletingRelationship] = useState<
+    string | null
+  >(null);
 
   // Listen for quick actions
   useEffect(() => {
@@ -161,6 +175,21 @@ const EnhancedRelationshipManagerComponent = () => {
     return "text-gray-600 bg-gray-50";
   };
 
+  const handleEditRelationship = (relationship: Relationship) => {
+    setEditingRelationship(relationship);
+    setShowAddDialog(true);
+  };
+
+  const handleDeleteRelationship = async (id: string) => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this relationship? This action cannot be undone.",
+      )
+    ) {
+      await deleteRelationship.mutateAsync(id);
+    }
+  };
+
   const RelationshipCard = ({
     relationship,
   }: {
@@ -235,9 +264,29 @@ const EnhancedRelationshipManagerComponent = () => {
                 {relationship.balance > 0 ? "+" : ""}
                 {relationship.balance}
               </Badge>
-              <Button variant="ghost" size="sm">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => handleEditRelationship(relationship)}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => handleDeleteRelationship(relationship.id)}
+                    className="text-red-600"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
