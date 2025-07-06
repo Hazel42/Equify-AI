@@ -83,7 +83,8 @@ const EnhancedRelationshipManagerComponent = () => {
       );
   }, []);
 
-  const { relationships, isLoading } = useRelationships();
+  const { relationships, isLoading, updateRelationship, deleteRelationship } =
+    useRelationships();
   const { getFavorsForRelationship, getRelationshipBalance } =
     useFavorsEnhanced();
 
