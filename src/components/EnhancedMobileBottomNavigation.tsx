@@ -51,13 +51,6 @@ const navigationItems: NavigationItem[] = [
     activeColor: "text-orange-600",
     inactiveColor: "text-gray-400",
   },
-  {
-    id: "settings",
-    label: "Settings",
-    icon: Settings,
-    activeColor: "text-gray-600",
-    inactiveColor: "text-gray-400",
-  },
 ];
 
 interface EnhancedMobileBottomNavigationProps {
