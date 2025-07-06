@@ -180,7 +180,7 @@ const Index = () => {
       case "relationships":
         return "My People";
       case "ai-chat":
-        return "AI Assistant";
+        return "Chat";
       case "analytics":
         return "Analytics";
       case "settings":

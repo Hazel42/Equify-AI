@@ -39,7 +39,7 @@ const navigationItems: NavigationItem[] = [
   },
   {
     id: "ai-chat",
-    label: "AI Chat",
+    label: "Chat",
     icon: MessageCircle,
     activeColor: "text-purple-600",
     inactiveColor: "text-gray-400",

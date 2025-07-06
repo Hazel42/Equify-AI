@@ -13,19 +13,23 @@ export const MainNavigation = ({ userId, activeTab }: MainNavigationProps) => {
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
-        return <EnhancedDashboard />;
+        return <EnhancedDashboard key="dashboard" />;
       case "relationships":
-        return <EnhancedRelationshipManager />;
+        return <EnhancedRelationshipManager key="relationships" />;
       case "ai-chat":
-        return <EnhancedAIChat />;
+        return <EnhancedAIChat key="ai-chat" />;
       case "analytics":
-        return <EnhancedAnalytics />;
+        return <EnhancedAnalytics key="analytics" />;
       case "settings":
-        return <EnhancedSettings />;
+        return <EnhancedSettings key="settings" />;
       default:
-        return <EnhancedDashboard />;
+        return <EnhancedDashboard key="dashboard" />;
     }
   };
 
-  return <div className="w-full">{renderContent()}</div>;
+  return (
+    <div className="w-full" key={activeTab}>
+      {renderContent()}
+    </div>
+  );
 };

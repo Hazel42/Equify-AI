@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,7 +43,7 @@ interface ConversationContext {
   conversationHistory: ChatMessage[];
 }
 
-export const EnhancedAIChat = () => {
+const EnhancedAIChatComponent = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();

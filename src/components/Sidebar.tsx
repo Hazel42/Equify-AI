@@ -69,7 +69,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         },
         {
           icon: MessageSquare,
-          label: "AI Chat",
+          label: "Chat",
           action: () => navigateToTab("ai-chat"),
           color: "text-green-500",
         },
