@@ -23,8 +23,8 @@ const COLORS = ['#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#8B5CF6'];
 export const EnhancedDashboard = () => {
   const [showAddFavor, setShowAddFavor] = useState(false);
   const [showAddRelationship, setShowAddRelationship] = useState(false);
-  const { relationships, isLoading: relationshipsLoading, addRelationship } = useRelationships();
-  const { favors, isLoading: favorsLoading } = useFavors();
+  const { relationships, loading: relationshipsLoading, addRelationship } = useRelationships();
+  const { favors, loading: favorsLoading } = useFavors();
   const { profile } = useProfile();
   const { user } = useAuth();
   const { generateRecommendations, loading: aiLoading } = useAI();
@@ -391,25 +391,10 @@ export const EnhancedDashboard = () => {
       {/* Action Items */}
       <TodayActionItems />
 
-      {/* Add relationship and favor dialogs remain the same */}
+      {/* Add relationship and favor dialogs */}
       <AddRelationshipDialog 
         open={showAddRelationship}
         onOpenChange={setShowAddRelationship}
-        onSave={(data) => {
-          addRelationship.mutate(data, {
-              onSuccess: (result: any) => {
-                  const newId = result?.data?.[0]?.id;
-                  if (newId) {
-                      setRelationshipForAI(newId);
-                  }
-                  toast({
-                    title: 'Relationship Added',
-                    description: 'Your new relationship has been saved successfully.',
-                  });
-              }
-          });
-          setShowAddRelationship(false);
-        }}
       />
 
       <AddFavorDialog 

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface Relationship {
   id: string;
@@ -19,6 +20,7 @@ export const useRelationships = () => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const fetchRelationships = async () => {
     if (!user) return;
@@ -45,14 +47,10 @@ export const useRelationships = () => {
     }
   };
 
-  useEffect(() => {
-    fetchRelationships();
-  }, [user]);
+  const addRelationship = useMutation({
+    mutationFn: async (relationshipData: Omit<Relationship, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
+      if (!user) throw new Error('User not authenticated');
 
-  const addRelationship = async (relationshipData: Omit<Relationship, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
-    if (!user) return;
-
-    try {
       const { data, error } = await supabase
         .from('relationships')
         .insert({
@@ -63,25 +61,29 @@ export const useRelationships = () => {
         .single();
 
       if (error) throw error;
-
+      return data;
+    },
+    onSuccess: (data) => {
       setRelationships(prev => [data, ...prev]);
-      
+      queryClient.invalidateQueries({ queryKey: ['relationships'] });
       toast({
         title: 'Success',
         description: 'Relationship added successfully',
       });
-      
-      return data;
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       console.error('Error adding relationship:', error);
       toast({
         title: 'Error',
         description: 'Failed to add relationship',
         variant: "destructive",
       });
-      throw error;
     }
-  };
+  });
+
+  useEffect(() => {
+    fetchRelationships();
+  }, [user]);
 
   return {
     relationships,

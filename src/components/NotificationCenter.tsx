@@ -6,7 +6,6 @@ import { Bell } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuHeader,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -47,9 +46,9 @@ export const NotificationCenter = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
-        <DropdownMenuHeader className="font-semibold">
+        <div className="px-4 py-2 font-semibold border-b">
           Notifications
-        </DropdownMenuHeader>
+        </div>
         {notifications.length === 0 ? (
           <DropdownMenuItem className="text-center text-gray-500">
             No notifications
