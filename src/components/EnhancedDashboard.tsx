@@ -30,6 +30,7 @@ import { motion } from "framer-motion";
 
 interface DashboardStats {
   totalRelationships: number;
+  totalFavors: number;
   favorsGiven: number;
   favorsReceived: number;
   balance: number;
@@ -68,6 +69,7 @@ export const EnhancedDashboard = () => {
 
       return {
         totalRelationships: relationships.data?.length || 0,
+        totalFavors: favors.data?.length || 0,
         favorsGiven: given,
         favorsReceived: received,
         balance: given - received,
