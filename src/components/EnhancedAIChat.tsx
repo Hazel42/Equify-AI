@@ -56,7 +56,7 @@ export const EnhancedAIChat = () => {
 
   // Listen for quick actions
   useEffect(() => {
-    const handleQuickAction = (event: CustomEvent) => {
+    const handleGlobalQuickAction = (event: CustomEvent) => {
       const { action, activeTab } = event.detail;
 
       if (activeTab === "ai-chat" && action === "quick-ai-message") {
@@ -65,11 +65,14 @@ export const EnhancedAIChat = () => {
       }
     };
 
-    window.addEventListener("quick-action", handleQuickAction as EventListener);
+    window.addEventListener(
+      "quick-action",
+      handleGlobalQuickAction as EventListener,
+    );
     return () =>
       window.removeEventListener(
         "quick-action",
-        handleQuickAction as EventListener,
+        handleGlobalQuickAction as EventListener,
       );
   }, []);
 
