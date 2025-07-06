@@ -56,6 +56,12 @@
     height: 100%;
     overflow: hidden;
   }
+
+  /* Ensure smooth scrolling for content area */
+  .content-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
 }
 
 /* Mobile safe area utilities */
