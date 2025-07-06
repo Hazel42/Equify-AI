@@ -47,7 +47,7 @@ export const MobileLayout = ({
 
       {/* Scrollable Main Content - Positioned between header and bottom nav */}
       <main
-        className="absolute inset-0 overflow-y-auto"
+        className="absolute inset-0 overflow-y-auto content-scroll"
         style={{
           top: "60px", // Header height
           bottom: "88px", // Bottom nav height + safe area
