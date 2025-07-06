@@ -63,11 +63,13 @@ const navigationItems: NavigationItem[] = [
 interface EnhancedMobileBottomNavigationProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  onQuickAction?: (action: string) => void;
 }
 
 export const EnhancedMobileBottomNavigation = ({
   activeTab,
   onTabChange,
+  onQuickAction,
 }: EnhancedMobileBottomNavigationProps) => {
   const { user } = useAuth();
   const [longPressTab, setLongPressTab] = useState<string | null>(null);
@@ -252,9 +254,13 @@ export const EnhancedMobileBottomNavigation = ({
         onClick={() => {
           // Quick add action based on current tab
           if (activeTab === "relationships") {
-            // Open add relationship dialog
+            onQuickAction?.("add-relationship");
           } else if (activeTab === "dashboard") {
-            // Open quick favor dialog
+            onQuickAction?.("add-favor");
+          } else if (activeTab === "ai-chat") {
+            onQuickAction?.("quick-ai-message");
+          } else {
+            onQuickAction?.("add-relationship"); // Default action
           }
         }}
       >

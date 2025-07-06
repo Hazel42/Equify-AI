@@ -25,6 +25,15 @@ export const MobileLayout = ({
     // Could handle additional navigation data here
   };
 
+  const handleQuickAction = (action: string) => {
+    // Dispatch custom events for quick actions
+    window.dispatchEvent(
+      new CustomEvent("quick-action", {
+        detail: { action, activeTab },
+      }),
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <EnhancedMobileHeader
@@ -40,6 +49,7 @@ export const MobileLayout = ({
       <EnhancedMobileBottomNavigation
         activeTab={activeTab}
         onTabChange={onTabChange}
+        onQuickAction={handleQuickAction}
       />
 
       <GlobalSearch
