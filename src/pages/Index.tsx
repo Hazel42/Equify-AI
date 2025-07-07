@@ -206,6 +206,19 @@ const Index = () => {
     );
   }
 
+  // If viewing a relationship detail, render it within mobile layout
+  if (relationshipId) {
+    return (
+      <MobileLayout
+        title="Relationship Details"
+        activeTab="relationships"
+        onTabChange={setActiveTab}
+      >
+        <RelationshipDetail />
+      </MobileLayout>
+    );
+  }
+
   // Main app dengan mobile layout
   return (
     <MobileLayout
