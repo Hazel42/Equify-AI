@@ -38,6 +38,14 @@ export const RelationshipDetail = () => {
   const { getFavorsForRelationship, getRelationshipBalance } =
     useFavorsEnhanced();
   const { generateRecommendations, loading: aiLoading } = useAI();
+  const {
+    savedRecommendations,
+    saveRecommendation,
+    deleteRecommendation,
+    markCompleted,
+    isSaving,
+    isDeleting,
+  } = useRecommendations(relationshipId || "");
 
   const relationship = getRelationship(relationshipId || "");
   const favors = getFavorsForRelationship(relationshipId || "");
