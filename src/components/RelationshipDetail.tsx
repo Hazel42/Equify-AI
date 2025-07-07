@@ -13,10 +13,16 @@ import {
   Calendar,
   MessageCircle,
   Sparkles,
+  Save,
+  Trash2,
+  Check,
+  X,
+  CheckCircle,
 } from "lucide-react";
 import { useRelationships } from "@/hooks/useRelationships";
 import { useFavorsEnhanced } from "@/hooks/useFavorsEnhanced";
 import { useAI } from "@/hooks/useAI";
+import { useRecommendations } from "@/hooks/useRecommendations";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
