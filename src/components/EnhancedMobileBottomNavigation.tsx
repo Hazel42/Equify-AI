@@ -7,8 +7,11 @@ import {
   Settings,
   Plus,
   Bell,
+  Gift,
+  X,
+  UserPlus,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -67,6 +70,7 @@ export const EnhancedMobileBottomNavigation = ({
   const { user } = useAuth();
   const [longPressTab, setLongPressTab] = useState<string | null>(null);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Get notification counts
   const { data: notificationCount } = useQuery({
@@ -134,6 +138,30 @@ export const EnhancedMobileBottomNavigation = ({
     // Auto hide after 2 seconds
     setTimeout(() => setLongPressTab(null), 2000);
   };
+
+  const handleQuickAction = (actionId: string) => {
+    onQuickAction?.(actionId);
+    setIsExpanded(false);
+  };
+
+  const getQuickActions = () => {
+    return [
+      {
+        id: "add-relationship",
+        label: "Add Person",
+        icon: UserPlus,
+        color: "bg-blue-500",
+      },
+      {
+        id: "add-favor",
+        label: "Add Favor",
+        icon: Gift,
+        color: "bg-green-500",
+      },
+    ];
+  };
+
+  const quickActions = getQuickActions();
 
   const getBadgeCount = (tabId: string) => {
     switch (tabId) {
@@ -253,6 +281,41 @@ export const EnhancedMobileBottomNavigation = ({
 
         {/* Center - Enhanced Quick Action Button */}
         <div className="flex-shrink-0 mx-6 relative">
+          {/* Expanded Actions */}
+          <AnimatePresence>
+            {isExpanded && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="absolute bottom-16 left-1/2 transform -translate-x-1/2 space-y-3"
+              >
+                {quickActions.map((action, index) => {
+                  const ActionIcon = action.icon;
+                  return (
+                    <motion.button
+                      key={action.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                        transition: { delay: index * 0.1 },
+                      }}
+                      exit={{ opacity: 0, y: 20 }}
+                      onClick={() => handleQuickAction(action.id)}
+                      className={`${action.color} text-white p-3 rounded-full shadow-lg flex items-center gap-2 pr-4 hover:shadow-xl transition-shadow whitespace-nowrap`}
+                    >
+                      <ActionIcon className="h-5 w-5" />
+                      <span className="text-sm font-medium">
+                        {action.label}
+                      </span>
+                    </motion.button>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <motion.div
             className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full blur-lg opacity-30"
             animate={{
@@ -272,20 +335,17 @@ export const EnhancedMobileBottomNavigation = ({
               boxShadow:
                 "0 8px 25px rgba(34, 197, 94, 0.3), 0 4px 12px rgba(0, 0, 0, 0.15)",
             }}
-            onClick={() => {
-              // Quick add action based on current tab
-              if (activeTab === "relationships") {
-                onQuickAction?.("add-relationship");
-              } else if (activeTab === "dashboard") {
-                onQuickAction?.("add-favor");
-              } else if (activeTab === "ai-chat") {
-                onQuickAction?.("quick-ai-message");
-              } else {
-                onQuickAction?.("add-relationship"); // Default action
-              }
+            onClick={() => setIsExpanded(!isExpanded)}
+            animate={{
+              rotate: isExpanded ? 45 : 0,
             }}
+            transition={{ duration: 0.2 }}
           >
-            <Plus className="h-7 w-7" />
+            {isExpanded ? (
+              <X className="h-7 w-7" />
+            ) : (
+              <Plus className="h-7 w-7" />
+            )}
           </motion.button>
         </div>
 
@@ -301,6 +361,19 @@ export const EnhancedMobileBottomNavigation = ({
       <div className="flex justify-center pt-3 pb-1">
         <div className="w-36 h-1 bg-gray-300 rounded-full opacity-60"></div>
       </div>
+
+      {/* Backdrop */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm -z-10"
+            onClick={() => setIsExpanded(false)}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
