@@ -549,6 +549,15 @@ export const EnhancedSettings = () => {
         </div>
       </SettingCard>
 
+      {/* System Health */}
+      <SettingCard
+        title="System Health"
+        description="Monitor application performance and connectivity"
+        icon={Database}
+      >
+        <AppHealthChecker />
+      </SettingCard>
+
       {/* Sign Out */}
       <Card className="border-red-200">
         <CardContent className="p-4">
