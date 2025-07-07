@@ -197,7 +197,11 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
               stiffness: 300,
               damping: 30,
             }}
-            className="fixed left-0 top-0 bottom-0 w-80 bg-white shadow-2xl z-50 overflow-hidden"
+            className="fixed left-0 top-0 w-80 bg-white shadow-2xl z-50 overflow-hidden"
+            style={{
+              height: "100vh",
+              paddingBottom: "100px",
+            }}
           >
             <div className="flex flex-col h-full">
               {/* Header */}
@@ -242,8 +246,8 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
               </div>
 
               {/* Menu Content */}
-              <div className="flex-1 overflow-y-auto">
-                <div className="p-4 space-y-6">
+              <div className="flex-1 overflow-y-auto scrollbar-hide">
+                <div className="p-4 space-y-6 pb-24">
                   {menuSections.map((section, sectionIndex) => (
                     <div key={section.title}>
                       <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">

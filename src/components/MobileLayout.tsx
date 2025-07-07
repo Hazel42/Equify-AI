@@ -56,7 +56,7 @@ export const MobileLayout = ({
         className="absolute inset-0 overflow-y-auto content-scroll"
         style={{
           top: "60px", // Header height
-          bottom: "88px", // Bottom nav height + safe area
+          bottom: "72px", // Reduced bottom nav height + safe area
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
         }}
       >
