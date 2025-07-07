@@ -46,6 +46,8 @@ export const MobileLayout = ({
           title={title}
           showSearch={shouldShowSearchButton}
           onSearchClick={() => setShowSearch(true)}
+          showBackButton={showBackButton}
+          onBackClick={onBackClick}
         />
       </div>
 
