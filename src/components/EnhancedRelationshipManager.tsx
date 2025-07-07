@@ -31,7 +31,7 @@ import {
   Trash2,
   Eye,
 } from "lucide-react";
-import { motion, AnimatePresence, PanInfo } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRelationships } from "@/hooks/useRelationships";
 import { useFavorsEnhanced } from "@/hooks/useFavorsEnhanced";
 import { AddRelationshipDialog } from "@/components/AddRelationshipDialog";
