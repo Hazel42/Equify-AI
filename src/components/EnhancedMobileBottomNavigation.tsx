@@ -264,7 +264,8 @@ export const EnhancedMobileBottomNavigation = ({
     <motion.div
       className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-3 py-1.5 z-50"
       style={{
-        paddingBottom: "max(0.375rem, env(safe-area-inset-bottom))",
+        paddingBottom:
+          "max(1.5rem, calc(env(safe-area-inset-bottom) + 0.75rem))",
       }}
       initial={{ y: 100 }}
       animate={{ y: 0 }}
