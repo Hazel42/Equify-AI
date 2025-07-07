@@ -207,46 +207,12 @@ const EnhancedRelationshipManagerComponent = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      drag="x"
-      dragConstraints={{ left: -100, right: 100 }}
-      dragElastic={0.2}
-      dragMomentum={false}
-      onDrag={(event, info: PanInfo) => {
-        if (Math.abs(info.offset.x) > 50) {
-          setSwipedCard(relationship.id);
-        } else {
-          setSwipedCard(null);
-        }
-      }}
-      onDragEnd={(event, info: PanInfo) => {
-        if (Math.abs(info.offset.x) > 100) {
-          if (info.offset.x > 100) {
-            handleSwipe(relationship.id, "right");
-          } else if (info.offset.x < -100) {
-            handleSwipe(relationship.id, "left");
-          }
-        } else if (Math.abs(info.offset.x) < 5) {
-          // If very little movement, treat as click
-          handleRelationshipClick(relationship.id);
-        }
-      }}
       className="relative"
     >
-      {/* Swipe Actions Background */}
-      <div
-        className={`absolute inset-0 flex items-center justify-between px-4 rounded-lg transition-opacity ${
-          swipedCard === relationship.id ? "opacity-100" : "opacity-0"
-        }`}
+      <Card
+        className="bg-white border shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+        onClick={() => handleRelationshipClick(relationship.id)}
       >
-        <div className="bg-blue-500 text-white p-2 rounded-full">
-          <Phone className="h-4 w-4" />
-        </div>
-        <div className="bg-green-500 text-white p-2 rounded-full">
-          <Gift className="h-4 w-4" />
-        </div>
-      </div>
-
-      <Card className="bg-white border shadow-sm hover:shadow-md transition-shadow cursor-pointer">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
