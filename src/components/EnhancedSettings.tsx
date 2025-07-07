@@ -28,6 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { AIStatusMonitor } from "@/components/AIStatusMonitor";
+import { AppHealthChecker } from "@/components/AppHealthChecker";
 
 interface UserSettings {
   notifications: {
