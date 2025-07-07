@@ -155,26 +155,32 @@ export const RelationshipDetail = () => {
     <div className="h-full overflow-y-auto">
       <div className="space-y-6">
         {/* Relationship Header */}
-        <div className="bg-white rounded-lg p-4 shadow-sm">
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-xl font-bold text-gray-900">
-              {relationship.name}
-            </h1>
-            <Badge
-              className={getImportanceColor(relationship.importance_level || 3)}
-            >
-              {getImportanceLabel(relationship.importance_level || 3)}
-            </Badge>
-          </div>
-          <p className="text-gray-600 capitalize">
-            {relationship.relationship_type.replace("_", " ")}
-          </p>
-        </div>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h1 className="text-xl font-bold text-gray-900 mb-2">
+                  {relationship.name}
+                </h1>
+                <p className="text-gray-600 capitalize">
+                  {relationship.relationship_type.replace("_", " ")}
+                </p>
+              </div>
+              <Badge
+                className={getImportanceColor(
+                  relationship.importance_level || 3,
+                )}
+              >
+                {getImportanceLabel(relationship.importance_level || 3)}
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Balance Card */}
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-semibold text-gray-900 mb-1">
                   Relationship Balance
@@ -183,7 +189,7 @@ export const RelationshipDetail = () => {
                   {balanceStatus.label}
                 </p>
               </div>
-              <div className={`px-4 py-2 rounded-lg ${balanceStatus.bg}`}>
+              <div className={`px-4 py-3 rounded-lg ${balanceStatus.bg}`}>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-gray-900">
                     {balance > 0 ? `+${balance}` : balance}
@@ -192,27 +198,26 @@ export const RelationshipDetail = () => {
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div className="text-center p-3 bg-green-50 rounded-lg">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center p-4 bg-green-50 rounded-lg border border-green-100">
                 <div className="text-xl font-bold text-green-600">
                   {givenFavors.length}
                 </div>
-                <div className="text-xs text-gray-600">Given</div>
+                <div className="text-xs text-gray-600 mt-1">Given</div>
               </div>
-              <div className="text-center p-3 bg-blue-50 rounded-lg">
+              <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-100">
                 <div className="text-xl font-bold text-blue-600">
                   {receivedFavors.length}
                 </div>
-                <div className="text-xs text-gray-600">Received</div>
+                <div className="text-xs text-gray-600 mt-1">Received</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Quick Actions */}
-        <div className="flex gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <Button
-            className="flex-1"
             variant="outline"
             onClick={() => {
               // You could implement a quick add favor modal here
@@ -223,12 +228,12 @@ export const RelationshipDetail = () => {
                   "Navigate to the main page to add a favor for this relationship.",
               });
             }}
+            className="h-12"
           >
             <Heart className="h-4 w-4 mr-2" />
             Add Favor
           </Button>
           <Button
-            className="flex-1"
             variant="outline"
             onClick={() => {
               // Handle contact action
@@ -237,6 +242,7 @@ export const RelationshipDetail = () => {
                 description: "Contact functionality can be implemented here.",
               });
             }}
+            className="h-12"
           >
             <MessageCircle className="h-4 w-4 mr-2" />
             Contact
@@ -244,7 +250,7 @@ export const RelationshipDetail = () => {
           <Button
             onClick={handleGenerateRecommendations}
             disabled={loadingRecommendations}
-            className="bg-purple-600 hover:bg-purple-700"
+            className="bg-purple-600 hover:bg-purple-700 h-12 col-span-2"
           >
             <Bot className="h-4 w-4 mr-2" />
             {loadingRecommendations ? "Generating..." : "AI Insights"}
