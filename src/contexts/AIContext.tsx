@@ -45,10 +45,10 @@ interface AIContext {
 
 const AIContext = createContext<AIContext | undefined>(undefined);
 
-export const useAI = () => {
+export const useAIContext = () => {
   const context = useContext(AIContext);
   if (!context) {
-    throw new Error("useAI must be used within an AIProvider");
+    throw new Error("useAIContext must be used within an AIProvider");
   }
   return context;
 };
