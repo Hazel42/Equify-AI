@@ -308,7 +308,7 @@ export const useAIAvailable = () => {
 
 // Hook for AI service metrics
 export const useAIMetrics = () => {
-  const { services } = useAI();
+  const { services } = useAIContext();
 
   const averageResponseTime =
     Object.values(services)
