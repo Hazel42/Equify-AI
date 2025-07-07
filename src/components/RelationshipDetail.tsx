@@ -118,12 +118,30 @@ export const RelationshipDetail = () => {
 
   if (!relationship) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Relationship not found</p>
-          <Button onClick={() => navigate(-1)} variant="outline">
+          <div className="mb-4">
+            <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Relationship Not Found
+          </h3>
+          <p className="text-gray-600 mb-6">
+            The relationship you're looking for doesn't exist or has been
+            removed.
+          </p>
+          <Button
+            onClick={() => {
+              navigate("/");
+              toast({
+                title: "Redirected to Home",
+                description: "Taking you back to the main page.",
+              });
+            }}
+            className="bg-green-600 hover:bg-green-700"
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Go Back
+            Back to Home
           </Button>
         </div>
       </div>
