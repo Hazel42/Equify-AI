@@ -313,55 +313,65 @@ export const RelationshipDetail = () => {
           </TabsContent>
 
           <TabsContent value="recommendations" className="space-y-4">
-            {recommendations.length === 0 ? (
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center text-gray-500 py-8">
-                    <Sparkles className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p className="font-semibold">No AI recommendations yet</p>
-                    <p className="text-sm mb-4">
-                      Click "AI Insights" to get personalized relationship
-                      recommendations.
-                    </p>
-                    <Button
-                      onClick={handleGenerateRecommendations}
-                      disabled={loadingRecommendations}
-                      className="bg-purple-600 hover:bg-purple-700"
-                    >
-                      <Bot className="h-4 w-4 mr-2" />
-                      {loadingRecommendations
-                        ? "Generating..."
-                        : "Generate Recommendations"}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
+            {/* Generate New Recommendations Button */}
+            <Button
+              onClick={handleGenerateRecommendations}
+              disabled={loadingRecommendations}
+              className="w-full bg-purple-600 hover:bg-purple-700"
+            >
+              <Bot className="h-4 w-4 mr-2" />
+              {loadingRecommendations
+                ? "Generating..."
+                : "Generate New AI Insights"}
+            </Button>
+
+            {/* Temporary AI Generated Recommendations */}
+            {recommendations.length > 0 && (
               <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="h-4 w-4 text-purple-600" />
+                  <h3 className="font-semibold text-gray-900">
+                    New AI Recommendations
+                  </h3>
+                  <Badge variant="outline" className="text-xs">
+                    Unsaved
+                  </Badge>
+                </div>
                 {recommendations.map((rec, index) => (
                   <Card
-                    key={index}
-                    className="hover:shadow-sm transition-shadow"
+                    key={`temp-${index}`}
+                    className="border-purple-200 bg-purple-50/50"
                   >
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <CardTitle className="text-lg">{rec.title}</CardTitle>
-                        <Badge
-                          variant={
-                            rec.priority_level >= 4
-                              ? "destructive"
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant={
+                              rec.priority_level >= 4
+                                ? "destructive"
+                                : rec.priority_level >= 3
+                                  ? "default"
+                                  : "secondary"
+                            }
+                          >
+                            {rec.priority_level >= 4
+                              ? "High"
                               : rec.priority_level >= 3
-                                ? "default"
-                                : "secondary"
-                          }
-                        >
-                          {rec.priority_level >= 4
-                            ? "High"
-                            : rec.priority_level >= 3
-                              ? "Medium"
-                              : "Low"}{" "}
-                          Priority
-                        </Badge>
+                                ? "Medium"
+                                : "Low"}{" "}
+                            Priority
+                          </Badge>
+                          <Button
+                            size="sm"
+                            onClick={() => saveRecommendation(rec)}
+                            disabled={isSaving}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <Save className="h-3 w-3 mr-1" />
+                            Save
+                          </Button>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -392,17 +402,143 @@ export const RelationshipDetail = () => {
                     </CardContent>
                   </Card>
                 ))}
-                <Button
-                  onClick={handleGenerateRecommendations}
-                  disabled={loadingRecommendations}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Bot className="h-4 w-4 mr-2" />
-                  Generate New Recommendations
-                </Button>
               </div>
             )}
+
+            {/* Saved Recommendations */}
+            {savedRecommendations.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Save className="h-4 w-4 text-green-600" />
+                  <h3 className="font-semibold text-gray-900">
+                    Saved Recommendations
+                  </h3>
+                  <Badge variant="outline" className="text-xs">
+                    {savedRecommendations.length} saved
+                  </Badge>
+                </div>
+                {savedRecommendations.map((rec) => (
+                  <Card
+                    key={rec.id}
+                    className="border-green-200 bg-green-50/50"
+                  >
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          {rec.title}
+                          {rec.completed && (
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                          )}
+                        </CardTitle>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant={
+                              rec.priority_level >= 4
+                                ? "destructive"
+                                : rec.priority_level >= 3
+                                  ? "default"
+                                  : "secondary"
+                            }
+                          >
+                            {rec.priority_level >= 4
+                              ? "High"
+                              : rec.priority_level >= 3
+                                ? "Medium"
+                                : "Low"}{" "}
+                            Priority
+                          </Badge>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              markCompleted({
+                                id: rec.id,
+                                completed: !rec.completed,
+                              })
+                            }
+                            className={rec.completed ? "bg-green-100" : ""}
+                          >
+                            {rec.completed ? (
+                              <X className="h-3 w-3" />
+                            ) : (
+                              <Check className="h-3 w-3" />
+                            )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => deleteRecommendation(rec.id)}
+                            disabled={isDeleting}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p
+                        className={`text-gray-700 mb-3 ${rec.completed ? "line-through opacity-60" : ""}`}
+                      >
+                        {rec.description}
+                      </p>
+                      {rec.suggested_actions &&
+                        typeof rec.suggested_actions === "object" &&
+                        rec.suggested_actions.how_to_execute && (
+                          <div className="space-y-2">
+                            <h4 className="font-semibold text-sm text-gray-900">
+                              How to execute:
+                            </h4>
+                            <ul className="text-sm text-gray-600 space-y-1">
+                              {rec.suggested_actions.how_to_execute.map(
+                                (action: string, i: number) => (
+                                  <li
+                                    key={i}
+                                    className={`flex items-start gap-2 ${rec.completed ? "line-through opacity-60" : ""}`}
+                                  >
+                                    <span className="text-green-600">•</span>
+                                    <span>{action}</span>
+                                  </li>
+                                ),
+                              )}
+                            </ul>
+                          </div>
+                        )}
+                      <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
+                        {rec.due_date && (
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            Due: {format(new Date(rec.due_date), "MMM d, yyyy")}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1">
+                          <span>
+                            Saved:{" "}
+                            {format(new Date(rec.created_at), "MMM d, yyyy")}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            {/* Empty State */}
+            {recommendations.length === 0 &&
+              savedRecommendations.length === 0 && (
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center text-gray-500 py-8">
+                      <Sparkles className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                      <p className="font-semibold">No recommendations yet</p>
+                      <p className="text-sm">
+                        Generate AI recommendations to get personalized
+                        relationship insights.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
           </TabsContent>
         </Tabs>
       </div>
