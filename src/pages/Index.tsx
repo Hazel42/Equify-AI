@@ -193,11 +193,6 @@ const Index = () => {
     }
   };
 
-  // Show relationship detail if relationshipId is present
-  if (relationshipId && isAuthenticated) {
-    return <RelationshipDetail />;
-  }
-
   // Show onboarding if needed
   if (showOnboarding) {
     return (

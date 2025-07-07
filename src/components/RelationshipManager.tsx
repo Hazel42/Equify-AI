@@ -27,6 +27,11 @@ export const RelationshipManager = () => {
     return 'Low';
   };
 
+  const handleRelationshipClick = (relationshipId: string) => {
+    console.log('Navigating to relationship:', relationshipId);
+    navigate(`/relationship/${relationshipId}`);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -74,7 +79,7 @@ export const RelationshipManager = () => {
             <Card 
               key={relationship.id} 
               className="hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => navigate(`/relationship/${relationship.id}`)}
+              onClick={() => handleRelationshipClick(relationship.id)}
             >
               <CardHeader>
                 <div className="flex items-start justify-between">
