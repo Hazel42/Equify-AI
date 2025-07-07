@@ -51,6 +51,7 @@ interface Relationship {
 }
 
 const EnhancedRelationshipManagerComponent = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [showAddDialog, setShowAddDialog] = useState(false);
