@@ -210,6 +210,7 @@ const EnhancedRelationshipManagerComponent = () => {
       drag="x"
       dragConstraints={{ left: -100, right: 100 }}
       dragElastic={0.2}
+      dragMomentum={false}
       onDrag={(event, info: PanInfo) => {
         if (Math.abs(info.offset.x) > 50) {
           setSwipedCard(relationship.id);
@@ -218,10 +219,15 @@ const EnhancedRelationshipManagerComponent = () => {
         }
       }}
       onDragEnd={(event, info: PanInfo) => {
-        if (info.offset.x > 100) {
-          handleSwipe(relationship.id, "right");
-        } else if (info.offset.x < -100) {
-          handleSwipe(relationship.id, "left");
+        if (Math.abs(info.offset.x) > 100) {
+          if (info.offset.x > 100) {
+            handleSwipe(relationship.id, "right");
+          } else if (info.offset.x < -100) {
+            handleSwipe(relationship.id, "left");
+          }
+        } else if (Math.abs(info.offset.x) < 5) {
+          // If very little movement, treat as click
+          handleRelationshipClick(relationship.id);
         }
       }}
       className="relative"
