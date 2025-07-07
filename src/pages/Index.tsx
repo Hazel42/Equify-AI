@@ -70,6 +70,25 @@ const Index = () => {
       );
   }, []);
 
+  // Handle browser back/forward buttons
+  useEffect(() => {
+    if (relationshipId) {
+      // We're on a relationship detail page, ensure we maintain proper navigation state
+      setActiveTab("relationships");
+    } else {
+      // We're on the main app, check if we need to update activeTab based on location
+      const currentPath = location.pathname;
+      if (
+        currentPath === "/" &&
+        activeTab === "relationships" &&
+        !relationshipId
+      ) {
+        // Just navigated back from relationship detail, maintain relationships tab
+        setActiveTab("relationships");
+      }
+    }
+  }, [relationshipId, location.pathname]);
+
   // Landing page untuk user yang belum login
   if (!isAuthenticated) {
     return (
