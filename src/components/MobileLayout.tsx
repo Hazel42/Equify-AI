@@ -8,6 +8,8 @@ interface MobileLayoutProps {
   title: string;
   activeTab: string;
   onTabChange: (tab: string) => void;
+  showBackButton?: boolean;
+  onBackClick?: () => void;
 }
 
 export const MobileLayout = ({
@@ -15,6 +17,8 @@ export const MobileLayout = ({
   title,
   activeTab,
   onTabChange,
+  showBackButton = false,
+  onBackClick,
 }: MobileLayoutProps) => {
   const [showSearch, setShowSearch] = useState(false);
   const shouldShowSearchButton =
