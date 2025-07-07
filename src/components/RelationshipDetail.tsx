@@ -370,7 +370,7 @@ export const RelationshipDetail = () => {
                           </Badge>
                           <Button
                             size="sm"
-                            onClick={() => saveRecommendation(rec)}
+                            onClick={() => handleSaveRecommendation(rec, index)}
                             disabled={isSaving}
                             className="bg-green-600 hover:bg-green-700"
                           >
@@ -391,7 +391,7 @@ export const RelationshipDetail = () => {
                             {rec.suggested_actions.how_to_execute.map(
                               (action: string, i: number) => (
                                 <li key={i} className="flex items-start gap-2">
-                                  <span className="text-purple-600">•</span>
+                                  <span className="text-purple-600">��</span>
                                   <span>{action}</span>
                                 </li>
                               ),
