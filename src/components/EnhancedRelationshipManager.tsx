@@ -344,7 +344,8 @@ const EnhancedRelationshipManagerComponent = () => {
               size="sm"
               variant="outline"
               className="flex-1 h-8"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setSelectedRelationship(relationship.id);
                 setShowFavorDialog(true);
               }}
@@ -356,7 +357,10 @@ const EnhancedRelationshipManagerComponent = () => {
               size="sm"
               variant="outline"
               className="flex-1 h-8"
-              onClick={() => handleContactClick(relationship)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleContactClick(relationship);
+              }}
             >
               <MessageCircle className="h-3 w-3 mr-1" />
               Contact
