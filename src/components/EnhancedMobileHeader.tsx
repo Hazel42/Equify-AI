@@ -12,6 +12,7 @@ import {
   Heart,
   Gift,
   MessageCircle,
+  ArrowLeft,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
