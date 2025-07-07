@@ -286,7 +286,7 @@ export const AIProvider: React.FC<AIProviderProps> = ({ children }) => {
 
 // Hook for checking if AI is available and enabled
 export const useAIAvailable = () => {
-  const { isAIEnabled, services, aiQuota } = useAI();
+  const { isAIEnabled, services, aiQuota } = useAIContext();
 
   const isAvailable =
     isAIEnabled &&
