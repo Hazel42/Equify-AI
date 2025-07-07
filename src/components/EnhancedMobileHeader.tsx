@@ -40,6 +40,8 @@ export const EnhancedMobileHeader = ({
   title,
   showSearch = false,
   onSearchClick,
+  showBackButton = false,
+  onBackClick,
 }: EnhancedMobileHeaderProps) => {
   const { user, signOut } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
