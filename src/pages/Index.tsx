@@ -70,6 +70,25 @@ const Index = () => {
       );
   }, []);
 
+  // Handle browser back/forward buttons
+  useEffect(() => {
+    if (relationshipId) {
+      // We're on a relationship detail page, ensure we maintain proper navigation state
+      setActiveTab("relationships");
+    } else {
+      // We're on the main app, check if we need to update activeTab based on location
+      const currentPath = location.pathname;
+      if (
+        currentPath === "/" &&
+        activeTab === "relationships" &&
+        !relationshipId
+      ) {
+        // Just navigated back from relationship detail, maintain relationships tab
+        setActiveTab("relationships");
+      }
+    }
+  }, [relationshipId, location.pathname]);
+
   // Landing page untuk user yang belum login
   if (!isAuthenticated) {
     return (
@@ -206,12 +225,49 @@ const Index = () => {
     );
   }
 
+  // If viewing a relationship detail, render it within mobile layout
+  if (relationshipId) {
+    const handleTabChangeFromDetail = (tab: string) => {
+      // Navigate away from relationship detail to the selected tab
+      navigate("/");
+      setActiveTab(tab);
+    };
+
+    return (
+      <MobileLayout
+        title="Relationship Details"
+        activeTab="relationships"
+        onTabChange={handleTabChangeFromDetail}
+        showBackButton={true}
+        onBackClick={() => {
+          // Add haptic feedback if available
+          if (navigator.vibrate) {
+            navigator.vibrate(10);
+          }
+          navigate("/");
+          setActiveTab("relationships");
+        }}
+      >
+        <RelationshipDetail />
+      </MobileLayout>
+    );
+  }
+
+  // Handle tab changes for main app
+  const handleMainTabChange = (tab: string) => {
+    // Ensure we're on the main route when changing tabs
+    if (location.pathname !== "/") {
+      navigate("/");
+    }
+    setActiveTab(tab);
+  };
+
   // Main app dengan mobile layout
   return (
     <MobileLayout
       title={getTitle()}
       activeTab={activeTab}
-      onTabChange={setActiveTab}
+      onTabChange={handleMainTabChange}
     >
       <MainNavigation userId={user?.id || ""} activeTab={activeTab} />
     </MobileLayout>

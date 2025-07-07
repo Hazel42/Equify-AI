@@ -1,4 +1,5 @@
 import { useState, useEffect, memo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,8 +29,9 @@ import {
   Mail,
   Edit,
   Trash2,
+  Eye,
 } from "lucide-react";
-import { motion, AnimatePresence, PanInfo } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRelationships } from "@/hooks/useRelationships";
 import { useFavorsEnhanced } from "@/hooks/useFavorsEnhanced";
 import { AddRelationshipDialog } from "@/components/AddRelationshipDialog";
@@ -49,6 +51,7 @@ interface Relationship {
 }
 
 const EnhancedRelationshipManagerComponent = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -56,7 +59,6 @@ const EnhancedRelationshipManagerComponent = () => {
   const [selectedRelationship, setSelectedRelationship] = useState<
     string | null
   >(null);
-  const [swipedCard, setSwipedCard] = useState<string | null>(null);
   const [editingRelationship, setEditingRelationship] =
     useState<Relationship | null>(null);
   const [deletingRelationship, setDeletingRelationship] = useState<
@@ -123,27 +125,6 @@ const EnhancedRelationshipManagerComponent = () => {
     return matchesSearch;
   });
 
-  const handleSwipe = (relationshipId: string, direction: "left" | "right") => {
-    if (direction === "right") {
-      // Quick favor
-      setSelectedRelationship(relationshipId);
-      setShowFavorDialog(true);
-    } else if (direction === "left") {
-      // Quick contact
-      const relationship = enrichedRelationships.find(
-        (r) => r.id === relationshipId,
-      );
-      const contactInfo = relationship?.contact_info as any;
-      if (contactInfo?.phone) {
-        window.location.href = `tel:${contactInfo.phone}`;
-      } else {
-        // If no phone, show a message
-        alert("No phone number available for this contact");
-      }
-    }
-    setSwipedCard(null);
-  };
-
   const handleContactClick = (relationship: any) => {
     const contactInfo = relationship?.contact_info as any;
     if (contactInfo?.phone) {
@@ -191,6 +172,10 @@ const EnhancedRelationshipManagerComponent = () => {
     }
   };
 
+  const handleRelationshipClick = (relationshipId: string) => {
+    navigate(`/relationship/${relationshipId}`);
+  };
+
   const RelationshipCard = ({
     relationship,
   }: {
@@ -200,40 +185,12 @@ const EnhancedRelationshipManagerComponent = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      drag="x"
-      dragConstraints={{ left: -100, right: 100 }}
-      dragElastic={0.2}
-      onDrag={(event, info: PanInfo) => {
-        if (Math.abs(info.offset.x) > 50) {
-          setSwipedCard(relationship.id);
-        } else {
-          setSwipedCard(null);
-        }
-      }}
-      onDragEnd={(event, info: PanInfo) => {
-        if (info.offset.x > 100) {
-          handleSwipe(relationship.id, "right");
-        } else if (info.offset.x < -100) {
-          handleSwipe(relationship.id, "left");
-        }
-      }}
       className="relative"
     >
-      {/* Swipe Actions Background */}
-      <div
-        className={`absolute inset-0 flex items-center justify-between px-4 rounded-lg transition-opacity ${
-          swipedCard === relationship.id ? "opacity-100" : "opacity-0"
-        }`}
+      <Card
+        className="bg-white border shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+        onClick={() => handleRelationshipClick(relationship.id)}
       >
-        <div className="bg-blue-500 text-white p-2 rounded-full">
-          <Phone className="h-4 w-4" />
-        </div>
-        <div className="bg-green-500 text-white p-2 rounded-full">
-          <Gift className="h-4 w-4" />
-        </div>
-      </div>
-
-      <Card className="bg-white border shadow-sm hover:shadow-md transition-shadow">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -267,20 +224,40 @@ const EnhancedRelationshipManagerComponent = () => {
               </Badge>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
-                    onClick={() => handleEditRelationship(relationship)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRelationshipClick(relationship.id);
+                    }}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Details
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditRelationship(relationship);
+                    }}
                   >
                     <Edit className="h-4 w-4 mr-2" />
                     Edit
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    onClick={() => handleDeleteRelationship(relationship.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteRelationship(relationship.id);
+                    }}
                     className="text-red-600"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
@@ -314,7 +291,8 @@ const EnhancedRelationshipManagerComponent = () => {
               size="sm"
               variant="outline"
               className="flex-1 h-8"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setSelectedRelationship(relationship.id);
                 setShowFavorDialog(true);
               }}
@@ -326,7 +304,10 @@ const EnhancedRelationshipManagerComponent = () => {
               size="sm"
               variant="outline"
               className="flex-1 h-8"
-              onClick={() => handleContactClick(relationship)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleContactClick(relationship);
+              }}
             >
               <MessageCircle className="h-3 w-3 mr-1" />
               Contact
@@ -406,9 +387,6 @@ const EnhancedRelationshipManagerComponent = () => {
       <AnimatePresence>
         {filteredRelationships.length > 0 ? (
           <div className="space-y-3">
-            <div className="text-xs text-gray-500 text-center p-2 bg-blue-50 rounded-lg">
-              💡 Swipe right to add favor, left to call
-            </div>
             {filteredRelationships.map((relationship) => (
               <RelationshipCard
                 key={relationship.id}

@@ -27,6 +27,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { AIStatusMonitor } from "@/components/AIStatusMonitor";
+import { AppHealthChecker } from "@/components/AppHealthChecker";
 
 interface UserSettings {
   notifications: {
@@ -362,6 +364,8 @@ export const EnhancedSettings = () => {
         icon={Brain}
       >
         <div className="space-y-4">
+          {/* AI Status Monitor */}
+          <AIStatusMonitor />
           <div className="flex items-center justify-between">
             <div>
               <Label>Auto Insights</Label>
@@ -543,6 +547,15 @@ export const EnhancedSettings = () => {
             </Button>
           </div>
         </div>
+      </SettingCard>
+
+      {/* System Health */}
+      <SettingCard
+        title="System Health"
+        description="Monitor application performance and connectivity"
+        icon={Database}
+      >
+        <AppHealthChecker />
       </SettingCard>
 
       {/* Sign Out */}

@@ -12,6 +12,7 @@ import {
   Heart,
   Gift,
   MessageCircle,
+  ArrowLeft,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
@@ -31,12 +32,16 @@ interface EnhancedMobileHeaderProps {
   title: string;
   showSearch?: boolean;
   onSearchClick?: () => void;
+  showBackButton?: boolean;
+  onBackClick?: () => void;
 }
 
 export const EnhancedMobileHeader = ({
   title,
   showSearch = false,
   onSearchClick,
+  showBackButton = false,
+  onBackClick,
 }: EnhancedMobileHeaderProps) => {
   const { user, signOut } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -94,10 +99,16 @@ export const EnhancedMobileHeader = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setSidebarOpen(true)}
+                onClick={
+                  showBackButton ? onBackClick : () => setSidebarOpen(true)
+                }
                 className="p-2 -ml-2 h-auto hover:bg-gray-100"
               >
-                <Menu className="h-5 w-5 text-gray-600" />
+                {showBackButton ? (
+                  <ArrowLeft className="h-5 w-5 text-gray-600" />
+                ) : (
+                  <Menu className="h-5 w-5 text-gray-600" />
+                )}
               </Button>
             </motion.div>
 
