@@ -194,6 +194,10 @@ const EnhancedRelationshipManagerComponent = () => {
     }
   };
 
+  const handleRelationshipClick = (relationshipId: string) => {
+    navigate(`/relationship/${relationshipId}`);
+  };
+
   const RelationshipCard = ({
     relationship,
   }: {
