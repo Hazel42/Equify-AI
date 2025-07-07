@@ -92,7 +92,7 @@ const Index = () => {
   // Landing page untuk user yang belum login
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-orange-50">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-orange-50 overflow-y-auto">
         <ResponsiveContainer maxWidth="lg" className="py-8 px-4">
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-4">

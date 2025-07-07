@@ -181,7 +181,7 @@ export const EnhancedMobileBottomNavigation = ({
 
     return (
       <motion.button
-        className={`relative flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 ${
+        className={`relative flex flex-col items-center justify-center p-1.5 rounded-lg transition-all duration-200 ${
           isActive ? "bg-gray-100" : "hover:bg-gray-50"
         }`}
         onClick={() => handleTabPress(item.id)}
@@ -207,7 +207,7 @@ export const EnhancedMobileBottomNavigation = ({
           >
             <Badge
               variant="destructive"
-              className="h-5 w-5 p-0 flex items-center justify-center text-xs rounded-full"
+              className="h-4 w-4 p-0 flex items-center justify-center text-xs rounded-full"
             >
               {badgeCount > 9 ? "9+" : badgeCount}
             </Badge>
@@ -217,19 +217,19 @@ export const EnhancedMobileBottomNavigation = ({
         {/* Icon */}
         <motion.div
           animate={{
-            scale: isActive ? 1.15 : 1,
-            rotate: isActive ? [0, -8, 8, 0] : 0,
+            scale: isActive ? 1.1 : 1,
+            rotate: isActive ? [0, -6, 6, 0] : 0,
           }}
           transition={{ duration: 0.3 }}
         >
           <Icon
-            className={`h-6 w-6 ${isActive ? item.activeColor : item.inactiveColor}`}
+            className={`h-5 w-5 ${isActive ? item.activeColor : item.inactiveColor}`}
           />
         </motion.div>
 
         {/* Label */}
         <span
-          className={`text-xs mt-1.5 font-medium transition-colors leading-none ${
+          className={`text-xs mt-1 font-medium transition-colors leading-none ${
             isActive ? item.activeColor : item.inactiveColor
           }`}
         >
@@ -251,7 +251,7 @@ export const EnhancedMobileBottomNavigation = ({
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0 }}
-            className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs py-1 px-2 rounded"
+            className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs py-1 px-2 rounded"
           >
             Quick actions
           </motion.div>
@@ -262,16 +262,16 @@ export const EnhancedMobileBottomNavigation = ({
 
   return (
     <motion.div
-      className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 pb-6 z-50"
+      className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-3 py-2 z-50"
       style={{
-        paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))",
+        paddingBottom: "max(2rem, calc(env(safe-area-inset-bottom) + 1rem))",
       }}
       initial={{ y: 100 }}
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
       {/* Enhanced Layout: 2 items - Large Add Button - 2 items */}
-      <div className="flex items-center justify-between px-2 pt-2">
+      <div className="flex items-center justify-between px-1 pt-1">
         {/* Left Section - Home & People */}
         <div className="flex flex-1 justify-around">
           {navigationItems.slice(0, 2).map((item) => (
@@ -280,7 +280,7 @@ export const EnhancedMobileBottomNavigation = ({
         </div>
 
         {/* Center - Enhanced Quick Action Button */}
-        <div className="flex-shrink-0 mx-6 relative">
+        <div className="flex-shrink-0 mx-4 relative">
           {/* Expanded Actions */}
           <AnimatePresence>
             {isExpanded && (
@@ -288,7 +288,7 @@ export const EnhancedMobileBottomNavigation = ({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                className="absolute bottom-16 left-1/2 transform -translate-x-1/2 space-y-3"
+                className="absolute bottom-14 left-1/2 transform -translate-x-1/2 space-y-2"
               >
                 {quickActions.map((action, index) => {
                   const ActionIcon = action.icon;
@@ -303,9 +303,9 @@ export const EnhancedMobileBottomNavigation = ({
                       }}
                       exit={{ opacity: 0, y: 20 }}
                       onClick={() => handleQuickAction(action.id)}
-                      className={`${action.color} text-white p-3 rounded-full shadow-lg flex items-center gap-2 pr-4 hover:shadow-xl transition-shadow whitespace-nowrap`}
+                      className={`${action.color} text-white p-2.5 rounded-full shadow-lg flex items-center gap-2 pr-3 hover:shadow-xl transition-shadow whitespace-nowrap`}
                     >
-                      <ActionIcon className="h-5 w-5" />
+                      <ActionIcon className="h-4 w-4" />
                       <span className="text-sm font-medium">
                         {action.label}
                       </span>
@@ -328,12 +328,12 @@ export const EnhancedMobileBottomNavigation = ({
             }}
           />
           <motion.button
-            className="relative bg-gradient-to-r from-green-500 to-emerald-600 text-white p-4 rounded-full shadow-lg"
+            className="relative bg-gradient-to-r from-green-500 to-emerald-600 text-white p-3 rounded-full shadow-lg"
             whileTap={{ scale: 0.9 }}
             whileHover={{ scale: 1.05 }}
             style={{
               boxShadow:
-                "0 8px 25px rgba(34, 197, 94, 0.3), 0 4px 12px rgba(0, 0, 0, 0.15)",
+                "0 6px 20px rgba(34, 197, 94, 0.3), 0 3px 10px rgba(0, 0, 0, 0.15)",
             }}
             onClick={() => setIsExpanded(!isExpanded)}
             animate={{
@@ -342,9 +342,9 @@ export const EnhancedMobileBottomNavigation = ({
             transition={{ duration: 0.2 }}
           >
             {isExpanded ? (
-              <X className="h-7 w-7" />
+              <X className="h-6 w-6" />
             ) : (
-              <Plus className="h-7 w-7" />
+              <Plus className="h-6 w-6" />
             )}
           </motion.button>
         </div>
@@ -358,8 +358,8 @@ export const EnhancedMobileBottomNavigation = ({
       </div>
 
       {/* Home indicator for iPhone-like devices */}
-      <div className="flex justify-center pt-3 pb-1">
-        <div className="w-36 h-1 bg-gray-300 rounded-full opacity-60"></div>
+      <div className="flex justify-center pt-2 pb-1">
+        <div className="w-32 h-1 bg-gray-300 rounded-full opacity-60"></div>
       </div>
 
       {/* Backdrop */}
