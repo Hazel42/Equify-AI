@@ -59,7 +59,6 @@ const EnhancedRelationshipManagerComponent = () => {
   const [selectedRelationship, setSelectedRelationship] = useState<
     string | null
   >(null);
-  const [swipedCard, setSwipedCard] = useState<string | null>(null);
   const [editingRelationship, setEditingRelationship] =
     useState<Relationship | null>(null);
   const [deletingRelationship, setDeletingRelationship] = useState<
