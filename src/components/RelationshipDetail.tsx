@@ -258,10 +258,12 @@ export const RelationshipDetail = () => {
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="history">Favor History</TabsTrigger>
-            <TabsTrigger value="recommendations">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
+          <TabsList className="grid w-full grid-cols-2 h-12">
+            <TabsTrigger value="history" className="text-sm">
+              Favor History
+            </TabsTrigger>
+            <TabsTrigger value="recommendations" className="text-sm">
               AI Recommendations
             </TabsTrigger>
           </TabsList>
