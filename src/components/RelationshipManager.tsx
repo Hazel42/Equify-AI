@@ -9,7 +9,7 @@ import { AddRelationshipDialog } from "@/components/AddRelationshipDialog";
 
 export const RelationshipManager = () => {
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const { relationships, loading } = useRelationships();
+  const { relationships, isLoading } = useRelationships();
 
   const getImportanceColor = (level: number) => {
     if (level >= 4) return 'bg-red-100 text-red-700 border-red-200';
@@ -25,7 +25,7 @@ export const RelationshipManager = () => {
     return 'Low';
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>

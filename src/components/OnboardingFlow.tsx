@@ -15,11 +15,14 @@ import {
   ArrowRight,
   ArrowLeft,
   Check,
+  Brain,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { PersonalityAssessment } from "@/components/PersonalityAssessment";
+import { AssessmentResults } from "@/components/AssessmentResults";
 
 interface OnboardingData {
   fullName: string;
@@ -161,6 +164,12 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
+  };
+
+  const handleAssessmentComplete = (result: any) => {
+    setAssessmentResult(result);
+    setShowAssessment(false);
+    setShowResults(true);
   };
 
   const handleComplete = async () => {
@@ -419,7 +428,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
           onSkip={() => {
             setShowAssessment(false);
             setShowResults(false);
-            handleFinalComplete();
+            handleComplete();
           }}
         />
       </div>
@@ -432,7 +441,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 p-4">
         <AssessmentResults
           result={assessmentResult}
-          onContinue={handleFinalComplete}
+          onContinue={handleComplete}
           onRetake={() => {
             setShowResults(false);
             setShowAssessment(true);
@@ -495,7 +504,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                     </Button>
                   ) : (
                     <Button
-                      onClick={handleBasicComplete}
+                      onClick={handleComplete}
                       disabled={!isStepComplete()}
                       className="flex-1 bg-purple-600 hover:bg-purple-700"
                     >

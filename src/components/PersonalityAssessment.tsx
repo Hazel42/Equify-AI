@@ -13,7 +13,7 @@ import {
   ArrowRight,
   CheckCircle,
   Zap,
-  Balance,
+  Scale,
   Target,
   Gift,
   MessageCircle,
