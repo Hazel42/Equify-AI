@@ -208,11 +208,22 @@ const Index = () => {
 
   // If viewing a relationship detail, render it within mobile layout
   if (relationshipId) {
+    const handleTabChangeFromDetail = (tab: string) => {
+      // Navigate away from relationship detail to the selected tab
+      navigate("/");
+      setActiveTab(tab);
+    };
+
     return (
       <MobileLayout
         title="Relationship Details"
         activeTab="relationships"
-        onTabChange={setActiveTab}
+        onTabChange={handleTabChangeFromDetail}
+        showBackButton={true}
+        onBackClick={() => {
+          navigate("/");
+          setActiveTab("relationships");
+        }}
       >
         <RelationshipDetail />
       </MobileLayout>
