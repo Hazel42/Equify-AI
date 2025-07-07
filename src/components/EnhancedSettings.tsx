@@ -363,6 +363,8 @@ export const EnhancedSettings = () => {
         icon={Brain}
       >
         <div className="space-y-4">
+          {/* AI Status Monitor */}
+          <AIStatusMonitor />
           <div className="flex items-center justify-between">
             <div>
               <Label>Auto Insights</Label>
