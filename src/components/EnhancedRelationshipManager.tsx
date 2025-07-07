@@ -125,27 +125,6 @@ const EnhancedRelationshipManagerComponent = () => {
     return matchesSearch;
   });
 
-  const handleSwipe = (relationshipId: string, direction: "left" | "right") => {
-    if (direction === "right") {
-      // Quick favor
-      setSelectedRelationship(relationshipId);
-      setShowFavorDialog(true);
-    } else if (direction === "left") {
-      // Quick contact
-      const relationship = enrichedRelationships.find(
-        (r) => r.id === relationshipId,
-      );
-      const contactInfo = relationship?.contact_info as any;
-      if (contactInfo?.phone) {
-        window.location.href = `tel:${contactInfo.phone}`;
-      } else {
-        // If no phone, show a message
-        alert("No phone number available for this contact");
-      }
-    }
-    setSwipedCard(null);
-  };
-
   const handleContactClick = (relationship: any) => {
     const contactInfo = relationship?.contact_info as any;
     if (contactInfo?.phone) {
