@@ -246,10 +246,7 @@ const EnhancedRelationshipManagerComponent = () => {
         </div>
       </div>
 
-      <Card
-        className="bg-white border shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-        onClick={() => handleRelationshipClick(relationship.id)}
-      >
+      <Card className="bg-white border shadow-sm hover:shadow-md transition-shadow cursor-pointer">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
