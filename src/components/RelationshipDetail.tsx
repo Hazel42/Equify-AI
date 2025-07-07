@@ -18,6 +18,7 @@ import {
   Check,
   X,
   CheckCircle,
+  Users,
 } from "lucide-react";
 import { useRelationships } from "@/hooks/useRelationships";
 import { useFavorsEnhanced } from "@/hooks/useFavorsEnhanced";
