@@ -32,6 +32,8 @@ interface EnhancedMobileHeaderProps {
   title: string;
   showSearch?: boolean;
   onSearchClick?: () => void;
+  showBackButton?: boolean;
+  onBackClick?: () => void;
 }
 
 export const EnhancedMobileHeader = ({
