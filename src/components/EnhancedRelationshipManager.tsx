@@ -387,9 +387,6 @@ const EnhancedRelationshipManagerComponent = () => {
       <AnimatePresence>
         {filteredRelationships.length > 0 ? (
           <div className="space-y-3">
-            <div className="text-xs text-gray-500 text-center p-2 bg-blue-50 rounded-lg">
-              💡 Tap for details • Swipe right for favor, left for call
-            </div>
             {filteredRelationships.map((relationship) => (
               <RelationshipCard
                 key={relationship.id}
