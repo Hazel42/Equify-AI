@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -14,12 +14,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MainNavigation } from "@/components/MainNavigation";
 import { EnhancedOnboardingFlow } from "@/components/EnhancedOnboardingFlow";
+import { RelationshipDetail } from "@/components/RelationshipDetail";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { relationshipId } = useParams();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showOnboarding, setShowOnboarding] = useState(false);
 
@@ -189,6 +192,11 @@ const Index = () => {
         return "Equify";
     }
   };
+
+  // Show relationship detail if relationshipId is present
+  if (relationshipId && isAuthenticated) {
+    return <RelationshipDetail />;
+  }
 
   // Show onboarding if needed
   if (showOnboarding) {

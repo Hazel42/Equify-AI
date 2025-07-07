@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,7 @@ import { useRelationships } from "@/hooks/useRelationships";
 import { AddRelationshipDialog } from "@/components/AddRelationshipDialog";
 
 export const RelationshipManager = () => {
+  const navigate = useNavigate();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const { relationships, isLoading } = useRelationships();
 
@@ -69,7 +71,11 @@ export const RelationshipManager = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {relationships.map((relationship) => (
-            <Card key={relationship.id} className="hover:shadow-md transition-shadow">
+            <Card 
+              key={relationship.id} 
+              className="hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => navigate(`/relationship/${relationship.id}`)}
+            >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
@@ -85,15 +91,38 @@ export const RelationshipManager = () => {
               </CardHeader>
               <CardContent>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" className="flex-1">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Handle add favor
+                    }}
+                  >
                     <Heart className="h-4 w-4 mr-1" />
                     Add Favor
                   </Button>
-                  <Button size="sm" variant="outline" className="flex-1">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Handle contact
+                    }}
+                  >
                     <MessageCircle className="h-4 w-4 mr-1" />
                     Contact
                   </Button>
-                  <Button size="sm" variant="outline">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Handle calendar
+                    }}
+                  >
                     <Calendar className="h-4 w-4" />
                   </Button>
                 </div>
