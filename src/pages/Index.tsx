@@ -240,6 +240,10 @@ const Index = () => {
         onTabChange={handleTabChangeFromDetail}
         showBackButton={true}
         onBackClick={() => {
+          // Add haptic feedback if available
+          if (navigator.vibrate) {
+            navigator.vibrate(10);
+          }
           navigate("/");
           setActiveTab("relationships");
         }}
