@@ -249,12 +249,21 @@ const Index = () => {
     );
   }
 
+  // Handle tab changes for main app
+  const handleMainTabChange = (tab: string) => {
+    // Ensure we're on the main route when changing tabs
+    if (location.pathname !== "/") {
+      navigate("/");
+    }
+    setActiveTab(tab);
+  };
+
   // Main app dengan mobile layout
   return (
     <MobileLayout
       title={getTitle()}
       activeTab={activeTab}
-      onTabChange={setActiveTab}
+      onTabChange={handleMainTabChange}
     >
       <MainNavigation userId={user?.id || ""} activeTab={activeTab} />
     </MobileLayout>
