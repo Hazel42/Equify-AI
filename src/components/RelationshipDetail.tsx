@@ -110,6 +110,12 @@ export const RelationshipDetail = () => {
     }
   };
 
+  const handleSaveRecommendation = (recommendation: any, index: number) => {
+    saveRecommendation(recommendation);
+    // Remove the saved recommendation from temporary list
+    setRecommendations((prev) => prev.filter((_, i) => i !== index));
+  };
+
   if (!relationship) {
     return (
       <div className="min-h-screen flex items-center justify-center">
