@@ -240,7 +240,10 @@ const EnhancedRelationshipManagerComponent = () => {
         </div>
       </div>
 
-      <Card className="bg-white border shadow-sm hover:shadow-md transition-shadow">
+      <Card
+        className="bg-white border shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+        onClick={() => handleRelationshipClick(relationship.id)}
+      >
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -274,20 +277,40 @@ const EnhancedRelationshipManagerComponent = () => {
               </Badge>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
-                    onClick={() => handleEditRelationship(relationship)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRelationshipClick(relationship.id);
+                    }}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Details
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditRelationship(relationship);
+                    }}
                   >
                     <Edit className="h-4 w-4 mr-2" />
                     Edit
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    onClick={() => handleDeleteRelationship(relationship.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteRelationship(relationship.id);
+                    }}
                     className="text-red-600"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
