@@ -3,6 +3,7 @@ import { EnhancedRelationshipManager } from "@/components/EnhancedRelationshipMa
 import { EnhancedAIChat } from "@/components/EnhancedAIChat";
 import { EnhancedAnalytics } from "@/components/EnhancedAnalytics";
 import { EnhancedSettings } from "@/components/EnhancedSettings";
+import { MonthlyGoals } from "@/components/MonthlyGoals";
 
 interface MainNavigationProps {
   userId: string;
@@ -16,6 +17,8 @@ export const MainNavigation = ({ userId, activeTab }: MainNavigationProps) => {
         return <EnhancedDashboard key="dashboard" />;
       case "relationships":
         return <EnhancedRelationshipManager key="relationships" />;
+      case "monthly-goals":
+        return <MonthlyGoals key="monthly-goals" />;
       case "ai-chat":
         return <EnhancedAIChat key="ai-chat" />;
       case "analytics":

@@ -155,6 +155,57 @@ export type Database = {
           },
         ]
       }
+      monthly_goals: {
+        Row: {
+          completed: boolean | null
+          created_at: string
+          current_progress: number | null
+          description: string | null
+          goal_type: string
+          id: string
+          metadata: Json | null
+          priority_level: number | null
+          relationship_id: string | null
+          target_month: string
+          target_value: number | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string
+          current_progress?: number | null
+          description?: string | null
+          goal_type: string
+          id?: string
+          metadata?: Json | null
+          priority_level?: number | null
+          relationship_id?: string | null
+          target_month: string
+          target_value?: number | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string
+          current_progress?: number | null
+          description?: string | null
+          goal_type?: string
+          id?: string
+          metadata?: Json | null
+          priority_level?: number | null
+          relationship_id?: string | null
+          target_month?: string
+          target_value?: number | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string

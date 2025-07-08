@@ -201,6 +201,8 @@ const Index = () => {
         return "Dashboard";
       case "relationships":
         return "My People";
+      case "monthly-goals":
+        return "Monthly Goals";
       case "ai-chat":
         return "Chat";
       case "analytics":

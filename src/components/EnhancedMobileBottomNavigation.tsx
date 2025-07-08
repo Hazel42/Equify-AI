@@ -10,6 +10,7 @@ import {
   Gift,
   X,
   UserPlus,
+  Target,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -41,16 +42,16 @@ const navigationItems: NavigationItem[] = [
     inactiveColor: "text-gray-400",
   },
   {
-    id: "ai-chat",
-    label: "Chat",
-    icon: MessageCircle,
+    id: "monthly-goals",
+    label: "Goals",
+    icon: Target,
     activeColor: "text-purple-600",
     inactiveColor: "text-gray-400",
   },
   {
-    id: "analytics",
-    label: "Analytics",
-    icon: BarChart3,
+    id: "ai-chat",
+    label: "Chat",
+    icon: MessageCircle,
     activeColor: "text-orange-600",
     inactiveColor: "text-gray-400",
   },
@@ -157,6 +158,12 @@ export const EnhancedMobileBottomNavigation = ({
         label: "Add Favor",
         icon: Gift,
         color: "bg-green-500",
+      },
+      {
+        id: "add-goal",
+        label: "Add Goal",
+        icon: Target,
+        color: "bg-purple-500",
       },
     ];
   };
@@ -351,7 +358,7 @@ export const EnhancedMobileBottomNavigation = ({
           </motion.button>
         </div>
 
-        {/* Right Section - AI Chat & Analytics */}
+        {/* Right Section - Goals & AI Chat */}
         <div className="flex flex-1 justify-around">
           {navigationItems.slice(2, 4).map((item) => (
             <NavigationButton key={item.id} item={item} />
