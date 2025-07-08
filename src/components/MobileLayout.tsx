@@ -56,7 +56,7 @@ export const MobileLayout = ({
         className="absolute inset-0 overflow-y-auto content-scroll"
         style={{
           top: "60px", // Header height
-          bottom: "max(96px, calc(env(safe-area-inset-bottom) + 80px))", // Navigation height + safe area
+          bottom: "max(80px, calc(env(safe-area-inset-bottom) + 80px))", // Navigation height + safe area
           paddingBottom: "0px",
         }}
       >
@@ -64,7 +64,12 @@ export const MobileLayout = ({
       </main>
 
       {/* Fixed Bottom Navigation */}
-      <div className="absolute bottom-0 left-0 right-0 z-50">
+      <div 
+        className="absolute left-0 right-0 z-50"
+        style={{
+          bottom: "0px",
+        }}
+      >
         <EnhancedMobileBottomNavigation
           activeTab={activeTab}
           onTabChange={onTabChange}
