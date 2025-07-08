@@ -203,7 +203,7 @@ export const AIProvider: React.FC<AIProviderProps> = ({ children }) => {
       // Update user preferences in database
       const { error } = await supabase
         .from("profiles")
-        .update({ ai_enabled: enabled })
+        .update({ subscription_tier: enabled ? 'premium' : 'free' })
         .eq("id", user?.id);
 
       if (error) throw error;
