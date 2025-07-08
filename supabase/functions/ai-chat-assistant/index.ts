@@ -10,10 +10,13 @@ const corsHeaders = {
 interface RequestBody {
   message: string;
   userId: string;
-  conversationHistory?: Array<{
-    role: 'user' | 'assistant';
-    content: string;
-  }>;
+  context?: {
+    recentRelationships: any[];
+    recentFavors: any[];
+    userPersonality: string;
+    conversationHistory: any[];
+  };
+  language?: string;
 }
 
 serve(async (req) => {
@@ -22,7 +25,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, userId, conversationHistory = [] }: RequestBody = await req.json()
+    const { message, userId, context, language = 'en' }: RequestBody = await req.json()
     
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -31,19 +34,27 @@ serve(async (req) => {
 
     console.log(`🤖 AI Chat request from user ${userId}`)
 
-    // Get user's relationships and recent favors for context
+    // Get comprehensive user data for context
     const { data: relationships } = await supabaseClient
       .from('relationships')
       .select('*')
       .eq('user_id', userId)
-      .limit(10)
+      .order('updated_at', { ascending: false })
 
     const { data: favors } = await supabaseClient
       .from('favors')
-      .select('*')
+      .select('*, relationships(name, relationship_type)')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(20)
+      .limit(50)
+
+    const { data: recommendations } = await supabaseClient
+      .from('recommendations')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('completed', false)
+      .order('priority_level', { ascending: false })
+      .limit(10)
 
     const { data: profile } = await supabaseClient
       .from('profiles')
@@ -51,36 +62,101 @@ serve(async (req) => {
       .eq('id', userId)
       .single()
 
-    // Prepare context for AI
+    // Calculate relationship statistics
+    const relationshipStats = relationships?.reduce((acc, rel) => {
+      acc[rel.relationship_type] = (acc[rel.relationship_type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>) || {};
+
+    // Analyze favor patterns
+    const favorStats = favors?.reduce((acc, favor) => {
+      const type = favor.direction;
+      acc[type] = (acc[type] || 0) + 1;
+      if (favor.estimated_value) {
+        acc[`${type}_value`] = (acc[`${type}_value`] || 0) + favor.estimated_value;
+      }
+      return acc;
+    }, {} as Record<string, number>) || {};
+
+    // Create detailed context
     const contextInfo = {
       relationshipCount: relationships?.length || 0,
-      recentFavors: favors?.length || 0,
-      personalityType: profile?.personality_type || 'Not set'
+      relationshipTypes: relationshipStats,
+      totalFavors: favors?.length || 0,
+      favorBalance: {
+        given: favorStats.given || 0,
+        received: favorStats.received || 0,
+        givenValue: favorStats.given_value || 0,
+        receivedValue: favorStats.received_value || 0,
+      },
+      pendingRecommendations: recommendations?.length || 0,
+      personalityType: profile?.personality_type || 'Not set',
+      reciprocityStyle: profile?.reciprocity_style || 'Not set',
     }
 
-    // Enhanced system prompt for relationship advisor
-    const systemPrompt = `You are an expert AI relationship advisor specializing in helping people build and maintain meaningful connections. You have access to the user's relationship data and should provide personalized, actionable advice.
+    // Enhanced system prompt for relationship advisor with detailed context
+    const systemPrompt = `You are an expert AI relationship advisor with deep emotional intelligence and expertise in human connections. You can access the user's comprehensive relationship data to provide highly personalized advice.
 
-Current user context:
-- Has ${contextInfo.relationshipCount} relationships tracked
-- ${contextInfo.recentFavors} recent interactions recorded
-- Personality type: ${contextInfo.personalityType}
+CURRENT USER PROFILE:
+- Total relationships tracked: ${contextInfo.relationshipCount}
+- Relationship types: ${Object.entries(contextInfo.relationshipTypes).map(([type, count]) => `${count} ${type}`).join(', ') || 'None'}
+- Total interactions: ${contextInfo.totalFavors}
+- Give/Take balance: Given ${contextInfo.favorBalance.given}, Received ${contextInfo.favorBalance.received}
+- Value balance: Given $${contextInfo.favorBalance.givenValue}, Received $${contextInfo.favorBalance.receivedValue}
+- Pending recommendations: ${contextInfo.pendingRecommendations}
+- Personality: ${contextInfo.personalityType}
+- Reciprocity style: ${contextInfo.reciprocityStyle}
 
-Your role is to:
-1. Provide specific, actionable relationship advice
-2. Help interpret relationship patterns and dynamics
-3. Suggest practical ways to strengthen connections
-4. Offer emotional intelligence insights
-5. Help with conflict resolution and communication strategies
-6. Provide timing suggestions for relationship actions
+AVAILABLE DATA:
+- All relationships with names, types, and importance levels
+- Complete favor history with descriptions, values, and emotional weights
+- Active recommendations and their priorities
+- User personality traits and preferences
 
-Keep responses conversational, empathetic, and practical. Ask clarifying questions when needed. Always consider the user's specific context and relationship data when giving advice.`
+YOUR CAPABILITIES:
+1. **Relationship Analysis**: Analyze specific relationships by name (e.g., "How is my relationship with Sarah?")
+2. **Gift Suggestions**: Provide personalized gift ideas based on relationship history and favor patterns
+3. **Communication Advice**: Suggest conversation starters, conflict resolution, and emotional approaches
+4. **Balance Assessment**: Evaluate give-and-take dynamics in specific relationships
+5. **Pattern Recognition**: Identify trends in interaction patterns and emotional investments
+6. **Timing Guidance**: Suggest optimal timing for relationship actions based on history
+7. **Personalized Strategies**: Tailor advice to user's personality type and reciprocity style
 
-    // Build conversation context
+RESPONSE GUIDELINES:
+- Use specific names and details from their relationship data
+- Reference actual favor history when relevant
+- Be conversational, empathetic, and actionable
+- Ask follow-up questions to provide deeper insights
+- Suggest concrete next steps
+- Consider cultural and emotional contexts
+
+${language === 'id' ? 'Respond in Indonesian (Bahasa Indonesia).' : 'Respond in English.'}
+
+You have access to their actual relationship data, so be specific and personal in your advice.`
+
+    // Build conversation with better context
+    const conversationHistory = context?.conversationHistory?.slice(-6) || [];
     const messages = [
       { role: 'system', content: systemPrompt },
-      ...conversationHistory.slice(-8), // Keep last 8 messages for context
-      { role: 'user', content: message }
+      ...conversationHistory.map((msg: any) => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.content
+      })),
+      { 
+        role: 'user', 
+        content: `${message}
+
+DETAILED CONTEXT:
+Relationships: ${JSON.stringify(relationships?.map(r => ({ name: r.name, type: r.relationship_type, importance: r.importance_level })) || [])}
+Recent Favors: ${JSON.stringify(favors?.slice(0, 10).map(f => ({ 
+          description: f.description, 
+          direction: f.direction, 
+          person: f.relationships?.name,
+          value: f.estimated_value,
+          date: f.date_occurred 
+        })) || [])}
+Active Recommendations: ${JSON.stringify(recommendations?.map(r => ({ title: r.title, description: r.description, priority: r.priority_level })) || [])}`
+      }
     ]
 
     // Call DeepSeek AI for response
