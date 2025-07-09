@@ -260,26 +260,8 @@ export const MonthlyGoals = () => {
     );
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5" />
-              Monthly Goals
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="animate-pulse space-y-4">
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Show content immediately with skeleton for individual goals loading
+  const showSkeleton = isLoading && currentGoals.length === 0;
 
   return (
     <div className="space-y-6">
@@ -440,7 +422,17 @@ export const MonthlyGoals = () => {
       {/* Goals List */}
       <div className="space-y-4">
         <AnimatePresence>
-          {currentGoals.length === 0 ? (
+          {showSkeleton ? (
+            // Skeleton loading for first load only
+            <Card>
+              <CardContent className="py-8">
+                <div className="animate-pulse space-y-4">
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : currentGoals.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
                 <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />

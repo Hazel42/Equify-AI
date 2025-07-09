@@ -37,9 +37,6 @@ export const useMonthlyGoals = () => {
       if (!user?.id) return [];
 
       const currentMonth = new Date();
-      const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-      const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
-
       const currentMonthStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}`;
       
       const { data, error } = await supabase
@@ -60,6 +57,9 @@ export const useMonthlyGoals = () => {
       return (data || []) as unknown as MonthlyGoal[];
     },
     enabled: !!user?.id,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    refetchOnWindowFocus: false,
+    initialData: [], // Show empty array immediately instead of loading
   });
 
   // Get goal history

@@ -107,19 +107,25 @@ const EnhancedAIChatComponent = () => {
       );
   }, []);
 
-  const [conversation, setConversation] = useState<ChatMessage[]>(() => {
-    // Initialize with welcome message only once
-    return [
-      {
-        id: "welcome",
-        content:
-          "Hi! I'm your relationship AI assistant. I can help you understand your relationships, suggest ways to strengthen connections, and provide insights based on your interaction patterns. What would you like to explore today?",
-        sender: "ai",
-        timestamp: new Date().toISOString(),
-        type: "text",
-      },
-    ];
-  });
+  const [conversation, setConversation] = useState<ChatMessage[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize welcome message only once
+  useEffect(() => {
+    if (!isInitialized && user?.id) {
+      setConversation([
+        {
+          id: "welcome",
+          content:
+            "Hi! I'm your relationship AI assistant. I can help you understand your relationships, suggest ways to strengthen connections, and provide insights based on your interaction patterns. What would you like to explore today?",
+          sender: "ai",
+          timestamp: new Date().toISOString(),
+          type: "text",
+        },
+      ]);
+      setIsInitialized(true);
+    }
+  }, [user?.id, isInitialized]);
 
   // Get user context for AI
   const { data: profile } = useQuery({
