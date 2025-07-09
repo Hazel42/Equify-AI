@@ -2,7 +2,7 @@ import { EnhancedDashboard } from "@/components/EnhancedDashboard";
 import { EnhancedRelationshipManager } from "@/components/EnhancedRelationshipManager";
 import { EnhancedAIChat } from "@/components/EnhancedAIChat";
 import { EnhancedAnalytics } from "@/components/EnhancedAnalytics";
-import { EnhancedSettings } from "@/components/EnhancedSettings";
+import { SimpleSettings } from "@/components/SimpleSettings";
 import { MonthlyGoals } from "@/components/MonthlyGoals";
 
 interface MainNavigationProps {
@@ -24,7 +24,7 @@ export const MainNavigation = ({ userId, activeTab }: MainNavigationProps) => {
       case "analytics":
         return <EnhancedAnalytics key="analytics" />;
       case "settings":
-        return <EnhancedSettings key="settings" />;
+        return <SimpleSettings key="settings" />;
       default:
         return <EnhancedDashboard key="dashboard" />;
     }
