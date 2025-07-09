@@ -272,7 +272,7 @@ export const EnhancedMobileBottomNavigation = ({
       className="fixed left-0 right-0 bg-white border-t border-gray-200 px-3 py-2 z-50"
       style={{
         bottom: "max(0px, env(safe-area-inset-bottom))",
-        paddingBottom: "max(8px, calc(env(safe-area-inset-bottom) + 8px))",
+        paddingBottom: "max(16px, calc(env(safe-area-inset-bottom) + 16px))",
         marginBottom: "max(0px, calc(env(keyboard-inset-height, 0px)))",
       }}
       initial={{ y: 100 }}

@@ -29,9 +29,11 @@ export const AIChatAssistant = () => {
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Welcome message
+  // Welcome message - initialize once with ref to prevent flickering
+  const [welcomeMessageInitialized, setWelcomeMessageInitialized] = useState(false);
+  
   useEffect(() => {
-    if (messages.length === 0) {
+    if (!welcomeMessageInitialized && messages.length === 0) {
       setMessages([{
         id: '1',
         role: 'assistant',
@@ -39,8 +41,9 @@ export const AIChatAssistant = () => {
         timestamp: new Date(),
         type: 'advice'
       }]);
+      setWelcomeMessageInitialized(true);
     }
-  }, []);
+  }, [welcomeMessageInitialized, messages.length]);
 
   // Auto-scroll to bottom
   useEffect(() => {

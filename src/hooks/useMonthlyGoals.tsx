@@ -40,6 +40,8 @@ export const useMonthlyGoals = () => {
       const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
       const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
 
+      const currentMonthStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}`;
+      
       const { data, error } = await supabase
         .from("monthly_goals")
         .select(`
@@ -50,8 +52,7 @@ export const useMonthlyGoals = () => {
           )
         `)
         .eq("user_id", user.id)
-        .gte("target_month", startOfMonth.toISOString().split('T')[0])
-        .lte("target_month", endOfMonth.toISOString().split('T')[0])
+        .like("target_month", `${currentMonthStr}%`)
         .order("priority_level", { ascending: false })
         .order("created_at", { ascending: false });
 

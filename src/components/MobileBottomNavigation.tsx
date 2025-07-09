@@ -44,7 +44,7 @@ export const MobileBottomNavigation = ({ activeTab, onTabChange }: MobileBottomN
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 safe-area-pb">
+    <div className="fixed left-0 right-0 bg-white border-t border-gray-200 z-50" style={{ bottom: "max(0px, env(safe-area-inset-bottom))", paddingBottom: "max(8px, calc(env(safe-area-inset-bottom) + 8px))" }}>
       <div className="flex justify-around items-center py-2 px-4">
         {menuItems.map((item) => {
           const isActive = activeTab === item.id;
